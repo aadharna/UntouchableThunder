@@ -3,7 +3,7 @@ Competitive Co-evolution of agents and environments (via mechanics) in GVG-AI
 
 Master's Thesis -- Aaron Dharna  
 
-PIs:  
+Advisers:   
 
 	- Dr. Julian Togelius (NYU-Tandon)
 	- Dr. Damian Lyons (Fordham University)
