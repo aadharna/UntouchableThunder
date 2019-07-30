@@ -1,6 +1,5 @@
 # UntouchableThunder
 Competitive Co-evolution of agents and environments (via mechanics) in [GVG-AI](https://arxiv.org/pdf/1802.10363.pdf).
-Generation Algorithms  
 
 Master's Thesis -- Aaron Dharna  
 
