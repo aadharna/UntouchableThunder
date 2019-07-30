@@ -24,8 +24,10 @@ Initial scope:
     - Use some sort of Evolutionary algorithm to generate new levels  
 		- Neuro-Evolution? (e.g. NEAT)
 		- Evolving the expansion term of MCTS?
-		- GAN?  	
+		- GAN? 
+		- See: [Search-Based Procedural Content Generation](https://course.ccs.neu.edu/cs5150f14/readings/togelius_sbpcg.pdf)
 	- Use either an EA or RL to have the agent learn the generated (paired) level.
+		- More likely an EA, I am just more familiar with RL
 	
 Things to consider:  
 
