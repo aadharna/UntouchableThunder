@@ -22,13 +22,16 @@ When I was talking with Dr. Togelius he suggested that I re-implement POET in [G
 Initial scope:  
 
     - Use some sort of Evolutionary algorithm to generate new levels  
-		- Neuro-Evolution? (e.g. NEAT)
+		- Neuro-Evolution? (e.g. NEAT) <-- current main contender. 
 		- Evolving the expansion term of MCTS?
 		- GAN? 
 		- See: [Search-Based Procedural Content Generation](https://course.ccs.neu.edu/cs5150f14/readings/togelius_sbpcg.pdf)
 	- Use either an EA or RL to have the agent learn the generated (paired) level.
-		- More likely an EA, I am just more familiar with RL
+		- More likely an EA, I am just more familiar with RL  
+			- I am currently doing some background reading on EAs.
 	
+The result here is that we generate problems (aka levels) along with their solutions. 
+
 Things to consider:  
 
 	- [Quality Diversity](https://arxiv.org/pdf/1907.04053.pdf) methods
