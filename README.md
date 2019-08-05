@@ -35,7 +35,7 @@ Things to consider:
 	
 Framework: 
 
-	- Use GVG-AI (generalized video game - ai) to set up levels.  
+	- Use GVG-AI (generalized video game - ai) to set up levels and train agents across multiple games.  
 
 POET alters the topology of the levels to instantiate curriculum learning, a complexification system of game-rules that makes the level/environment progressively more complex  
 
