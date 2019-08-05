@@ -46,7 +46,7 @@ Framework:
 ----  
 # tl;dr
 
-POET alters the topology of the levels to instantiate curriculum learning, a complexification system of game-rules that makes the level/environment progressively more complex  
+POET alters the topology of the levels to instantiate curriculum learning. A complexification system of game-rules that makes the level/environment progressively more complex  
 
 	- new rules
 	- new items
