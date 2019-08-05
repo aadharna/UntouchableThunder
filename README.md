@@ -30,7 +30,7 @@ Initial scope:
 		- More likely an EA, I am just more familiar with RL  
 			- I am currently doing some background reading on EAs.
 	
-The result here is that we generate problems (aka levels) along with their solutions. 
+The result here is that we generate problems (aka levels) along with their solutions (trained agents). As we can trace the lineage of both agents and levels, it would be nice if this resulted in being able to create a "plan" of how to train the final agent to optimize the environment we're maximizing. (e.g. train in environment C and then train in environment G to get the most robust agent.)
 
 Things to consider:  
 
@@ -39,6 +39,9 @@ Things to consider:
 Framework: 
 
 	- Use GVG-AI (generalized video game - ai) to set up levels and train agents across multiple games.  
+
+----  
+# tl;dr
 
 POET alters the topology of the levels to instantiate curriculum learning, a complexification system of game-rules that makes the level/environment progressively more complex  
 
