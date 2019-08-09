@@ -24,6 +24,7 @@ Initial scope:
 
     - Use some sort of Evolutionary algorithm to generate new levels  
 		- Neuro-Evolution? (e.g. NEAT) <-- current main contender. 
+			- https://arxiv.org/pdf/1410.7326.pdf
 		- Evolving the expansion term of MCTS?
 		- GAN? 
 		- See: [Search-Based Procedural Content Generation](https://course.ccs.neu.edu/cs5150f14/readings/togelius_sbpcg.pdf)
