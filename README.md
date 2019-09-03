@@ -51,6 +51,7 @@ POET alters the topology of the levels to instantiate curriculum learning. A com
 
 	- new rules
 	- new items
+	- long jump v short jump
 	- etc
 
 as the agent gets better is the direction that I would like to go in. 
