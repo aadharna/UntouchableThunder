@@ -13,6 +13,6 @@ Running agent optimization will play out just about like normal. Note: in RL, we
 Furthermore, once we generate the level, we will need to 'set' the level to be the one we want. To do this, we need to save the file (or perhaps just get the path to memory, I think Python can do that) and pass that path to 
 
 1) `env.unwrapped._setLevel(path)`  
-2) `env.reset()
+2) `env.reset()`
 
 Then start the optimization loop. 
