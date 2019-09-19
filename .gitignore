@@ -1,4 +1,5 @@
 
 InitialIdeas.md 
 .idea/*
+*.ipynb_checkpoints/**
 example/*
