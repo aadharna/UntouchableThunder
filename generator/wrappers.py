@@ -6,7 +6,7 @@ import csv
 import random
 import numpy as np
 
-import timeout_decorator
+# import timeout_decorator
 
 import gym
 import gym_gvgai
