@@ -16,3 +16,10 @@ Furthermore, once we generate the level, we will need to 'set' the level to be t
 2) `env.reset()`
 
 Then start the optimization loop. 
+
+
+- one folder for each member of the population
+- Spin up thread when running env to evaluate agent. Return results.
+    - store for each agent
+- when agents all done, kill threads
+- update agent params in main thread

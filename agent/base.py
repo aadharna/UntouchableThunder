@@ -20,7 +20,14 @@ class Agent:
         self._env.reset()
 
     def evaluate(self):
-        pass
+        done = False
+        rewards = []
+        self._env.reset()
+        while not done: 
+            action = self.get_action()
+            state, reward, done, info = self._env.step(action)
+            rewards.append(reward)
+        return rewards
 
     def update(self):
         pass
@@ -29,24 +36,13 @@ class Agent:
         # randomly for now
         return np.random.choice(self.action_space)
 
-# will move this when I figure out where it goes
-def generate_level_from_rules(rules):
-    pass
-
-def simulate(model, rules, n_episodes=5):
-    level = generate_level_from_rules(rules) #returns path to txt/npy file
+def simulate(model, level, n_episodes=5):
     model.set_level(level)
 
     # track information
     total_rewards = []
-    total_reward = 0
     for _ in range(n_episodes):
-        model.env.reset()
-        done = False
-        while not done:
-            action = model.get_action()
-            obs, reward, done, info = model.env.step(action)
-            total_reward += reward
-        total_rewards.append(total_reward)
+        episode_reward = model.evaluate()
+        total_rewards.append(sum(episode_reward))
 
     return total_rewards

@@ -1,9 +1,9 @@
 wwwwwwwwwwwww
-w......g...gw
+wA.........gw
 w....w......w
 w.w.w..1....w
-w.w.........w
-ww1..2..3..Aw
-w..w..w.w.w3w
+w+w....w....w
+ww1..2..3...w
+w..w..w.w.w.w
 w...A.......w
 wwwwwwwwwwwww

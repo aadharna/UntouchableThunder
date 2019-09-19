@@ -14,14 +14,12 @@ IS_VIABLE_SCORE = 100
 # STATIC_WORLD_TOP[:, -1] = 'F' # flag/end
 
 class Generator:
-    def __init__(self, world, mechanics=[]):
+    def __init__(self, world, mechanics=None):
         self._length = world.shape[0]
         self._height = world.shape[1]
         self._world = world
 
-        self.mechanics = mechanics
-
-        self.chars = np.unique(np.unique(self.world).tolist() + self.mechanics)
+        self.chars = np.unique(np.unique(self.world).tolist() + mechanics)
         self.mechanics = mechanics
 
         self._fit = 0
@@ -32,8 +30,6 @@ class Generator:
 
     def fitness(self, gym, agent):
         """Score agent by having it try to complete the level.
-        todo: implement this!
-
         :param gym: gvgai_gym env.
         :param agent: NN-agent
         :return:
@@ -45,7 +41,6 @@ class Generator:
 
     def mutate(self, mutationRate):
         """randomly edit parts of the level!
-
         :param mutationRate:
         :return: n/a
         """
@@ -62,7 +57,6 @@ class Generator:
 
     def apply_gravity(self):
         """ensure goombas, piranha plants etc are not floating
-
         :return:
         """
         for j in range(self._length):
@@ -73,7 +67,6 @@ class Generator:
 
     def crossOver(self, parent):
         """Edit levels via crossover rather than mutation
-
         :param self: parent level A
         :param parent: parent level B
         :return: child level
