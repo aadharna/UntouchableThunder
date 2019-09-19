@@ -7,24 +7,26 @@ CHARS = ['#',  # ground
          'C',  # coin
          'P',  # piranha plant
          ' ']  # gap
+GROUND_CHARS = ['G', 'P']
 
 IS_VIABLE_SCORE = 100
-WIDE = 25
-TALL = 5
 # STATIC_WORLD_TOP = np.array([['']*WIDE]*3, ndmin=2)
 # STATIC_WORLD_TOP[:, -1] = 'F' # flag/end
 
-class generator:
-    def __init__(self):
-        self._length = WIDE
-        self._height = TALL
-        self._world = np.array([['']*self._length]*self._height, ndmin=2)
+class Generator:
+    def __init__(self, world, mechanics=None):
+        self._length = world.shape[0]
+        self._height = world.shape[1]
+        self._world = world
+
+        self.chars = np.unique(np.unique(self.world).tolist() + mechanics)
+        self.mechanics = mechanics
+
         self._fit = 0
 
     @property
     def world(self):
         return self._world
-        # return np.concatenate((STATIC_WORLD_TOP, self._world), axis=0)
 
     def fitness(self, gym, agent):
         """Score agent by having it try to complete the level.
@@ -44,16 +46,16 @@ class generator:
         :param mutationRate:
         :return: n/a
         """
-        for i in range(self._length):
-            height = np.random.choice(np.arange(5))
+        for i in range(self._length): 
+            height = np.random.choice(np.arange(self._height))
             if np.random.rand() < mutationRate:
-                self._world[height][i] = np.random.choice(CHARS)
+                self._world[i][height] = np.random.choice(self.chars)
 
-        self.apply_gravity()
+        # self.apply_gravity()
 
         # add static elements (end goal/mario starting position)
-        self._world[:, -1] = 'F'  # flag/end
-        self._world[-2][0] = 'M'
+        # self._world[:, -1] = 'F'  # flag/end
+        # self._world[-2][0] = 'M'
 
     def apply_gravity(self):
         """ensure goombas, piranha plants etc are not floating
@@ -62,7 +64,7 @@ class generator:
         """
         for j in range(self._length):
             for i in range(self._height - 2):
-                if self._world[i][j] in CHARS:
+                if self._world[i][j] in GROUND_CHARS and not self._world[i+1][j] in CHARS:
                     self._world[i+1][j] = self._world[i][j]
                     self._world[i][j] = ''
 
@@ -73,10 +75,22 @@ class generator:
         :param parent: parent level B
         :return: child level
         """
-        pass
 
-x = generator()
+        child = Generator(self.world, self.mechanics)
+        for i in range(len(child._world)):
+            for j in range(len(child._world[i])):
+                if np.random.choice([0, 1]):
+                    child._world[i][j] = self._world[i][j]
+                else:
+                    child._world[i][j] = parent._world[i][j]
 
-x._world[-1][:] = CHARS[0] # set ground
-x.mutate(0.25)
-print(pd.DataFrame(x.world))
+        return child
+
+    def __str__(self):
+        stringrep = ""
+        for i in range(len(self._world)):
+            for j in range(len(self._world[i])):
+                stringrep += self._world[i][j]
+                if j == (len(self._world[i]) - 1):
+                    stringrep += '\n'
+        return stringrep
