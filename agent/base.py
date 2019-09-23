@@ -25,6 +25,7 @@ class Agent:
     def evaluate(self):
         """Run self agent on current generator level. 
         """
+        print("evaluating agent")
         done = False
         rewards = []
         self._env.reset()
@@ -32,11 +33,10 @@ class Agent:
         while not done:
             action = self.get_action()
             state, reward, done, info = self._env.step(action)
+            print(f"step: {step}, action: {action}, done: {done}, reward: {reward}")
             # state is a grid world here since we're using GridGame class
             step += 1
             rewards.append(reward)
-            if step > self.max_steps:
-                done = True
         return rewards
 
     def update(self):

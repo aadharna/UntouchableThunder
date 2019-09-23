@@ -53,6 +53,8 @@ class GridGame(gym.Wrapper):
         im, reward, done, info = self.env.step(action)
         if(self.steps >= self.play_length):
             done = True
+            reward += 1 #reward the agent for living the same amount as for winning
+            print(f"lived until end of env: +{reward}")
         
         #reward = self.get_reward(done, info["winner"], r) #extra r parameter
         
@@ -75,6 +77,7 @@ class GridGame(gym.Wrapper):
         :param agent: NN-agent
         :return:
         """
+        print("running agent")
         score = np.sum(agent.evaluate())
         self._fit = score / 100
     
