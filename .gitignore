@@ -1,7 +1,7 @@
 
 InitialIdeas.md 
 .idea/*
-*checkpoint.ipynb_checkpoints
+*checkpoint.ipynb
 */.ipynb_checkpoints/*
 example/*
 __pycache__
