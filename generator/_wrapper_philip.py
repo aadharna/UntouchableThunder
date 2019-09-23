@@ -11,7 +11,7 @@ import numpy as np
 import gym
 import gym_gvgai
 
-import a2c_ppo_acktr.envs as torch_env
+# import a2c_ppo_acktr.envs as torch_env
 
 from baselines import bench
 from baselines.common.vec_env.dummy_vec_env import DummyVecEnv
@@ -53,10 +53,10 @@ def make_vec_envs(env_def, level_path, seed, num_processes, gamma, log_dir, devi
         else:
             envs = VecNormalize(envs, gamma=gamma)
 
-    envs = torch_env.VecPyTorch(envs, device)
-
-    if num_frame_stack is not None:
-        envs = torch_env.VecPyTorchFrameStack(envs, num_frame_stack, device)
+    # envs = torch_env.VecPyTorch(envs, device)
+    #
+    # if num_frame_stack is not None:
+    #     envs = torch_env.VecPyTorchFrameStack(envs, num_frame_stack, device)
     #elif len(envs.observation_space.shape) == 3:
     #    envs = torch_env.VecPyTorchFrameStack(envs, 4, device)
 

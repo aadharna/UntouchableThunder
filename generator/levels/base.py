@@ -1,6 +1,9 @@
 import numpy as np
+import os
 from pprint import pprint
 import pandas as pd
+
+from gym_gvgai import dir
 
 CHARS = ['#',  # ground
          'G',  # goomba
@@ -14,56 +17,64 @@ IS_VIABLE_SCORE = 100
 # STATIC_WORLD_TOP[:, -1] = 'F' # flag/end
 
 class Generator:
-    def __init__(self, world, mechanics=None):
-        self._length = world.shape[0]
-        self._height = world.shape[1]
-        self._world = world
+    def __init__(self, tile_world, path=dir+'envs/games/zelda_v0/', mechanics=[], generation=0):
+        """
 
-        self.chars = np.unique(np.unique(self.world).tolist() + mechanics)
+        :param tile_world: 2d numpy array of map
+        :param path: gym_gvgai.dir
+        :param mechanics: list of sprites you would like to be able to mutate into
+        """
+        self._length = tile_world.shape[0]
+        self._height = tile_world.shape[1]
+        self._tile_world = tile_world
+        self.mechanics = mechanics
+        #make folder in levels folder
+        self.base_path = path
+        if not os.path.exists(os.path.join(self.base_path, 'levels')):
+            os.mkdir(os.path.join(self.base_path, 'levels'))
+        self.base_path = os.path.join(self.base_path, 'levels')
+
+        self.chars = np.unique(np.unique(self.tile_world).tolist() + self.mechanics)
         self.mechanics = mechanics
 
         self._fit = 0
+        self.generation = generation
+
 
     @property
-    def world(self):
-        return self._world
+    def tile_world(self):
+        return self._tile_world
 
-    def fitness(self, gym, agent):
-        """Score agent by having it try to complete the level.
-        :param gym: gvgai_gym env.
-        :param agent: NN-agent
+    def cleanup(self):
+        """remove generated/saved files.
+        SHOULD ONLY BE CALLED ONCE (which actually tells me that this shouldn't live in the Generator class).
+
         :return:
         """
-        # gym.unwrapped.setLevel(self.world)
-        # gym.reset()
-        score = agent.evalute_in(gym)
-        self._fit = score / IS_VIABLE_SCORE
+        for fname in os.listdir(self.base_path):
+            os.remove(os.path.join(self.base_path, fname))
+        os.rmdir(self.base_path)
+
+
+    def to_file(self, env_id, game='zelda'):
+        path = os.path.join(self.base_path, f"{game}_id:{env_id}_g:{self.generation}.txt")
+        with open(path, 'w+') as fname:
+            fname.write(str(self))
+            self.path_to_file = path
+            # np.save(f"{path.split('.')[0]}.npy", self.tile_world)
+        return path
 
     def mutate(self, mutationRate):
         """randomly edit parts of the level!
         :param mutationRate:
         :return: n/a
         """
+        # self.generation += 1
+        
         for i in range(self._length): 
             height = np.random.choice(np.arange(self._height))
             if np.random.rand() < mutationRate:
-                self._world[i][height] = np.random.choice(self.chars)
-
-        # self.apply_gravity()
-
-        # add static elements (end goal/mario starting position)
-        # self._world[:, -1] = 'F'  # flag/end
-        # self._world[-2][0] = 'M'
-
-    def apply_gravity(self):
-        """ensure goombas, piranha plants etc are not floating
-        :return:
-        """
-        for j in range(self._length):
-            for i in range(self._height - 2):
-                if self._world[i][j] in GROUND_CHARS and not self._world[i+1][j] in CHARS:
-                    self._world[i+1][j] = self._world[i][j]
-                    self._world[i][j] = ''
+                self._tile_world[i][height] = np.random.choice(self.chars)
 
     def crossOver(self, parent):
         """Edit levels via crossover rather than mutation
@@ -72,21 +83,43 @@ class Generator:
         :return: child level
         """
 
-        child = Generator(self.world, self.mechanics)
-        for i in range(len(child._world)):
-            for j in range(len(child._world[i])):
+        child = Generator(tile_world= self.tile_world, 
+                          mechanics = self.mechanics, 
+                          generation= self.generation + 1)
+        
+        for i in range(len(child._tile_world)):
+            for j in range(len(child._tile_world[i])):
                 if np.random.choice([0, 1]):
-                    child._world[i][j] = self._world[i][j]
+                    child._tile_world[i][j] = self._tile_world[i][j]
                 else:
-                    child._world[i][j] = parent._world[i][j]
+                    child._tile_world[i][j] = parent._world[i][j]
 
         return child
 
     def __str__(self):
         stringrep = ""
-        for i in range(len(self._world)):
-            for j in range(len(self._world[i])):
-                stringrep += self._world[i][j]
-                if j == (len(self._world[i]) - 1):
+        for i in range(len(self._tile_world)):
+            for j in range(len(self._tile_world[i])):
+                stringrep += self._tile_world[i][j]
+                if j == (len(self._tile_world[i]) - 1):
                     stringrep += '\n'
         return stringrep
+
+
+def _initialize(path):
+    """build numpy array of level from txt file
+
+    :param path: path to txt file representation of level
+    :return:
+    """
+    f = open(path, 'r')
+    f = f.readlines()
+    rep = []
+    for l in f:
+        rep.append(l[:-1]) #cut off '\n'
+    mat = []
+    for r in rep:
+        for s in r:
+            mat.append(s)
+    npa = np.array(mat).reshape((9, -1)) # make into numpy array 9x13
+    return npa

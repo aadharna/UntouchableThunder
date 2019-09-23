@@ -49,9 +49,15 @@ Framework:
 
 POET alters the topology of the levels to instantiate curriculum learning. A complexification system of game-rules that makes the level/environment progressively more complex  
 
+	- number of monsters
+	- number of doors
+	- number of keys
+	- position of all game objects
+
+If those initial results hold, then scope will be expanded to also complexity via: 
+
 	- new rules
 	- new items
-	- long jump v short jump
 	- etc
 
 as the agent gets better is the direction that I would like to go in. 

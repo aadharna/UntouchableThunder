@@ -1,32 +1,42 @@
 import numpy as np
 import pandas as pd
+from generator.levels.base import Generator
 
 class Agent:
     """
     Wrap each env with a game-playing agent
     """
-    def __init__(self, env, action_space):
-        self._env = env
+    def __init__(self, GG, max_steps=250):
+        """Wrap environment with a game-playing agent
+        
+        :param GG: GridGame Class (contains gym_gvgai env and a level generator.
+        
+        """
+
+        self._env = GG
         self.envs_through_time = []
-        self.action_space = action_space
+        self.action_space = GG.env.env.action_space.n
+        self.max_steps = max_steps
 
     @property
     def env(self):
         return self._env
 
-    def set_level(self, path_to_level):
-        self.envs_through_time.append(path_to_level)
-        self._env.unwrapped._setLevel(path_to_level)
-        self._env.reset()
-
     def evaluate(self):
+        """Run self agent on current generator level. 
+        """
         done = False
         rewards = []
         self._env.reset()
-        while not done: 
+        step = 0
+        while not done:
             action = self.get_action()
             state, reward, done, info = self._env.step(action)
+            # state is a grid world here since we're using GridGame class
+            step += 1
             rewards.append(reward)
+            if step > self.max_steps:
+                done = True
         return rewards
 
     def update(self):
@@ -35,14 +45,23 @@ class Agent:
     def get_action(self):
         # randomly for now
         return np.random.choice(self.action_space)
+    
+    def fitness(self):
+        """run this agent through the current generator env once and store result into 
+            agent.env._fit
+        """
+        return self.env.fitness(self)
 
-def simulate(model, level, n_episodes=5):
-    model.set_level(level)
+def simulate(model, level, max_steps=250, n_episodes=5):
+    """Run this agent on this level n_episodes times and get reward for each run
+    """
+    # use property env rather than private _env
+    model.env.set_level(level)
 
     # track information
     total_rewards = []
     for _ in range(n_episodes):
         episode_reward = model.evaluate()
-        total_rewards.append(sum(episode_reward))
+        total_rewards.append(episode_reward)
 
     return total_rewards
