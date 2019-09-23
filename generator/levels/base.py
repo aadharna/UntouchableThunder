@@ -5,17 +5,6 @@ import pandas as pd
 
 from gym_gvgai import dir
 
-CHARS = ['#',  # ground
-         'G',  # goomba
-         'C',  # coin
-         'P',  # piranha plant
-         ' ']  # gap
-GROUND_CHARS = ['G', 'P']
-
-IS_VIABLE_SCORE = 100
-# STATIC_WORLD_TOP = np.array([['']*WIDE]*3, ndmin=2)
-# STATIC_WORLD_TOP[:, -1] = 'F' # flag/end
-
 class Generator:
     def __init__(self, tile_world, path=dir+'envs/games/zelda_v0/', mechanics=[], generation=0):
         """
@@ -23,7 +12,9 @@ class Generator:
         :param tile_world: 2d numpy array of map
         :param path: gym_gvgai.dir
         :param mechanics: list of sprites you would like to be able to mutate into
+        :param generation: int 
         """
+        
         self._length = tile_world.shape[0]
         self._height = tile_world.shape[1]
         self._tile_world = tile_world
@@ -35,9 +26,7 @@ class Generator:
         self.base_path = os.path.join(self.base_path, 'levels')
 
         self.chars = np.unique(np.unique(self.tile_world).tolist() + self.mechanics)
-        self.mechanics = mechanics
 
-        self._fit = 0
         self.generation = generation
 
 
