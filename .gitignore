@@ -6,3 +6,4 @@ InitialIdeas.md
 example/*
 __pycache__
 */__pychache__/*
+*.pyc
