@@ -37,6 +37,8 @@ class GridGame(gym.Wrapper):
         self.score = 0
         self.play_length = play_length
         
+    def swap_generator(self, child):
+        self.generator = child
 
     def reset(self):
         """reset gym simluation with whatever level the Generator currently holds

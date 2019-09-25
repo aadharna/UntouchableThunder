@@ -33,7 +33,7 @@ class Agent:
         while not done:
             action = self.get_action()
             state, reward, done, info = self._env.step(action)
-            print(f"step: {step}, action: {action}, done: {done}, reward: {reward}")
+            # print(f"step: {step}, action: {action}, done: {done}, reward: {reward}")
             # state is a grid world here since we're using GridGame class
             step += 1
             rewards.append(reward)

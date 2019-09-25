@@ -6,7 +6,7 @@ import pandas as pd
 from gym_gvgai import dir
 
 class Generator:
-    def __init__(self, tile_world, path=dir+'envs/games/zelda_v0/', mechanics=[], generation=0):
+    def __init__(self, tile_world, path=dir+'/envs/games/zelda_v0/', mechanics=[], generation=0):
         """
 
         :param tile_world: 2d numpy array of map
@@ -58,7 +58,10 @@ class Generator:
         :param mutationRate:
         :return: n/a
         """
-        # self.generation += 1
+        # crossOver just seems weird. 
+        # So I am going to remove it for now and therefore count "generations" as 
+        # number of times the env has been mutated. 
+        self.generation += 1
         
         for i in range(self._length): 
             height = np.random.choice(np.arange(self._height))
@@ -81,7 +84,7 @@ class Generator:
                 if np.random.choice([0, 1]):
                     child._tile_world[i][j] = self._tile_world[i][j]
                 else:
-                    child._tile_world[i][j] = parent._world[i][j]
+                    child._tile_world[i][j] = parent._tile_world[i][j]
 
         return child
 
