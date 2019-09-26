@@ -1,8 +1,6 @@
 import numpy as np
+from copy import deepcopy
 import os
-from pprint import pprint
-import pandas as pd
-
 from gym_gvgai import dir
 
 class Generator:
@@ -17,7 +15,14 @@ class Generator:
         
         self._length = tile_world.shape[0]
         self._height = tile_world.shape[1]
+        self.BOUNDARY = {'w': [(x, y)
+                               for x in range(9)
+                               for y in range(13)
+                               if (x == 0 or y == 0 or x == 8 or y == 12)]
+                         }
+
         self._tile_world = tile_world
+
         self.mechanics = mechanics
         #make folder in levels folder
         self.base_path = path
@@ -25,14 +30,45 @@ class Generator:
             os.mkdir(os.path.join(self.base_path, 'levels'))
         self.base_path = os.path.join(self.base_path, 'levels')
 
-        self.chars = np.unique(np.unique(self.tile_world).tolist() + self.mechanics)
+        self.chars = np.unique(np.unique(self._tile_world).tolist() + self.mechanics)
+        self.chars = list(set(self.chars) - {'A'}) # do not place more agents
 
         self.generation = generation
+        self.locations = self._parse_tile_world(tile_world)
 
+
+    def _parse_tile_world(self, tile_world):
+        locations = {}
+        # comb through world, extract positions for each element currently in world
+        for i in range(len(tile_world)):
+            for j in range(len(tile_world[i])):
+                c = tile_world[i][j]
+                if c not in locations:
+                    locations[c] = []
+                    locations[c].append((i, j))
+                else:
+                    locations[c].append((i, j))
+        # add in user-specified sprites as empty lists.
+        for char in self.chars:
+            if char not in locations:
+                locations[char] = []
+
+        # separate out mutable walls vs non-mutable walls
+        mutable_walls = list(set(locations['w']) - set(self.BOUNDARY['w']))
+        locations['w'] = mutable_walls
+
+        return locations
 
     @property
     def tile_world(self):
-        return self._tile_world
+        # numpy array
+        npa = np.array([['0'] * self._height] * self._length, dtype=str)
+        for k in self.locations.keys():
+            for pos in self.locations[k]:
+                npa[pos[0]][pos[1]] = k
+        for pos in self.BOUNDARY['w']:
+            npa[pos[0]][pos[1]] = 'w'
+        return npa
 
     def cleanup(self):
         """remove generated/saved files.
@@ -53,47 +89,157 @@ class Generator:
             # np.save(f"{path.split('.')[0]}.npy", self.tile_world)
         return path
 
+    # todo rework mutation.
     def mutate(self, mutationRate):
         """randomly edit parts of the level!
-        :param mutationRate:
+        :param mutationRate: e.g. 0.2
         :return: n/a
         """
+
+        def find_place_for_sprite():
+            """find an empty location in the matrix for the sprite that is empty.
+
+            :return: new (x, y) location
+            """
+            conflicting = True
+            new_location = (0, 0)
+            while conflicting:
+                new_location = (np.random.randint(0, self._length),   # [, )  in, ex
+                                np.random.randint(0, self._height))
+                print(f"potential location {new_location}")
+
+                # don't overwrite Agent, goal, or key
+                if not (new_location in self.locations['A'] or \
+                        new_location in self.locations['g'] or \
+                        new_location in self.locations['+'] or \
+                        new_location in self.BOUNDARY['w']):
+                    conflicting = False
+
+            return new_location
+
         # crossOver just seems weird. 
         # So I am going to remove it for now and therefore count "generations" as 
         # number of times the env has been mutated. 
         self.generation += 1
-        
-        for i in range(self._length): 
-            height = np.random.choice(np.arange(self._height))
-            if np.random.rand() < mutationRate:
-                self._tile_world[i][height] = np.random.choice(self.chars)
 
-    def crossOver(self, parent):
-        """Edit levels via crossover rather than mutation
-        :param self: parent level A
-        :param parent: parent level B
-        :return: child level
-        """
+        if np.random.rand() < mutationRate:
+            mutationType = np.random.randint(1, 4)  # [, )  in, ex
+            print(mutationType)
+            # 1 -- change location of sprite in the scene
+            # 2 -- spawn new sprite into the scene
+            # 3 -- remove sprite from scene
+            if mutationType == 1:
+                moved = False
+                while not moved:
+                    # choose a random viable sprite
+                    sprite = np.random.choice(list(self.locations))
+                    if len(list(self.locations[sprite])) == 0 or sprite == '.':
+                        continue
+                    moved = True
 
-        child = Generator(tile_world= self.tile_world, 
-                          mechanics = self.mechanics, 
-                          generation= self.generation + 1)
-        
-        for i in range(len(child._tile_world)):
-            for j in range(len(child._tile_world[i])):
-                if np.random.choice([0, 1]):
-                    child._tile_world[i][j] = self._tile_world[i][j]
-                else:
-                    child._tile_world[i][j] = parent._tile_world[i][j]
+                print(f"moving {sprite}?")
+                # choose location index in list of chosen sprite
+                ind = np.random.choice(len(self.locations[sprite]))
+                # where the sprite was previously
+                old = self.locations[sprite][ind]
+                # new location for sprite
+                new_location = find_place_for_sprite()
 
-        return child
+                # remove whoever already has that new_location
+                # e.g. wall, floor
+                for k in self.locations.keys():
+                    if new_location in self.locations[k]:
+                        rm_ind = self.locations[k].index(new_location)
+                        self.locations[k].pop(rm_ind)
+                        break
+
+                # move sprite to new location
+                self.locations[sprite][ind] = new_location
+
+                # fill previous spot with blank floor.
+                self.locations['.'].append(old)
+
+
+            # spawn a new sprite into the scene
+            elif mutationType == 2:
+                # choose a random sprite
+                spawned = False
+                while not spawned:
+                    sprite = np.random.choice(list(self.locations))
+                    if sprite in 'A':
+                        continue
+                    spawned = True
+                print(f"spawning {sprite}?")
+                new_location = find_place_for_sprite()
+
+                # remove from whoever already has that new_location
+                for k in self.locations.keys():
+                    if new_location in self.locations[k]:
+                        rm_ind = self.locations[k].index(new_location)
+                        self.locations[k].pop(rm_ind)
+                        break
+
+                # add new sprite to the level
+                self.locations[sprite].append(new_location)
+
+            # remove an existing sprite from the scene
+            elif mutationType == 3:
+                somethingToRemove = False
+                # choose a random sprite that has multiple instances of itself to remove
+                while not somethingToRemove:
+                    sprite = np.random.choice(list(self.locations))
+                    print(f"removing {sprite}?")
+                    # do not remove agent, cannot remove floor
+                    if sprite in ['A', '.']:
+                        return
+                    # do not remove goal or key if there are only one of them
+                    #  do not attempt to remove sprite when there are none of that type
+                    elif len(self.locations[sprite]) <= 1:
+                        if sprite in ['g', '+'] or len(self.locations[sprite]) == 0:
+                            continue
+                    # else we have found something meaningful we can remove
+                    else:
+                        somethingToRemove = True
+                # choose location index in list of chosen sprite
+                ind = np.random.choice(len(self.locations[sprite]))
+                v = deepcopy(self.locations[sprite][ind])
+                print(f"removed {v}")
+                self.locations['.'].append(v)
+                self.locations[sprite].pop(ind)
+
+        # remove anything that was in the boundary wall's spot.
+        for k in self.locations.keys():
+            for i, p in enumerate(self.locations[k]):
+                if p in self.BOUNDARY['w']:
+                    self.locations[k].pop(i)
+
+    # def crossOver(self, parent):
+    #     """Edit levels via crossover rather than mutation
+    #     :param self: parent level A
+    #     :param parent: parent level B
+    #     :return: child level generator
+    #     """
+    #
+    #     child = Generator(tile_world= self.tile_world,
+    #                       mechanics = self.mechanics,
+    #                       generation= self.generation + 1)
+    #
+    #     for i in range(len(child._tile_world)):
+    #         for j in range(len(child._tile_world[i])):
+    #             if np.random.choice([0, 1]):
+    #                 child._tile_world[i][j] = self._tile_world[i][j]
+    #             else:
+    #                 child._tile_world[i][j] = parent._tile_world[i][j]
+    #
+    #     return child
 
     def __str__(self):
         stringrep = ""
-        for i in range(len(self._tile_world)):
-            for j in range(len(self._tile_world[i])):
-                stringrep += self._tile_world[i][j]
-                if j == (len(self._tile_world[i]) - 1):
+        tile_world = self.tile_world
+        for i in range(len(tile_world)):
+            for j in range(len(tile_world[i])):
+                stringrep += tile_world[i][j]
+                if j == (len(tile_world[i]) - 1):
                     stringrep += '\n'
         return stringrep
 
@@ -108,10 +254,10 @@ def _initialize(path):
     f = f.readlines()
     rep = []
     for l in f:
-        rep.append(l[:-1]) #cut off '\n'
+        rep.append(l[:-1])  # cut off '\n'
     mat = []
     for r in rep:
         for s in r:
             mat.append(s)
-    npa = np.array(mat).reshape((9, -1)) # make into numpy array 9x13
+    npa = np.array(mat).reshape((9, -1))  # make into numpy array 9x13
     return npa

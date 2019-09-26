@@ -9,7 +9,7 @@ class Agent:
     def __init__(self, GG, max_steps=250):
         """Wrap environment with a game-playing agent
         
-        :param GG: GridGame Class (contains gym_gvgai env and a level generator.
+        :param GG: GridGame Class (contains gym_gvgai env and a level generator)
         
         """
 
@@ -42,7 +42,7 @@ class Agent:
     def update(self):
         pass
 
-    def get_action(self):
+    def get_action(self, action=None):
         # randomly for now
         return np.random.choice(self.action_space)
     

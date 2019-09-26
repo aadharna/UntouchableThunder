@@ -27,7 +27,8 @@ class GridGame(gym.Wrapper):
         
         self.env = gym_gvgai.make('gvgai-{}-lvl0-v0'.format(game))
         gym.Wrapper.__init__(self, self.env)
-        
+
+        self.depth = None
         # env must exist to reset
         self.reset()
 
@@ -72,6 +73,8 @@ class GridGame(gym.Wrapper):
         self.env.reset()
         _, _, _, info = self.env.step(0)
         state = info['grid']
+        if self.depth is None:
+            self.depth = state.shape[0]
         return state
     
     def fitness(self, agent):
