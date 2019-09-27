@@ -28,12 +28,10 @@ class GridGame(gym.Wrapper):
         self.env = gym_gvgai.make('gvgai-{}-lvl0-v0'.format(game))
         gym.Wrapper.__init__(self, self.env)
 
-        self.depth = None
+        self.depth = None # gets set in self.reset()
         # env must exist to reset
         self.reset()
 
-        self.compiles = True
-        self.state = None
         self.steps = 0
         self.score = 0
         self.play_length = play_length
@@ -71,10 +69,12 @@ class GridGame(gym.Wrapper):
     def set_level(self, path_to_level):
         self.env.unwrapped._setLevel(path_to_level)
         self.env.reset()
-        _, _, _, info = self.env.step(0)
+        _, _, _, info = self.env.step(0) # do nothing
         state = info['grid']
         if self.depth is None:
-            self.depth = state.shape[0]
+            self.depth = state.shape[0] # for zelda shape is (13, 9, 13).
+                                        #  The matrix shape is 9 x 13. So we want to extract the
+                                        #  first element.
         return state
     
     def fitness(self, agent):
