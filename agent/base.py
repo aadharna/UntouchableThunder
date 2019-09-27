@@ -1,6 +1,4 @@
 import numpy as np
-import pandas as pd
-from generator.levels.base import Generator
 
 class Agent:
     """
@@ -28,10 +26,10 @@ class Agent:
         print("evaluating agent")
         done = False
         rewards = []
-        self._env.reset()
+        state = self._env.reset()
         step = 0
         while not done:
-            action = self.get_action()
+            action = self.get_action(state)
             state, reward, done, info = self._env.step(action)
             # print(f"step: {step}, action: {action}, done: {done}, reward: {reward}")
             # state is a grid world here since we're using GridGame class
@@ -42,7 +40,7 @@ class Agent:
     def update(self):
         pass
 
-    def get_action(self, action=None):
+    def get_action(self, state):
         # randomly for now
         return np.random.choice(self.action_space)
     
