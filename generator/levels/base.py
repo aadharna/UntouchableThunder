@@ -123,11 +123,11 @@ class Generator:
         self.generation += 1
 
         if np.random.rand() < mutationRate:
-            mutationType = np.random.randint(1, 4)  # [, )  in, ex
+            mutationType = np.random.choice(np.arange(1, 4), p=[0.4, 0.4, 0.2])  # [, )  in, ex
             print(mutationType)
-            # 1 -- change location of sprite in the scene
-            # 2 -- spawn new sprite into the scene
-            # 3 -- remove sprite from scene
+            # 1 -- change location of sprite in the scene .... 40% chance
+            # 2 -- spawn new sprite into the scene        .... 40% chance
+            # 3 -- remove sprite from scene               .... 20% chance
             if mutationType == 1:
                 moved = False
                 while not moved:
@@ -193,7 +193,10 @@ class Generator:
                     print(f"removing {sprite}?")
                     # do not remove agent, cannot remove floor
                     if sprite in ['A', '.']:
-                        continue
+                        # todo talk with lisa.
+                        # at the beginning, there is nothing to remove.
+                        # How to handle?
+                        return
                     # do not remove goal or key if there are only one of them
                     #  do not attempt to remove sprite when there are none of that type
                     elif len(self.locations[sprite]) <= 1:
