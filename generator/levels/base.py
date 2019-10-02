@@ -110,9 +110,9 @@ class Generator:
 
                 # don't overwrite Agent, goal, or key
                 if not (new_location in self.locations['A'] or \
-                        new_location in self.locations['g'] or \
-                        new_location in self.locations['+'] or \
-                        new_location in self.BOUNDARY['w']):
+                        (new_location in self.locations['g'] and len(self.locations['g']) == 1) or \
+                        (new_location in self.locations['+'] and len(self.locations['+']) == 1) or \
+                         new_location in self.BOUNDARY['w']):
                     conflicting = False
 
             return new_location
@@ -142,6 +142,7 @@ class Generator:
                 ind = np.random.choice(len(self.locations[sprite]))
                 # where the sprite was previously
                 old = self.locations[sprite][ind]
+                print(f'from {old}')
                 # new location for sprite
                 new_location = find_place_for_sprite()
 
@@ -154,10 +155,11 @@ class Generator:
                         break
 
                 # move sprite to new location
-                self.locations[sprite][ind] = new_location
-
+                self.locations[sprite].append(new_location)
                 # fill previous spot with blank floor.
                 self.locations['.'].append(old)
+                self.locations[sprite].pop(ind)
+
 
 
             # spawn a new sprite into the scene
@@ -191,7 +193,7 @@ class Generator:
                     print(f"removing {sprite}?")
                     # do not remove agent, cannot remove floor
                     if sprite in ['A', '.']:
-                        return
+                        continue
                     # do not remove goal or key if there are only one of them
                     #  do not attempt to remove sprite when there are none of that type
                     elif len(self.locations[sprite]) <= 1:
