@@ -63,4 +63,10 @@ If those initial results hold, then scope will be expanded to also complexity vi
 as the agent gets better is the direction that I would like to go in. 
 
 ----  
+
+NOTE: We have decided to go forward with neuroevolution. To do this, we are using PyTorch-Neat also out of Uber-Engineering. 
+I could not figure out a way to use their repo as if it were just a module. The only way it worked was by cloning the appropriate
+code into my repo in the `pytorch_neat` folder. All code in there was from Uber_Eng and not myself. 
+
+----  
 This is a living document.
