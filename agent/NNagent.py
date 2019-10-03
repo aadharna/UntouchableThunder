@@ -4,6 +4,7 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 
 import numpy as np
+from copy import deepcopy
 
 
 from agent.base import Agent
@@ -31,13 +32,19 @@ class Net(nn.Module):
 
 class NNagent(Agent):
 
-    def __init__(self, GG, max_steps=250):
+    def __init__(self, GG, parent=None, max_steps=250):
         super(NNagent, self).__init__(GG, max_steps)
 
-        self.nn = Net(n_actions=self.action_space,
-                      depth=self.env.depth)
+        if parent:
+            self.nn = deepcopy(parent)
+        
+        else:
+            self.nn = Net(n_actions=self.action_space,
+                          depth=self.env.depth)
 
         self.nn.double()
+
+
 
     def update(self):
         """Update network. neuroevolution.
@@ -46,6 +53,10 @@ class NNagent(Agent):
         """
         pass
 
+    def mutate(self, mutationRate):
+        childGG = self.env.mutate(mutationRate)
+        return NNagent(childGG, self.nn)
+    
     def get_action(self, state):
         """Select an action by running a tile-input through the neural network.
 

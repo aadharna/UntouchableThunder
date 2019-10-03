@@ -26,7 +26,7 @@ class Agent:
         print("evaluating agent")
         done = False
         rewards = []
-        state = self._env.reset()
+        state = self.env.reset()
         step = 0
         while not done:
             action = self.get_action(state)
@@ -40,6 +40,10 @@ class Agent:
     def update(self):
         pass
 
+    def mutate(self, mutationRate):
+        childGG = self.env.mutate(mutationRate)
+        return Agent(childGG)
+
     def get_action(self, state):
         # randomly for now
         return np.random.choice(self.action_space)
@@ -49,6 +53,9 @@ class Agent:
             agent.env._fit
         """
         return self.env.fitness(self)
+
+    def reset(self):
+        return self.env.reset()
 
 def simulate(model, level, max_steps=250, n_episodes=5):
     """Run this agent on this level n_episodes times and get reward for each run
