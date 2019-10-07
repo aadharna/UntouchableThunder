@@ -15,6 +15,8 @@ class Agent:
         self.envs_through_time = []
         self.action_space = GG.env.env.action_space.n
         self.max_steps = max_steps
+        # total reward of agent playing env
+        self.max_achieved_score = None
 
     @property
     def env(self):
@@ -35,7 +37,18 @@ class Agent:
             # state is a grid world here since we're using GridGame class
             step += 1
             rewards.append(reward)
+
+        self.update_score(sum(rewards))
         return rewards
+
+    def update_score(self, potential_score):
+        """If new score is greater than previous score, update max_achieved_score
+
+        :param potential_score: total score of current agent playing env
+        :return:
+        """
+        if potential_score > self.max_achieved_score:
+            self.max_achieved_score = potential_score
 
     def update(self):
         pass

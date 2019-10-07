@@ -8,6 +8,8 @@ from generator.levels.base import Generator
 from generator.levels.base import _initialize
 
 class GridGame(gym.Wrapper):
+    # static variable. Increment when new GG objs are created
+    # and use value as part of unique id.
     env_count = 0
     def __init__(self, game, play_length, path, lvl_name, mechanics=[], locations={}, gen_id=0):
         """Returns Grid instead of pixels
@@ -100,4 +102,4 @@ class GridGame(gym.Wrapper):
         print("running agent")
         score = np.sum(agent.evaluate())
         self._fit = score / 100
-    
+

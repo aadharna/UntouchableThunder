@@ -36,8 +36,8 @@ class Generator:
         self.generation = generation
         self.locations = locations if bool(locations) else self._parse_tile_world(tile_world)
 
-        self.chars = np.unique(np.unique(self.tile_world).tolist() + self.mechanics)
-        self.chars = list(set(self.chars) - {'A'}) # do not place more agents
+        # self.chars = np.unique(np.unique(self.tile_world).tolist() + self.mechanics)
+        # self.chars = list(set(self.chars) - {'A'}) # do not place more agents
 
 
     def _parse_tile_world(self, tile_world):
