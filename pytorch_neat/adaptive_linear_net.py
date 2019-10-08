@@ -29,7 +29,7 @@ class AdaptiveLinearNet:
         activation=tanh_activation,
         cppn_activation=identity_activation,
         batch_size=1,
-        device="cuda:0",
+        device="cpu",
     ):
 
         self.delta_w_node = delta_w_node
@@ -142,20 +142,22 @@ class AdaptiveLinearNet:
         config,
         input_coords,
         output_coords,
+        input_names,
+        output_names,
         weight_threshold=0.2,
         weight_max=3.0,
         output_activation=None,
         activation=tanh_activation,
         cppn_activation=identity_activation,
         batch_size=1,
-        device="cuda:0",
+        device="cpu",
     ):
 
         nodes = create_cppn(
             genome,
             config,
-            ["x_in", "y_in", "x_out", "y_out", "pre", "post", "w"],
-            ["delta_w"],
+            input_names,
+            output_names,
             output_activation=output_activation,
         )
 

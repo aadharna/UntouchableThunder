@@ -63,6 +63,8 @@ class GridGame(gym.Wrapper):
     
     def step(self, action):
         im, reward, done, info = self.env.step(action)
+        if done: 
+            print("solved env")
         if(self.steps >= self.play_length):
             done = True
         

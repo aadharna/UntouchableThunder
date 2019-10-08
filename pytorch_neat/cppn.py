@@ -98,6 +98,7 @@ class Node:
         assert inputs
         shape = list(inputs.values())[0].shape
         self.reset()
+        print(inputs)
         for name in self.leaves.keys():
             assert (
                 inputs[name].shape == shape
@@ -168,6 +169,7 @@ class Leaf:
 def create_cppn(genome, config, leaf_names, node_names, output_activation=None):
 
     genome_config = config.genome_config
+    print(leaf_names, genome_config.input_keys)
     required = required_for_output(
         genome_config.input_keys, genome_config.output_keys, genome.connections
     )
@@ -251,7 +253,7 @@ def get_coord_inputs(in_coords, out_coords, batch_size=None):
 
     if batch_size is not None:
         in_coords = in_coords.unsqueeze(0).expand(batch_size, n_in, 2)
-        out_coords = out_coords.unsqueeze(0).expand(batch_size, n_out, 2)
+        out_coords = out_coords.unsqueeze(0).expand(batch_size, n_out, 8)
 
         x_out = out_coords[:, :, 0].unsqueeze(2).expand(batch_size, n_out, n_in)
         y_out = out_coords[:, :, 1].unsqueeze(2).expand(batch_size, n_out, n_in)

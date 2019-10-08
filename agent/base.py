@@ -19,6 +19,7 @@ class Agent:
         # total reward of agent playing env
         self.max_achieved_score = 0
         self.noisy = False
+        self.vis = None
 
     @property
     def env(self):
@@ -32,7 +33,6 @@ class Agent:
         rewards = []
         state = add_noise(self.env.reset()) if self.noisy else self.env.reset()
 
-        step = 0
         while not done:
             action = self.get_action(state)
             state, reward, done, info = self._env.step(action)
@@ -40,8 +40,10 @@ class Agent:
                 state = add_noise(state)
             # print(f"step: {step}, action: {action}, done: {done}, reward: {reward}")
             # state is a grid world here since we're using GridGame class
-            step += 1
             rewards.append(reward)
+            if self.vis:
+                self.vis(self.env.env, action)
+
 
         self.update_score(np.sum(rewards))
         # if the user wants to do another noisy trial,
@@ -69,11 +71,12 @@ class Agent:
         # randomly for now
         return np.random.choice(self.action_space)
     
-    def fitness(self, noisy=False):
+    def fitness(self, noisy=False, fn=None):
         """run this agent through the current generator env once and store result into 
             agent.env._fit
         """
         self.noisy = noisy
+        self.vis = fn
         return self.env.fitness(self)
 
     def reset(self):

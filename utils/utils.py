@@ -23,3 +23,7 @@ def add_noise(grid):
 
     return noisy_grid
 
+
+def eval_cppn_genome(genomes, config):
+    for genome_id, genome in genomes:
+        genome.fitness = np.random.rand()

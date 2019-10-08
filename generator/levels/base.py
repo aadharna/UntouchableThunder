@@ -29,9 +29,9 @@ class Generator:
         self.mechanics = mechanics
         #make folder in levels folder
         self.base_path = path
-        if not os.path.exists(os.path.join(self.base_path, 'levels')):
-            os.mkdir(os.path.join(self.base_path, 'levels'))
         self._path = os.path.join(self.base_path, 'levels')
+        if not os.path.exists(self._path):
+            os.mkdir(self._path)
 
         self.generation = generation
         self.locations = locations if bool(locations) else self._parse_tile_world(tile_world)
