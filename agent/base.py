@@ -1,4 +1,5 @@
 import numpy as np
+from utils.utils import add_noise
 
 class Agent:
     """
@@ -16,7 +17,8 @@ class Agent:
         self.action_space = GG.env.env.action_space.n
         self.max_steps = max_steps
         # total reward of agent playing env
-        self.max_achieved_score = None
+        self.max_achieved_score = 0
+        self.noisy = False
 
     @property
     def env(self):
@@ -28,17 +30,23 @@ class Agent:
         print("evaluating agent")
         done = False
         rewards = []
-        state = self.env.reset()
+        state = add_noise(self.env.reset()) if self.noisy else self.env.reset()
+
         step = 0
         while not done:
             action = self.get_action(state)
             state, reward, done, info = self._env.step(action)
+            if self.noisy:
+                state = add_noise(state)
             # print(f"step: {step}, action: {action}, done: {done}, reward: {reward}")
             # state is a grid world here since we're using GridGame class
             step += 1
             rewards.append(reward)
 
-        self.update_score(sum(rewards))
+        self.update_score(np.sum(rewards))
+        # if the user wants to do another noisy trial,
+        # let them request it again.
+        self.noisy = False
         return rewards
 
     def update_score(self, potential_score):
@@ -61,10 +69,11 @@ class Agent:
         # randomly for now
         return np.random.choice(self.action_space)
     
-    def fitness(self):
+    def fitness(self, noisy=False):
         """run this agent through the current generator env once and store result into 
             agent.env._fit
         """
+        self.noisy = noisy
         return self.env.fitness(self)
 
     def reset(self):

@@ -11,7 +11,15 @@ class GridGame(gym.Wrapper):
     # static variable. Increment when new GG objs are created
     # and use value as part of unique id.
     env_count = 0
-    def __init__(self, game, play_length, path, lvl_name, mechanics=[], locations={}, gen_id=0):
+    def __init__(self,
+                 game,
+                 play_length,
+                 path=gym_gvgai.dir + '/envs/games/zelda_v0/',
+                 lvl_name='zelda_lvl0.txt',
+                 mechanics=[],
+                 locations={},
+                 gen_id=0):
+
         """Returns Grid instead of pixels
         Sets the reward
         Generates new level on reset
@@ -57,8 +65,6 @@ class GridGame(gym.Wrapper):
         im, reward, done, info = self.env.step(action)
         if(self.steps >= self.play_length):
             done = True
-            reward += 1 #reward the agent for living the same amount as for winning
-            print(f"lived until end of env: +{reward}")
         
         #reward = self.get_reward(done, info["winner"], r) #extra r parameter
         
@@ -71,7 +77,7 @@ class GridGame(gym.Wrapper):
     
     def set_level(self, path_to_level):
         self.env.unwrapped._setLevel(path_to_level)
-        self.env.reset()
+        self.env.reset() # calls gym reset(). not wrapper reset()
         _, _, _, info = self.env.step(0) # do nothing
         state = info['grid']
         if self.depth is None:
@@ -96,7 +102,7 @@ class GridGame(gym.Wrapper):
 
     def fitness(self, agent):
         """Score agent by having it try to complete the level.
-        :param agent: NN-agent
+        :param agent: (NN-)agent
         :return:
         """
         print("running agent")

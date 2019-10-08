@@ -4,6 +4,7 @@ InitialIdeas.md
 *checkpoint.ipynb
 */.ipynb_checkpoints/*
 example/*
+vis/*
 __pycache__
 */__pychache__/*
 *.pyc
