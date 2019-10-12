@@ -72,7 +72,7 @@ class NNagent(Agent):
     def evaluate(self):
         """Run self agent on current generator level.
         """
-        return np.sum(super().evaluate())
+        return -1*np.sum(super().evaluate())
 
     def update(self):
         """Update network. neuroevolution.

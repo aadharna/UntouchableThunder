@@ -38,13 +38,14 @@ class Agent:
             state, reward, done, info = self._env.step(action)
             if self.noisy:
                 state = add_noise(state)
-            # print(f"step: {step}, action: {action}, done: {done}, reward: {reward}")
+            # print(f"action: {action}, done: {done}, reward: {reward}")
             # state is a grid world here since we're using GridGame class
             rewards.append(reward)
             if self.vis:
                 self.vis(self.env.env, action)
 
         self.update_score(np.sum(rewards))
+        print("evaluated")
         # if the user wants to do another noisy trial,
         # let them request it again.
         self.noisy = False
