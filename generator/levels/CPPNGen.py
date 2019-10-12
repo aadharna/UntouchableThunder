@@ -59,17 +59,17 @@ class CPPNGen(Generator):
 
         self.genome = self.p.run(eval_cppn_genome, 1)
 
-        self.sprites = np.array(list(set(self.locations)))# - {'A'})
-
         def one_hot(y):
-            oneHot = np.zeros((y.shape[0], y.shape[0]))
-            i = 0
-            for v in range(len(oneHot)):
-                oneHot[v][i] = 1
-                i += 1
-            return oneHot
+            """one hot encode the sprites
 
+            :param y: list of sprites
+            :return:
+            """
+            return np.eye(y.shape[0])
+
+        self.sprites = np.array(list(set(self.locations)))# - {'A'})
         self.hot_sprites = one_hot(self.sprites)
+
 
         self.nn = make_net(self.genome,
                            self.config,
@@ -77,10 +77,6 @@ class CPPNGen(Generator):
                            self.hot_sprites,
                            ['x_in', 'y_in'],
                            self.sprites)
-
-        print(type(self.nn))
-
-
 
     @property
     def tile_world(self):
@@ -88,7 +84,9 @@ class CPPNGen(Generator):
         npa = np.array([['0'] * self._height] * self._length, dtype=str)
         for i in range(1, self._length - 1):
             for j in range(1, self._height - 1):
-                npa[i][j] = self.nn([i, j])
+                output = self.nn([(i, j)])
+                cha = self._output_to_char(output)
+                npa[i][j] = cha
 
         for pos in self.BOUNDARY['w']:
             npa[pos[0]][pos[1]] = 'w'
@@ -96,7 +94,7 @@ class CPPNGen(Generator):
 
     def mutate(self, mutationRate):
         if np.random.rand() < mutationRate:
-            self.genome = self.p.run(eval_cppn_genome, 1)
+            self.genome = self.p.run(eval_cppn_genome, 10)
 
         self.nn = make_net(self.genome,
                            self.config,
@@ -104,3 +102,6 @@ class CPPNGen(Generator):
                            self.hot_sprites,
                            ['x_in', 'y_in'],
                            self.sprites)
+
+    def _output_to_char(self, output):
+        return np.random.choice(self.sprites)

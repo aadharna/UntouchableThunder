@@ -44,7 +44,6 @@ class Agent:
             if self.vis:
                 self.vis(self.env.env, action)
 
-
         self.update_score(np.sum(rewards))
         # if the user wants to do another noisy trial,
         # let them request it again.
