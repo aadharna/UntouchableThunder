@@ -28,7 +28,7 @@ class Agent:
     def evaluate(self):
         """Run self agent on current generator level. 
         """
-        print("evaluating agent")
+        # print("evaluating agent")
         done = False
         rewards = []
         state = add_noise(self.env.reset()) if self.noisy else self.env.reset()
@@ -45,7 +45,8 @@ class Agent:
                 self.vis(self.env.env, action)
 
         self.update_score(np.sum(rewards))
-        print("evaluated")
+        # print("evaluated")
+        # print(len(rewards))
         # if the user wants to do another noisy trial,
         # let them request it again.
         self.noisy = False
