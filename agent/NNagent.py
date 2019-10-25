@@ -18,6 +18,7 @@ from copy import deepcopy
 
 from agent.base import Agent
 
+import pdb
 
 class Net(nn.Module):
     def __init__(self, n_actions, depth):
@@ -35,7 +36,7 @@ class Net(nn.Module):
         x = x.view(-1, 32 * 3)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        x = F.softmax(self.fc3(x), dim=0)
+        x = F.softmax(self.fc3(x), dim=1) #dim=0 --> [1, 1, 1, 1, ..., 1]
         return x
 
 
@@ -125,8 +126,8 @@ class NNagent(Agent):
         :return: int of selected action
         """
         # the grid needs to be part of a 'batch', so we make state the only element in a list.
-        input = Variable(torch.from_numpy(np.array([state])), requires_grad=False)
-        outputs = self.nn(input)
+        inp = Variable(torch.from_numpy(np.array([state])), requires_grad=False)
+        outputs = self.nn(inp)
         _, predicted = torch.max(outputs, 1)
         # break data out of tensor
         return predicted.data.numpy()[0]
