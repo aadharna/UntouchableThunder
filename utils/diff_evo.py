@@ -24,7 +24,7 @@ def differential_evolution(func, bounds, args=(), strategy='best1bin',
                            mutation=(0.5, 1), recombination=0.7, seed=None,
                            callback=None, disp=False, polish=True,
                            init='latinhypercube', atol=0, updating='immediate',
-                           workers=1, constraints=()):
+                           workers=1, constraints=(), x0=None):
     """Finds the global minimum of a multivariate function.
     Differential Evolution is stochastic in nature (does not use gradient
     methods) to find the minimum, and can search large areas of candidate
@@ -275,7 +275,7 @@ def differential_evolution(func, bounds, args=(), strategy='best1bin',
                                      disp=disp, init=init, atol=atol,
                                      updating=updating,
                                      workers=workers,
-                                     constraints=constraints) as solver:
+                                     constraints=constraints, x0=x0) as solver:
         ret = solver.solve()
 
     return ret
@@ -436,7 +436,7 @@ class DifferentialEvolutionSolver(object):
                  tol=0.01, mutation=(0.5, 1), recombination=0.7, seed=None,
                  maxfun=np.inf, callback=None, disp=False, polish=True,
                  init='latinhypercube', atol=0, updating='immediate',
-                 workers=1, constraints=()):
+                 workers=1, constraints=(), x0=None):
 
         if strategy in self._binomial:
             self.mutation_func = getattr(self, self._binomial[strategy])
@@ -531,21 +531,30 @@ class DifferentialEvolutionSolver(object):
         # I have changed how scipy handles their population stuff.
         # instead you, the user, just pass in directly how large the population should be.
         self.num_population_members = popsize #max(5, popsize * self.parameter_count)
-        print(self.num_population_members)
 
         self.population_shape = (self.num_population_members,
                                  self.parameter_count)
 
         self._nfev = 0
         if isinstance(init, string_types):
+            
+            if x0 is not None:
+                self.num_population_members += 1
+                self.population_shape = (self.num_population_members, self.parameter_count)
+            
             if init == 'latinhypercube':
                 self.init_population_lhs()
             elif init == 'random':
                 self.init_population_random()
             else:
                 raise ValueError(self.__init_error_msg)
+            
+            if x0 is not None:
+                self.population[0] = x0
         else:
             self.init_population_array(init)
+        
+        print(self.num_population_members)
 
         # infrastructure for constraints
         # dummy parameter vector for preparing constraints, this is required so
