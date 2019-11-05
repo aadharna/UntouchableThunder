@@ -60,17 +60,26 @@ class GridGame(gym.Wrapper):
         # reset to just saved file
         state = self.set_level(f)
         return state
-    
+
+    def _process(self, state):
+        """Make tile grid actually a 1-hot encoding by adding an on position for floor
+
+        :param state: tile grid
+        :return: fixed tile-grid
+        """
+        v = (state.sum(0) + 1) % 2
+        return np.concatenate((state, v[None]), axis=0)
+
     def step(self, action):
         im, reward, done, info = self.env.step(action)
         if done:
-            print(f"solved env with sc:{self.score}")
+            print(f"solved env with sc:{self.score + reward}")
         if(self.steps >= self.play_length):
             done = True
         
         #reward = self.get_reward(done, info["winner"], r) #extra r parameter
         
-        state = info['grid'] # need to understand how Philip changes this below
+        state = self._process(info['grid'])
         # state = self.get_state(info['grid'])
         
         self.steps += 1
@@ -81,11 +90,11 @@ class GridGame(gym.Wrapper):
         self.env.unwrapped._setLevel(path_to_level)
         self.env.reset() # calls gym reset(). not wrapper reset()
         _, _, _, info = self.env.step(0) # do nothing
-        state = info['grid']
+        state = self._process(info['grid'])
         if self.depth is None:
-            self.depth = state.shape[0] # for zelda shape is (13, 9, 13).
+            self.depth = state.shape[0] # for zelda shape is (14, 9, 13).
                                         #  The matrix shape is 9 x 13. So we want to extract the
-                                        #  first element.
+                                        #  first element and add 1 for the floor slice.
         return state
 
     def mutate(self, mutationRate):
