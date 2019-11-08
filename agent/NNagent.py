@@ -11,7 +11,6 @@ from pytorch_neat.neat_reporter import LogReporter
 from pytorch_neat.recurrent_net import RecurrentNet
 
 import numpy as np
-from utils.utils import add_noise
 from copy import deepcopy
 
 
@@ -127,7 +126,7 @@ class NNagent(Agent):
         """
         # the grid needs to be part of a 'batch', so we make state the only element in a list.
         inp = Variable(torch.from_numpy(np.array([state])), requires_grad=False)
-        outputs = self.nn(inp)
+        outputs = self.nn(inp.double())
         _, predicted = torch.max(outputs, 1)
         # break data out of tensor
         return predicted.data.numpy()[0]

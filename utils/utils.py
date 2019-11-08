@@ -15,9 +15,9 @@ def add_noise(grid):
         for p2 in range(grid.shape[1]):
             # flip a bit in every other tensor fiber
             if np.random.rand() < 0.5:
-                # slice all row, all column, fibers p1 then pick exactly depth p2
+                # slice all depths, at this row/col,
                 # then pick which element of fiber p2 inside fiber_p1_p2
-                fiber = noisy_grid[:, :, p1].T[p2]
+                fiber = noisy_grid[:, p1, p2]
                 ind = np.random.choice(np.arange(len(fiber)))
                 flip_bit(fiber, ind)
 

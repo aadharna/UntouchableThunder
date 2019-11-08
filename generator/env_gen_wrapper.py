@@ -1,6 +1,6 @@
 import os
 import gym
-import gym_gvgai
+import gvgai
 
 import numpy as np
 
@@ -14,7 +14,7 @@ class GridGame(gym.Wrapper):
     def __init__(self,
                  game,
                  play_length,
-                 path=gym_gvgai.dir + '/envs/games/zelda_v0/',
+                 path='/home/aadharna/miniconda3/envs/thesis/lib/python3.7/site-packages/GVGAI_GYM/gym_gvgai' + '/envs/games/zelda_v0/',
                  lvl_name='zelda_lvl0.txt',
                  mechanics=[],
                  locations={},
@@ -36,7 +36,12 @@ class GridGame(gym.Wrapper):
                                    generation=gen_id,
                                    locations=locations)
         
-        self.env = gym_gvgai.make('gvgai-{}-lvl0-v0'.format(game))
+        # self.env = gym_gvgai.make('gvgai-{}-lvl0-v0'.format(game))
+        self.env = gym.make(f'gvgai-{game}-custom-v0',
+                            level_data=str(self.generator),
+                            pixel_observations=True,
+                            tile_observations=True)
+
         # update static count of number of all envs
         self.id = GridGame.env_count
         GridGame.env_count += 1
@@ -44,11 +49,13 @@ class GridGame(gym.Wrapper):
 
         self.depth = None # gets set in self.reset()
         # env must exist to reset
-        self.reset()
-
         self.steps = 0
         self.score = 0
         self.play_length = play_length
+
+        self.reset()
+
+
 
     def reset(self):
         """reset gym simulation with whatever level the Generator currently holds
@@ -56,9 +63,16 @@ class GridGame(gym.Wrapper):
         self.steps = 0
         self.score = 0
         # save file currently in generator to disk
-        f = self.generator.to_file(self.id)
+        s = str(self.generator)
+        # f = self.generator.to_file(self.id)
         # reset to just saved file
-        state = self.set_level(f)
+        #state = self.set_level(f)
+        # self.env.reset()
+        self.env.reset(environment_id=f'{self.name}-custom', level_data=s)
+        (pix, state), _, _, _ = self.env.step(0)
+        state = np.transpose(state, (2, 0, 1))
+        if self.depth is None:
+            self.depth = state.shape[2]
         return state
 
     def _process(self, state):
@@ -67,35 +81,36 @@ class GridGame(gym.Wrapper):
         :param state: tile grid
         :return: fixed tile-grid
         """
-        v = (state.sum(0) + 1) % 2
-        return np.concatenate((state, v[None]), axis=0)
+        # v = (state.sum(0) + 1) % 2
+        # return np.concatenate((state, v[None]), axis=0)
+
 
     def step(self, action):
-        im, reward, done, info = self.env.step(action)
+        (pix, tile), reward, done, info = self.env.step(action)
         if done:
-            print(f"solved env with sc:{self.score + reward}")
-        if(self.steps >= self.play_length):
+            print(f"solved env with sc: {self.score + reward}")
+        if self.steps >= self.play_length:
             done = True
-        
+        state = np.transpose(tile, (2, 0, 1))
         #reward = self.get_reward(done, info["winner"], r) #extra r parameter
         
-        state = self._process(info['grid'])
+        #state = self._process(info['grid'])
         # state = self.get_state(info['grid'])
         
         self.steps += 1
         self.score += reward
-        return state, reward, done, {'pic':im}
+        return state, reward, done, {'pic':pix}
     
-    def set_level(self, path_to_level):
-        self.env.unwrapped._setLevel(path_to_level)
-        self.env.reset() # calls gym reset(). not wrapper reset()
-        _, _, _, info = self.env.step(0) # do nothing
-        state = self._process(info['grid'])
-        if self.depth is None:
-            self.depth = state.shape[0] # for zelda shape is (14, 9, 13).
-                                        #  The matrix shape is 9 x 13. So we want to extract the
-                                        #  first element and add 1 for the floor slice.
-        return state
+    # def set_level(self, path_to_level):
+    #     self.env.unwrapped._setLevel(path_to_level)
+    #     self.env.reset() # calls gym reset(). not wrapper reset()
+    #     _, _, _, info = self.env.step(0) # do nothing
+    #     state = self._process(info['grid'])
+    #     if self.depth is None:
+    #         self.depth = state.shape[0] # for zelda shape is (14, 9, 13).
+    #                                     #  The matrix shape is 9 x 13. So we want to extract the
+    #                                     #  first element and add 1 for the floor slice.
+    #     return state
 
     def mutate(self, mutationRate):
         new_map = self.generator.mutate(mutationRate)

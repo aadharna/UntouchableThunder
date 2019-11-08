@@ -1,10 +1,10 @@
 import numpy as np
 from copy import deepcopy
 import os
-from gym_gvgai import dir
+# from gym_gvgai import dir
 
 class Generator:
-    def __init__(self, tile_world, path=dir+'/envs/games/zelda_v0/', mechanics=[], generation=0, locations={}):
+    def __init__(self, tile_world, path='/envs/games/zelda_v0/', mechanics=[], generation=0, locations={}):
         """
 
         :param tile_world: 2d numpy array of map
