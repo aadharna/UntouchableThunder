@@ -7,7 +7,9 @@ def add_noise(grid):
     """
     def flip_bit(fiber, ind):
         # switch 1 to 0, or 0 to 1.
-        fiber[ind] = (fiber[ind] + 1) % 2
+        new_fiber = np.zeros(len(fiber))
+        new_fiber[ind] = 1
+        return new_fiber
 
     noisy_grid = np.array(grid)
 
@@ -19,7 +21,7 @@ def add_noise(grid):
                 # then pick which element of fiber p2 inside fiber_p1_p2
                 fiber = noisy_grid[:, p1, p2]
                 ind = np.random.choice(np.arange(len(fiber)))
-                flip_bit(fiber, ind)
+                noisy_grid[:, p1, p2] = flip_bit(fiber, ind)
 
     return noisy_grid
 
