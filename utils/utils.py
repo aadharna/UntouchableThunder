@@ -13,8 +13,8 @@ def add_noise(grid):
 
     noisy_grid = np.array(grid)
 
-    for p1 in range(grid.shape[0]):
-        for p2 in range(grid.shape[1]):
+    for p1 in range(grid.shape[1]):
+        for p2 in range(grid.shape[2]):
             # flip a bit in every other tensor fiber
             if np.random.rand() < 0.5:
                 # slice all depths, at this row/col,
