@@ -5,6 +5,7 @@ class Agent:
     """
     Wrap each env with a game-playing agent
     """
+    agent_count = 0
     def __init__(self, GG, max_steps=250):
         """Wrap environment with a game-playing agent
         
@@ -20,29 +21,34 @@ class Agent:
         self.max_achieved_score = 0
         self.noisy = False
         self.vis = None
+        self.id = Agent.agent_count
+        Agent.agent_count += 1
 
     @property
     def env(self):
         return self._env
 
-    def evaluate(self):
+    @property
+    def name(self):
+        return f'{self.env.game}_{self.env.id}_{self.env.generator.generation}'
+
+    def evaluate(self, env):
         """Run self agent on current generator level. 
         """
         # print("evaluating agent")
         done = False
         rewards = []
-        state = add_noise(self.env.reset()) if self.noisy else self.env.reset()
-
+        state = add_noise(env.reset()) if self.noisy else env.reset()
         while not done:
             action = self.get_action(state)
-            state, reward, done, info = self._env.step(action)
+            state, reward, done, info = env.step(action)
             if self.noisy:
                 state = add_noise(state)
             # print(f"action: {action}, done: {done}, reward: {reward}")
             # state is a grid world here since we're using GridGame class
             rewards.append(reward)
             if self.vis:
-                self.vis(self.env.env, action)
+                self.vis(env.env, action)
 
         self.update_score(np.sum(rewards))
         # print("evaluated")
@@ -61,9 +67,6 @@ class Agent:
         if potential_score > self.max_achieved_score:
             self.max_achieved_score = potential_score
 
-    def update(self):
-        pass
-
     def mutate(self, mutationRate):
         childGG = self.env.mutate(mutationRate)
         return Agent(childGG)
@@ -74,7 +77,6 @@ class Agent:
     
     def fitness(self, noisy=False, fn=None):
         """run this agent through the current generator env once and store result into 
-            agent.env._fit
         """
         self.noisy = noisy
         self.vis = fn
