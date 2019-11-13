@@ -16,7 +16,7 @@ class PyTorchObjective(object):
         self.x0 = np.concatenate([parameters[n].data.numpy().ravel()
                                   for n in parameters])
 
-        self.eval_fn = agent.evaluate  # produces a scalar loss when run that evalutes the nn
+        self.eval_fn = lambda: -1 * agent.evaluate() # produces a scalar loss when run that evalutes the nn
         self.id = agent.name
         self.c = 0
         self.bounds = [bound_limits]*self.x0.shape[0]
@@ -81,7 +81,7 @@ class PyTorchObjective(object):
 def run_opt_n_steps(pair, n=3, popsize=99, strategy='rand1bin'):
     """run n steps on the evolution optimizer
 
-    :param pair: NNAgent object
+    :param pair: PyTorchObjective wrapper of paired NNAgent_Environment object
     :param n: number of generations
     :param popsize: size of population - 1
     :param strategy: weight update strat
