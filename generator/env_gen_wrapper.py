@@ -32,6 +32,7 @@ class GridGame(gym.Wrapper):
         self.lvl_path = os.path.join(path, lvl_name)
         self.mechanics = mechanics
         
+        # if we do not have parsed location data on the sprites, read in a level and use that
         if not bool(locations):
             #set up first level, read it in from disk.
             lvl = _initialize(self.lvl_path)
@@ -41,6 +42,8 @@ class GridGame(gym.Wrapper):
                                        mechanics=self.mechanics,
                                        generation=gen_id,
                                        locations=locations)
+        
+        # this condition will be used 99% of the time.
         else:
             # use generated lvl contained within locations dict.
             self.generator = Generator(tile_world=None,
@@ -100,7 +103,7 @@ class GridGame(gym.Wrapper):
         else:
             tile, reward, done, info = self.env.step(action)
         if done:
-            print(f"solved env with sc: {self.score + reward}")
+            print(f"finished env with sc: {self.score + reward} \nenv: {self.game}_id:{self.id}_g:{self.generator.generation}")
         if self.steps >= self.play_length:
             done = True
         state = np.transpose(tile, (2, 0, 1))

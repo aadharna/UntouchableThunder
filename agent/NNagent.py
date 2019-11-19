@@ -48,7 +48,7 @@ class NNagent(Agent):
         """
         if env == None:
             env = self.env
-        return -1*np.sum(super().evaluate(env))
+        return np.sum(super().evaluate(env))
 
     def mutate(self, mutationRate):
         childGG = self.env.mutate(mutationRate)
@@ -62,8 +62,9 @@ class NNagent(Agent):
         """
         # the grid needs to be part of a 'batch', so we make state the only element in a list.
         inp = Variable(torch.from_numpy(np.array([state])), requires_grad=False)
-        outputs = self.nn(inp.double())
-        _, predicted = torch.max(outputs, 1)
+        with torch.no_grad():
+            outputs = self.nn(inp.double())
+            _, predicted = torch.max(outputs, 1)
         # break data out of tensor
         return predicted.data.numpy()[0]
 

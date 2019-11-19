@@ -17,6 +17,8 @@ class PyTorchObjective(object):
                                   for n in parameters])
 
         self.eval_fn = lambda: -1 * agent.evaluate() # produces a scalar loss when run that evalutes the nn
+                                 # NEGATIVE VALUES ARE GOOD HERE. We're trying to minimize the loss surface.
+            
         self.id = agent.name
         self.c = 0
         self.bounds = [bound_limits]*self.x0.shape[0]
