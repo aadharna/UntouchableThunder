@@ -75,6 +75,10 @@ class GridGame(gym.Wrapper):
         self.play_length = play_length
 
         self.reset()
+        
+        self.orientation = np.eye(4, dtype=int)
+        self.prev_move = 4
+        self.rotating_actions = [1, 2, 3, 4]
 
 
 
@@ -83,6 +87,8 @@ class GridGame(gym.Wrapper):
         """
         self.steps = 0
         self.score = 0
+        self.prev_move = 4
+
         # save file currently in generator to disk
         s = str(self.generator)
         self.env.reset(environment_id=f'{self.game}-custom', level_data=s)
@@ -110,6 +116,11 @@ class GridGame(gym.Wrapper):
         
         self.steps += 1
         self.score += reward
+        
+        # update orientation
+        if action != self.prev_move and action in self.rotating_actions:
+            self.prev_move = action
+        
         return state, reward, done, {'pic': im}
 
     def mutate(self, mutationRate):
