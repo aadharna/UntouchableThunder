@@ -1,10 +1,10 @@
 import numpy as np
 from copy import deepcopy
 import os
-from gym_gvgai import dir
+# from gym_gvgai import dir
 
 class Generator:
-    def __init__(self, tile_world, path=dir+'/envs/games/zelda_v0/', mechanics=[], generation=0, locations={}):
+    def __init__(self, tile_world, shape, path='/envs/games/zelda_v0/', mechanics=[], generation=0, locations={}):
         """
 
         :param tile_world: 2d numpy array of map
@@ -13,8 +13,8 @@ class Generator:
         :param generation: int 
         """
         
-        self._length = tile_world.shape[0]
-        self._height = tile_world.shape[1]
+        self._length = shape[0]
+        self._height = shape[1]
         self.BOUNDARY = {'w': [(x, y)
                                for x in range(self._length)
                                for y in range(self._height)
@@ -113,7 +113,7 @@ class Generator:
             while conflicting:
                 new_location = (np.random.randint(0, self._length),   # [, )  in, ex
                                 np.random.randint(0, self._height))
-                print(f"potential location {new_location}")
+                # print(f"potential location {new_location}")
 
                 # don't overwrite Agent, goal, or key
                 if not (new_location in locations['A'] or
@@ -128,7 +128,7 @@ class Generator:
         if np.random.rand() < mutationRate:
             choices = np.arange(1, 4)
             mutationType = np.random.choice(choices, p=[0.2, 0.4, 0.4])  # [, )  in, ex
-            print(mutationType)
+            # print(mutationType)
             # 1 -- remove sprite from scene               .... 20% chance
             # 2 -- spawn new sprite into the scene        .... 40% chance
             # 3 -- change location of sprite in the scene .... 40% chance
@@ -138,12 +138,12 @@ class Generator:
                 # choose a random sprite that has multiple instances of itself to remove
                 while not somethingToRemove:
                     sprite = np.random.choice(list(locations))
-                    print(f"removing {sprite}?")
+                    # print(f"removing {sprite}?")
                     # do not remove agent, cannot remove floor
                     if sprite in ['A', '.']:
                         # pick a new mutation
                         mutationType = np.random.choice(choices, p=[0, 0.5, 0.5])
-                        print(f"new mutation {mutationType}")
+                        # print(f"new mutation {mutationType}")
                         skip = True
                         break
 
@@ -152,7 +152,7 @@ class Generator:
                     elif len(locations[sprite]) <= 1:
                         if sprite in ['g', '+'] or len(locations[sprite]) == 0:
                             mutationType = np.random.choice(choices, p=[0, 0.5, 0.5])
-                            print(f"new mutation {mutationType}")
+                            # print(f"new mutation {mutationType}")
                             skip = True
                             break
                     # else we have found something meaningful we can remove
@@ -162,7 +162,7 @@ class Generator:
                 if not skip:
                     ind = np.random.choice(len(locations[sprite]))
                     v = deepcopy(locations[sprite][ind])
-                    print(f"removed {v}")
+                    # print(f"removed {v}")
                     self.locations['.'].append(v)
                     self.locations[sprite].pop(ind)
 
@@ -175,7 +175,7 @@ class Generator:
                     if sprite == 'A':
                         continue
                     spawned = True
-                print(f"spawning {sprite}?")
+                # print(f"spawning {sprite}?")
                 new_location = find_place_for_sprite()
 
                 # remove from whoever already has that new_location
@@ -198,12 +198,12 @@ class Generator:
                         continue
                     moved = True
 
-                print(f"moving {sprite}?")
+                # print(f"moving {sprite}?")
                 # choose location index in list of chosen sprite
                 ind = np.random.choice(len(locations[sprite]))
                 # where the sprite was previously
                 old = locations[sprite][ind]
-                print(f'from {old}')
+                # print(f'from {old}')
                 # new location for sprite
                 new_location = find_place_for_sprite()
 
@@ -227,7 +227,7 @@ class Generator:
                 if p in self.BOUNDARY['w']:
                     locations[k].pop(i)
 
-        return locations
+        return locations, self.tile_world.shape
 
     # def crossOver(self, parent):
     #     """Edit levels via crossover rather than mutation

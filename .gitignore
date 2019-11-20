@@ -8,3 +8,4 @@ vis/*
 __pycache__
 */__pychache__/*
 *.pyc
+./levels/levels/*
