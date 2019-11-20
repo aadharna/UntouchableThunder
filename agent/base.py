@@ -21,8 +21,10 @@ class Agent:
         self.max_achieved_score = 0
         self.noisy = False
         self.vis = None
+        self.images = []        
         self.id = Agent.agent_count
         Agent.agent_count += 1
+        
 
     @property
     def env(self):
@@ -48,7 +50,8 @@ class Agent:
             # state is a grid world here since we're using GridGame class
             rewards.append(reward)
             if self.vis:
-                self.vis(env.env, action)
+                self.images.append(info['pic'])
+                self.vis(env.env, action, image=info['pic'])
 
         self.update_score(np.sum(rewards))
         # print("evaluated")
