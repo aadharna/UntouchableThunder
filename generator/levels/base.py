@@ -127,6 +127,11 @@ class Generator:
         # if we manage to mutate:
         if np.random.rand() < mutationRate:
             choices = np.arange(1, 4)
+            
+            ###
+            choices = [3, 3, 3] # TEMPORARY FOR THE EXPERIMENT OF CONSISTANT SHIFTING OF KEY AND DOORS.
+            ###
+            
             mutationType = np.random.choice(choices, p=[0.2, 0.4, 0.4])  # [, )  in, ex
             # print(mutationType)
             # 1 -- remove sprite from scene               .... 20% chance
