@@ -19,11 +19,11 @@ Use the env.yml file to create a conda env.
         - cd to your equivilent of: `~/.conda/envs/thesis/lib/python3.7/site-packages/`  
         - `git clone git@github.com:omardelarosa/Adaptive-DEs.git`  
         - `cd Adaptive-DEs`  
-        - `pip install -e .` 
-        - `cd ..`
-        - `git clone git@github.com:hardmaru/estool.git`
-        - `cd estool`
-        - `pip install -e .`
+        - `pip install -e .`  
+        - `cd ..`  
+        - `git clone git@github.com:hardmaru/estool.git`  
+        - `cd estool`  
+        - `pip install -e .`  
 
 ----    
  
