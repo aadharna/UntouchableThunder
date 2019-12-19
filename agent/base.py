@@ -87,6 +87,9 @@ class Agent:
 
     def reset(self):
         return self.env.reset()
+    
+    def __str__(self):
+        return str(self.env.generator)
 
 def simulate(model, level, max_steps=250, n_episodes=5):
     """Run this agent on this level n_episodes times and get reward for each run

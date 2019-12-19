@@ -17,6 +17,7 @@ class Net(nn.Module):
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(in_channels=8, out_channels=32, kernel_size=3)
         self.fc1 = nn.Linear((32 * 3) + 4, 48)
+                        # neurons from conv layer + neurons to enter compass info
         self.fc2 = nn.Linear(48, 24)
         self.fc3 = nn.Linear(24, n_actions)
 

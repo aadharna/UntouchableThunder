@@ -11,10 +11,21 @@ Advisers:
 See tl;dr at bottom.
 
 ----  
+Installing:
+
+Use the env.yml file to create a conda env.
+    - `conda env create -f env.yml`
+    - NOTE: this yml file is INCOMPLETE. You will need to also run:
+        - cd to your equivilent of: `.conda/envs/thesis/lib/python3.7/site-packages/`
+        - `git clone git@github.com:omardelarosa/Adaptive-DEs.git`
+        - `cd Adaptive-DEs`
+        - pip install -e .
+
+----  
  
 The main phenomenon under investigation here is the co-evolution of agents and environments such that agents maximize the env, while environments adapt to minimize the agents (while maintaining playability).  
 
-Basic idea: I was thinking about competitive co-evolution several weeks ago (before I knew that was the term), and thought to myself, "wouldn't it be neat if on one-hand we had an agent, A,  learning to play a level, but then we also had an adversarial agent, B, who was editing the levels that the first agent was trying to learn. **Would this help with generalizing what A was learning,** as Deep-RL Methods can very easily overfit (which is a problem that is exacerbated by the fact that in RL, we test on the same environment we train on!). 
+Basic idea: I was thinking about competitive co-evolution several weeks ago (before I knew that was the term), and thought to myself, "wouldn't it be neat if on one-hand we had an agent, A,  learning to play a level, but then we also had an adversarial agent, B, who was editing the levels that the first agent was trying to learn. **Would this help with generalizing what A was learning?S** as Deep-RL Methods can very easily overfit (which is a problem that is exacerbated by the fact that in RL, we test on the same environment we train on!). 
 
 I then came across [UberEngineering's POET](https://eng.uber.com/poet-open-ended-deep-learning/) -- Paired Open Ended Trailblazer, which does exactly that but with genetic algorithms for both 'agents'/sides of the problem (game playing agent and level generation) in a paired manner. From POET, this type of systems: Endlessly Generates Increasingly Complex and Diverse Learning Environments and their Solutions! The result is something like **Curriculum Learning**.
 
