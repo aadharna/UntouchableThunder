@@ -11,17 +11,17 @@ Advisers:
 See tl;dr at bottom.
 
 ----  
-Installing:
+Installing:  
 
-Use the env.yml file to create a conda env.
-    - `conda env create -f env.yml`
-    - NOTE: this yml file is INCOMPLETE. You will need to also run:
-        - cd to your equivilent of: `.conda/envs/thesis/lib/python3.7/site-packages/`
-        - `git clone git@github.com:omardelarosa/Adaptive-DEs.git`
-        - `cd Adaptive-DEs`
-        - pip install -e .
+Use the env.yml file to create a conda env.  
+    - `conda env create -f env.yml`  
+    - NOTE: this yml file is INCOMPLETE. You will need to also run:  
+        - cd to your equivilent of: `.conda/envs/thesis/lib/python3.7/site-packages/`  
+        - `git clone git@github.com:omardelarosa/Adaptive-DEs.git`  
+        - `cd Adaptive-DEs`  
+        - pip install -e .  
 
-----  
+----    
  
 The main phenomenon under investigation here is the co-evolution of agents and environments such that agents maximize the env, while environments adapt to minimize the agents (while maintaining playability).  
 
