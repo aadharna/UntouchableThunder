@@ -1,4 +1,7 @@
 import numpy as np
+from gym.spaces import Box, Discrete
+
+zelda_spaces = (Box(low=0, high=1, shape=(13, 9, 13), dtype=np.float32), Discrete(6))
 
 def add_noise(grid):
     """add noise to the grid. Let that noise be flip the bit from 0 to 1 or vice-versa

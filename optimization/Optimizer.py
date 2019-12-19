@@ -26,10 +26,19 @@ class PyTorchObjective():
         self.bounds = [bound_limits]*self.x0.shape[0]
         self.popsize = popsize
         
-        self.init_fitnesses = np.random.rand(popsize, 1)
-        self.out_population = np.zeros((popsize, self.x0.shape[0]), dtype='float32')
+        
+        
+        _min = -100.0  # min
+        _max = 100.0  # max
+        dimension = self.x0.shape[0]
+        
+        
+        self.init_fitnesses = (_max - _min) * np.random.uniform(size=popsize) + _min
+        
+        self.out_population = np.zeros((popsize, dimension), dtype='float32')
         self.out_fitnesses  = np.zeros((popsize, 1), dtype='float32')
         
+        self.watching = []
         
 
     def unpack_parameters(self, x):
@@ -75,25 +84,24 @@ class PyTorchObjective():
         # calculate the objective using x
         score = self.eval_fn()
         self.cached_score = score
+        
+        if self.c % 50:
+            self.watching.append(self.cached_score)
+        
 
     def fun(self, x, dimension):
         self.c += 1
         z = np.zeros(dimension, dtype=np.float32)
         for i in range(dimension):
-            z[i] = x[i]
+            z[i] = x[i] + 0.
         if self.is_new(z):
             self.cache(z)
             
         return self.cached_score
     
     def fun_c(self, x, dimension):
-        self.c += 1
-        z = np.zeros(dimension, dtype=np.float32)
-        for i in range(dimension):
-            z[i] = x[i]
-        if self.is_new(z):
-            self.cache(z)
         
+        self.fun(x, dimension)
         return ctypes.c_double(self.cached_score)
         
         
@@ -103,12 +111,20 @@ class PyTorchObjective():
 
     def create_population(self):
         ## TALK WITH TAE JONG ABOUT A GOOD WAY TO ADD NOISE.
+        _max, _min = 100., -100.
+        self.init_population = (
+            _max - _min) * np.random.uniform(size=(self.popsize, self.x0.shape[0])) + _min
         
-        # get noise
-        noise = np.random.randn(self.popsize, self.x0.shape[0])
-        # add noise to theta for each member of the population
-        pop = [self.x0 + noise[i] for i in range(self.popsize)]
-        return np.array(pop)
+
+          ## NOTE, we might want to change this back, in some manner. 
+#         # get noise
+#         noise = np.random.randn(self.popsize, self.x0.shape[0])
+#         # add noise to theta for each member of the population
+#         pop = [self.x0 + noise[i] for i in range(self.popsize)]
+
+        self.init_population[0] = self.x0
+
+        return self.init_population
     
     def results_callback(self, population, fitness_values, population_size, problem_size):
         # Store results to python memory containers
