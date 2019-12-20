@@ -15,7 +15,7 @@ class Agent:
 
         self._env = GG
         self.envs_through_time = []
-        self.action_space = GG.env.env.action_space.n
+        self.action_space = GG.env.action_space.n
         self.max_steps = max_steps
         # total reward of agent playing env
         self.max_achieved_score = 0
