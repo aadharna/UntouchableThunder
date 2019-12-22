@@ -14,6 +14,7 @@ class Agent:
         """
 
         self._env = GG
+        self.depth = GG.depth
         self.envs_through_time = []
         self.action_space = GG.env.action_space.n
         self.max_steps = max_steps
@@ -88,8 +89,12 @@ class Agent:
     def reset(self):
         return self.env.reset()
     
+    def step(self, x):
+        return self.env.step(x)
+    
     def __str__(self):
         return str(self.env.generator)
+    
 
 def simulate(model, level, max_steps=250, n_episodes=5):
     """Run this agent on this level n_episodes times and get reward for each run

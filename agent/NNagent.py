@@ -41,7 +41,7 @@ class NNagent(Agent):
         
         else:
             self.nn = Net(n_actions=self.action_space,
-                          depth=self.env.depth)
+                          depth=self.depth)
 
         self.nn.double()
 
@@ -55,6 +55,19 @@ class NNagent(Agent):
     def mutate(self, mutationRate):
         childGG = self.env.mutate(mutationRate)
         return NNagent(childGG, parent=self.nn)
+    
+    def __getstate__(self):
+        base = super().__dict__
+        base['state_dict'] = self.nn.state_dict()
+        return base
+    
+    def __setstate__(self, d):
+        self.__dict__ = d
+        self.nn = Net(d['action_space'], d['depth'])
+        self.nn.load_state_dict(d['state_dict'])
+        self.nn.double()
+        del self.__dict__['state_dict']
+        
     
     def get_action(self, state):
         """Select an action by running a tile-input through the neural network.

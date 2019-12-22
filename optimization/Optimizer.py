@@ -4,21 +4,22 @@ import numpy as np
 from functools import reduce
 from collections import OrderedDict
 from utils.diff_evo import differential_evolution
-from devo import *
+# from devo import *
 
 class PyTorchObjective():
     """PyTorch objective function, wrapped to be called by scipy.optimize."""
 
     def __init__(self, agent, bound_limits=(-5, 5), popsize=100):
-        self.f = agent.nn  # some pytorch module
+        self.agent = agent
+        self.nn = agent.nn  # some pytorch module
         # make an x0 from the parameters in this module
         parameters = OrderedDict(agent.nn.named_parameters())
         self.param_shapes = {n: parameters[n].size() for n in parameters}
         # ravel and concatenate all parameters to make x0
         self.x0 = np.concatenate([parameters[n].data.numpy().ravel()
                                   for n in parameters])
-
-        self.eval_fn = lambda: -1 * agent.evaluate() # produces a scalar loss when run that evalutes the nn
+        
+        self.eval_fn = agent.evaluate # produces a scalar loss when run that evalutes the nn
                                  # NEGATIVE VALUES ARE GOOD HERE. We're trying to minimize the loss surface.
             
         self.id = agent.name
@@ -28,8 +29,8 @@ class PyTorchObjective():
         
         
         
-        _min = -100.0  # min
-        _max = 100.0  # max
+        _min = -1.0  # min
+        _max = 1.0  # max
         dimension = self.x0.shape[0]
         
         
@@ -60,7 +61,7 @@ class PyTorchObjective():
         """pack all the gradients from the parameters in the module into a
         numpy array."""
         grads = []
-        for p in self.f.parameters():
+        for p in self.nn.parameters():
             grad = p.grad.data.numpy()
             grads.append(grad.ravel())
         return np.concatenate(grads)
@@ -78,12 +79,12 @@ class PyTorchObjective():
     def cache(self, x):
         # unpack x and load into module
         state_dict = self.unpack_parameters(x)
-        self.f.load_state_dict(state_dict)
+        self.nn.load_state_dict(state_dict)
         # store the raw array as well
         self.cached_x = x
         # calculate the objective using x
         score = self.eval_fn()
-        self.cached_score = score
+        self.cached_score = -1 * score
         
         if self.c % 50:
             self.watching.append(self.cached_score)
@@ -107,15 +108,14 @@ class PyTorchObjective():
         
     def update_nn(self, answer):
         state_dict = self.unpack_parameters(answer.x)
-        self.f.load_state_dict(state_dict)
+        self.nn.load_state_dict(state_dict)
 
     def create_population(self):
         ## TALK WITH TAE JONG ABOUT A GOOD WAY TO ADD NOISE.
-        _max, _min = 100., -100.
+        _max, _min = 1., -1.
         self.init_population = (
             _max - _min) * np.random.uniform(size=(self.popsize, self.x0.shape[0])) + _min
         
-
           ## NOTE, we might want to change this back, in some manner. 
 #         # get noise
 #         noise = np.random.randn(self.popsize, self.x0.shape[0])

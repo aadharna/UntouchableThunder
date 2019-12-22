@@ -36,6 +36,7 @@ class GridGame(gym.Wrapper):
         if not bool(locations):
             #set up first level, read it in from disk.
             lvl = _initialize(self.lvl_path)
+            self.lvl_shape = lvl.shape
             self.generator = Generator(tile_world=lvl,
                                        shape=lvl.shape,
                                        path=path,
@@ -46,6 +47,7 @@ class GridGame(gym.Wrapper):
         # this condition will be used 99% of the time.
         else:
             # use generated lvl contained within locations dict.
+            self.shape = shape
             self.generator = Generator(tile_world=None,
                                        shape=shape,
                                        path=path,
@@ -154,3 +156,27 @@ class GridGame(gym.Wrapper):
         # print(f"testing env {self.id} on agent {agent.id}")
         return np.sum(agent.evaluate(self))
 
+    
+    # To be able to pickle the GridGame
+    def __getstate__(self):
+        dictionary = self.__dict__
+        dictionary['lvl_data'] = str(self.generator)
+        del dictionary['env'] # This should also cleanup the java process
+        return dictionary
+    
+    def __setstate__(self, d):
+        self.__dict__ = d
+        lvl = _initialize(d['lvl_path'])
+        self.generator = Generator(tile_world=lvl,
+                                   shape=lvl.shape,
+                                   path=self.dir_path,
+                                   mechanics=self.mechanics,
+                                   generation=self.id,
+                                   locations={})
+        
+        self.env = gym.make(f'gvgai-{self.game}-custom-v0',
+                            level_data=str(self.generator),
+                            pixel_observations=self.pics,
+                            tile_observations=True)
+        
+        
