@@ -1,4 +1,7 @@
 import os
+from copy import deepcopy
+from pprint import pprint
+
 import gym
 import gvgai
 
@@ -159,24 +162,23 @@ class GridGame(gym.Wrapper):
     
     # To be able to pickle the GridGame
     def __getstate__(self):
-        dictionary = self.__dict__
+        dictionary = {}
+        for k, v in self.__dict__.items():
+            # skip the gvgai env. But DO NOT DELETE IT.
+            if not k == 'env':
+                dictionary[k] = v
+                
         dictionary['lvl_data'] = str(self.generator)
-        del dictionary['env'] # This should also cleanup the java process
+            
         return dictionary
     
     def __setstate__(self, d):
         self.__dict__ = d
-        lvl = _initialize(d['lvl_path'])
-        self.generator = Generator(tile_world=lvl,
-                                   shape=lvl.shape,
-                                   path=self.dir_path,
-                                   mechanics=self.mechanics,
-                                   generation=self.id,
-                                   locations={})
         
-        self.env = gym.make(f'gvgai-{self.game}-custom-v0',
-                            level_data=str(self.generator),
-                            pixel_observations=self.pics,
-                            tile_observations=True)
-        
+        #since we skipped the gvgai env, we need to create a new one. 
+        self.__dict__['env'] = gym.make(f'gvgai-{self.game}-custom-v0',
+                                        level_data=self.lvl_data,
+                                        pixel_observations=self.pics,
+                                        tile_observations=True)
+                
         

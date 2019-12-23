@@ -11,7 +11,6 @@ class PyTorchObjective():
 
     def __init__(self, agent, bound_limits=(-5, 5), popsize=100):
         self.agent = agent
-        self.nn = agent.nn  # some pytorch module
         # make an x0 from the parameters in this module
         parameters = OrderedDict(agent.nn.named_parameters())
         self.param_shapes = {n: parameters[n].size() for n in parameters}
@@ -79,7 +78,7 @@ class PyTorchObjective():
     def cache(self, x):
         # unpack x and load into module
         state_dict = self.unpack_parameters(x)
-        self.nn.load_state_dict(state_dict)
+        self.agent.nn.load_state_dict(state_dict)
         # store the raw array as well
         self.cached_x = x
         # calculate the objective using x
@@ -108,7 +107,7 @@ class PyTorchObjective():
         
     def update_nn(self, answer):
         state_dict = self.unpack_parameters(answer.x)
-        self.nn.load_state_dict(state_dict)
+        self.agent.nn.load_state_dict(state_dict)
 
     def create_population(self):
         ## TALK WITH TAE JONG ABOUT A GOOD WAY TO ADD NOISE.
