@@ -33,16 +33,35 @@ class Net(nn.Module):
 
 class NNagent(Agent):
 
-    def __init__(self, GG, parent=None, max_steps=1000):
-        super(NNagent, self).__init__(GG, max_steps)
-
-        if parent:
-            self.nn = deepcopy(parent)
+    def __init__(self, GG=None, parent=None, max_steps=1000, actions=6, depth=13):
         
+        # GG exists, use it.
+        if GG:
+                super(NNagent, self).__init__(GG, max_steps)
+                
+                if parent:
+                    self.nn = deepcopy(parent)
+                else:
+                    self.nn = Net(n_actions=self.action_space,
+                              depth=self.depth)
+                    
+        
+        # GG does not exist, That's okay       
         else:
-            self.nn = Net(n_actions=self.action_space,
-                          depth=self.depth)
-
+            
+            # we cannot rely on the env to have this information
+            self.orientation = np.eye(4, dtype=int)
+            self.prev_move = 4
+            self.rotating_actions = [1, 2, 3, 4]
+            
+            if parent:
+                self.nn = deepcopy(parent)
+                
+            # 
+            else:    
+                self.nn = Net(n_actions=actions,
+                                  depth=depth)
+       
         self.nn.double()
 
     def evaluate(self, env=None):
@@ -77,11 +96,22 @@ class NNagent(Agent):
         """
         # the grid needs to be part of a 'batch', so we make state the only element in a list.
         inp = Variable(torch.from_numpy(np.array([state])), requires_grad=False)
-        # get one-hot encoding of the direction the agent is facing. note: self.env.orientation is 0-indexed
-        compass = Variable(torch.from_numpy(self.env.orientation[self.env.prev_move - 1]), requires_grad=False)
+        
+        if hasattr(self, '_env'):
+            # get one-hot encoding of the direction the agent is facing. note: self.env.orientation is 0-indexed
+            compass = Variable(torch.from_numpy(self.env.orientation[self.env.prev_move - 1]), requires_grad=False)
+        else:
+            compass = Variable(torch.from_numpy(self.orientation[self.prev_move - 1]), requires_grad=False)
+            
         with torch.no_grad():
             outputs = self.nn(inp.double(), compass.double())
             _, predicted = torch.max(outputs, 0)
         # break data out of tensor
-        return predicted.data.numpy()
-
+        action = predicted.data.numpy()
+        
+        # update orientation
+        if not hasattr(self, '_env') and action != self.prev_move and action in self.rotating_actions:
+            self.prev_move = action
+        
+        return action
+        

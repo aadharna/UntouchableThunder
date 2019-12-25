@@ -114,7 +114,7 @@ class GridGame(gym.Wrapper):
         else:
             tile, reward, done, info = self.env.step(action)
         if done:
-            pass
+            reward = 0
             #print(f"finished env with sc: {self.score + reward} \nenv: {self.game}_id:{self.id}_g:{self.generator.generation}")
         if self.steps >= self.play_length:
             done = True
@@ -180,5 +180,20 @@ class GridGame(gym.Wrapper):
                                         level_data=self.lvl_data,
                                         pixel_observations=self.pics,
                                         tile_observations=True)
-                
         
+        
+    # for use in vec_envs
+    def make(self):
+        def _make():
+            return GridGame(game=self.game,
+                             play_length=self.play_length,
+                             path=os.path.join(self.dir_path, 'levels'),
+                             lvl_name=f"{self.game}_id:{self.id}_g:{self.generator.generation+1}.txt",
+                             gen_id=self.generator.generation + 1,
+                             mechanics=self.mechanics,
+                             images=self.pics,
+                             locations=self.generator.locations,
+                             shape=self.lvl_shape)
+        return _make
+                
+    

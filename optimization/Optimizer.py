@@ -21,9 +21,9 @@ class PyTorchObjective():
         self.eval_fn = agent.evaluate # produces a scalar loss when run that evalutes the nn
                                  # NEGATIVE VALUES ARE GOOD HERE. We're trying to minimize the loss surface.
             
-        self.id = agent.name
+        #self.id = agent.name
         self.c = 0
-        self.bounds = [bound_limits]*self.x0.shape[0]
+        #self.bounds = [bound_limits]*self.x0.shape[0]
         self.popsize = popsize
         
         
@@ -105,8 +105,8 @@ class PyTorchObjective():
         return ctypes.c_double(self.cached_score)
         
         
-    def update_nn(self, answer):
-        state_dict = self.unpack_parameters(answer.x)
+    def update_nn(self, weights):
+        state_dict = self.unpack_parameters(weights)
         self.agent.nn.load_state_dict(state_dict)
 
     def create_population(self):
@@ -162,18 +162,18 @@ def run_TJ_DE(_de, pair, n=3, popsize=99):
                     pair.results_callback
                     )
     
-def run_opt_n_steps(pair, n=3, popsize=99, strategy='rand1bin'):
-    """run n steps on the evolution optimizer
+# def run_opt_n_steps(pair, n=3, popsize=99, strategy='rand1bin'):
+#     """run n steps on the evolution optimizer
 
-    :param pair: PyTorchObjective wrapper of paired NNAgent_Environment object
-    :param n: number of generations
-    :param popsize: size of population - 1
-    :param strategy: weight update strat
-    :return: 'best' weights found
-    """
-    return differential_evolution(pair.fun, pair.bounds,
-                                 strategy=strategy,
-                                 popsize=popsize,
-                                 maxiter=n,
-                                 polish=False,
-                                 x0=pair.x0)
+#     :param pair: PyTorchObjective wrapper of paired NNAgent_Environment object
+#     :param n: number of generations
+#     :param popsize: size of population - 1
+#     :param strategy: weight update strat
+#     :return: 'best' weights found
+#     """
+#     return differential_evolution(pair.fun, pair.bounds,
+#                                  strategy=strategy,
+#                                  popsize=popsize,
+#                                  maxiter=n,
+#                                  polish=False,
+#                                  x0=pair.x0)
