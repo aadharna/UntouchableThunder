@@ -113,9 +113,10 @@ class GridGame(gym.Wrapper):
             (im, tile), reward, done, info = self.env.step(action)
         else:
             tile, reward, done, info = self.env.step(action)
-        if done:
+            
+        if done and self.score == 3.:
             reward = 0
-            #print(f"finished env with sc: {self.score + reward} \nenv: {self.game}_id:{self.id}_g:{self.generator.generation}")
+
         if self.steps >= self.play_length:
             done = True
         state = np.transpose(tile, (2, 0, 1))
@@ -195,5 +196,8 @@ class GridGame(gym.Wrapper):
                              locations=self.generator.locations,
                              shape=self.lvl_shape)
         return _make
+    
+    def close(self):
+        del self.env
                 
     
