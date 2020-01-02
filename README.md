@@ -18,7 +18,8 @@ git clone --recursive git@github.com:aadharna/UntouchableThunder.git`
 conda env create -f env.yml  
 conda activate thesis   
 cd UntouchableThunder/ext  
-# pip install each of the submodules  
+# pip install each of the submodules with:  
+pip install -e .
 ```   
 
 
