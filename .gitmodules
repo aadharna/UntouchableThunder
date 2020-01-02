@@ -1,3 +1,17 @@
 [submodule "ext/estool"]
 	path = ext/estool
 	url = git@github.com:hardmaru/estool.git
+
+[submodule "ext/Adaptive-DEs"]
+	path = ext/Adaptive-DEs
+	url  = git@github.com:omardelarosa/Adaptive-DEs.git
+
+
+[submodule "ext/baselines"]
+	path = ext/baselines
+	url  = git@github.com:openai/baselines.git
+
+[submodule "ext/GVGAI"]
+	path = ext/GVGAI
+	url  = git@github.com:Bam4d/GVGAI_GYM.git
+
