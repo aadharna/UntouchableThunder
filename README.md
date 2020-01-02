@@ -14,7 +14,7 @@ See tl;dr at bottom.
 Installing:  
 
 Use the env.yml file to create a conda env.  
-    - `conda env create -f env.yml`
+    - `conda env create -f env.yml`  
     - `conda activate thesis`  
     - NOTE: this yml file is INCOMPLETE. You will need to also run:  
         - cd to your equivilent of: `~/.conda/envs/thesis/lib/python3.7/site-packages/`  
@@ -22,10 +22,10 @@ Use the env.yml file to create a conda env.
 	- `cd GVGAI/python/gvgai`    
 	- `pip install -e .`   
 	- `cd ../../..`  
-	- `git clone git@github.com:openai/baselines.git`
-	- `cd baselines`
-	- `pip install -e .`
-	- `cd ..`
+	- `git clone git@github.com:openai/baselines.git`  
+	- `cd baselines`  
+	- `pip install -e .`  
+	- `cd ..`  
         - `git clone git@github.com:omardelarosa/Adaptive-DEs.git`  
         - `cd Adaptive-DEs`  
         - `pip install -e .`  
