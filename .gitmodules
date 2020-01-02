@@ -1,0 +1,3 @@
+[submodule "ext/estool"]
+	path = ext/estool
+	url = git@github.com:hardmaru/estool.git
