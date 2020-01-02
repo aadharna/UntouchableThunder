@@ -13,28 +13,15 @@ See tl;dr at bottom.
 ----  
 Installing:  
 
-Use the env.yml file to create a conda env.  
-    - `conda env create -f env.yml`  
-    - `conda activate thesis`  
-    - NOTE: this yml file is INCOMPLETE. You will need to also run:  
-        - cd to your equivilent of: `~/.conda/envs/thesis/lib/python3.7/site-packages/`  
-	- `git clone git@github.com:Bam4d/GVGAI_GYM.git`  
-	- `cd GVGAI/python/gvgai`    
-	- `pip install -e .`   
-	- `cd ../../..`  
-	- `git clone git@github.com:openai/baselines.git`  
-	- `cd baselines`  
-	- `pip install -e .`  
-	- `cd ..`  
-        - `git clone git@github.com:omardelarosa/Adaptive-DEs.git`  
-        - `cd Adaptive-DEs`  
-        - `pip install -e .`  
-        - `cd ..`  
-        - `git clone git@github.com:hardmaru/estool.git`  
-        - `cd estool`  
-        - `pip install -e .`  
+```
+git clone --recursive git@github.com:aadharna/UntouchableThunder.git`   
+conda env create -f env.yml  
+conda activate thesis   
+cd UntouchableThunder/ext  
+# pip install each of the submodules  
+```   
 
-----    
+
  
 The main phenomenon under investigation here is the co-evolution of agents and environments such that agents maximize the env, while environments adapt to minimize the agents (while maintaining playability).  
 
