@@ -11,10 +11,11 @@
 	path = ext/baselines
 	url = git@github.com:openai/baselines.git
 
-[submodule "ext/GVGAI"]
-	path = ext/GVGAI
-	url  = git@github.com:Bam4d/GVGAI_GYM.git
-
 [submodule "ext/GVGAI_GYM"]
 	path = ext/GVGAI_GYM
 	url = git@github.com:Bam4d/GVGAI_GYM.git
+
+[submodule "ext/PyTorch-NEAT"]
+	path = ext/PyTorch-NEAT
+	url = git@github.com:uber-research/PyTorch-NEAT.git
+
