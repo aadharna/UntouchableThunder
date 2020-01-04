@@ -35,6 +35,8 @@ class NNagent(Agent):
 
     def __init__(self, GG=None, parent=None, max_steps=1000, actions=6, depth=13):
         
+        self.compass_info = []
+        
         # GG exists, use it.
         if GG:
                 super(NNagent, self).__init__(GG, max_steps)
@@ -114,4 +116,34 @@ class NNagent(Agent):
             self.prev_move = action
         
         return action
+   
+    def rl_get_action(self, state):
+        """Select an action by running a tile-input through the neural network.
+
+        :param state: tile-grid; numpy tensor
+        :return: int of selected action
+        """
+        # the grid needs to be part of a 'batch', so we make state the only element in a list.
+        inp = Variable(torch.from_numpy(np.array([state])))
+        
+        if hasattr(self, '_env'):
+            # get one-hot encoding of the direction the agent is facing. note: self.env.orientation is 0-indexed
+            c = self.env.orientation[self.env.prev_move - 1]
+            compass = Variable(torch.from_numpy(c))
+        else:
+            c = self.orientation[self.prev_move - 1]
+            compass = Variable(torch.from_numpy(c))
+        
+        self.compass_info = c
+        
+        probs = self.nn(inp.double(), compass.double())
+        _, predicted = torch.max(probs, 0)
+        # break data out of tensor
+        a = predicted.data.numpy()
+
+        # update orientation
+        if not hasattr(self, '_env') and a != self.prev_move and a in self.rotating_actions:
+            self.prev_move = a
+        
+        return probs
         
