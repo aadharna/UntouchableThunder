@@ -26,7 +26,7 @@ class PyTorchObjective():
         #self.bounds = [bound_limits]*self.x0.shape[0]
         self.popsize = popsize
         
-        self.best_score = -1
+        self.best_score = np.inf
         
         _min = -1.0  # min
         _max = 1.0  # max
@@ -84,13 +84,10 @@ class PyTorchObjective():
         score = self.eval_fn()
         self.cached_score = -1 * score
         
-        if self.c % 50:
-            self.watching.append(self.cached_score)
-        
 
     def fun(self, x, dimension):
         self.c += 1
-        z = np.zeros(dimension, dtype=np.float32)
+        z = np.zeros(dimension, dtype=np.float64)
         for i in range(dimension):
             z[i] = x[i] + 0.
         if self.is_new(z):
@@ -101,7 +98,7 @@ class PyTorchObjective():
     def fun_c(self, x, dimension):
         score = self.fun(x, dimension)
         # add global best variables
-        if score > self.best_score:
+        if score < self.best_score:
             self.best_score = score
             self.best_individual = self.cached_x
         return ctypes.c_double(self.cached_score)
