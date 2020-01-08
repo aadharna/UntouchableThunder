@@ -50,7 +50,7 @@ class GridGame(gym.Wrapper):
         # this condition will be used 99% of the time.
         else:
             # use generated lvl contained within locations dict.
-            self.shape = shape
+            self.lvl_shape = shape
             self.generator = Generator(tile_world=None,
                                        shape=shape,
                                        path=path,
@@ -113,12 +113,10 @@ class GridGame(gym.Wrapper):
             (im, tile), reward, done, info = self.env.step(action)
         else:
             tile, reward, done, info = self.env.step(action)
-            
-        if done and self.score == 3.:
-            reward = 0
 
         if self.steps >= self.play_length:
             done = True
+            
         state = np.transpose(tile, (2, 0, 1))
         
         self.steps += 1
