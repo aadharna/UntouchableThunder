@@ -1,6 +1,8 @@
 import numpy as np
 from utils.utils import add_noise
 
+from torch.distributions import Categorical
+
 class Agent:
     """
     Wrap each env with a game-playing agent
@@ -35,15 +37,20 @@ class Agent:
     def name(self):
         return f'{self.env.game}_{self.env.id}_{self.env.generator.generation}'
 
-    def evaluate(self, env):
+    def evaluate(self, env, rl=False):
         """Run self agent on current generator level. 
         """
+        self.images = []
         # print("evaluating agent")
         done = False
         rewards = []
         state = add_noise(env.reset()) if self.noisy else env.reset()
         while not done:
-            action = self.get_action(state)
+            action = self.get_action(state) if not rl else self.rl_get_action(state)
+            if rl:
+                c = Categorical(action)
+                action = c.sample()
+            
             state, reward, done, info = env.step(action)
             if self.noisy:
                 state = add_noise(state)
@@ -54,7 +61,7 @@ class Agent:
                 self.images.append(info['pic'])
                 self.vis(env.env, action, image=info['pic'])
 
-        self.update_score(np.sum(rewards))
+        # self.update_score(np.sum(rewards))
         # print("evaluated")
         # print(len(rewards))
         # if the user wants to do another noisy trial,
@@ -62,14 +69,14 @@ class Agent:
         self.noisy = False
         return rewards
 
-    def update_score(self, potential_score):
-        """If new score is greater than previous score, update max_achieved_score
+#     def update_score(self, potential_score):
+#         """If new score is greater than previous score, update max_achieved_score
 
-        :param potential_score: total score of current agent playing env
-        :return:
-        """
-        if potential_score > self.max_achieved_score:
-            self.max_achieved_score = potential_score
+#         :param potential_score: total score of current agent playing env
+#         :return:
+#         """
+#         if potential_score > self.max_achieved_score:
+#             self.max_achieved_score = potential_score
 
     def mutate(self, mutationRate):
         childGG = self.env.mutate(mutationRate)
@@ -79,12 +86,12 @@ class Agent:
         # randomly for now
         return np.random.choice(self.action_space)
     
-    def fitness(self, noisy=False, fn=None):
+    def fitness(self, noisy=False, fn=None, rl=False):
         """run this agent through the current generator env once and store result into 
         """
         self.noisy = noisy
         self.vis = fn
-        return self.env.fitness(self)
+        return self.env.fitness(self, rl=rl)
 
     def reset(self):
         return self.env.reset()

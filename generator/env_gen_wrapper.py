@@ -144,7 +144,7 @@ class GridGame(gym.Wrapper):
         return childGG
 
 
-    def fitness(self, agent):
+    def fitness(self, agent, rl=False):
         """Score THIS agent by having it try to complete THIS level.
         
         This function allows you to easily test any agent on an env that it's not paired with.
@@ -156,7 +156,7 @@ class GridGame(gym.Wrapper):
         :return:
         """
         # print(f"testing env {self.id} on agent {agent.id}")
-        return np.sum(agent.evaluate(self))
+        return np.sum(agent.evaluate(self, rl=rl))
 
     
     # To be able to pickle the GridGame

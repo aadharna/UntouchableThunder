@@ -66,12 +66,12 @@ class NNagent(Agent):
        
         self.nn.double()
 
-    def evaluate(self, env=None):
+    def evaluate(self, env=None, rl=False):
         """Run self agent on current generator level.
         """
         if env == None:
             env = self.env
-        return np.sum(super().evaluate(env))
+        return np.sum(super().evaluate(env, rl=rl))
 
     def mutate(self, mutationRate):
         childGG = self.env.mutate(mutationRate)
