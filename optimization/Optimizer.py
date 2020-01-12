@@ -151,7 +151,7 @@ def run_TJ_DE(_de, pair, n=3, popsize=99):
                     n,
                     pair.popsize,
                     0.5,
-                    0.9,
+                    0.1,
                     pair.fun,
                     pair.x0.shape[0],
                     -5.0,

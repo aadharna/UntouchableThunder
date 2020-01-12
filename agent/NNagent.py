@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
+from torch.distributions.categorical import Categorical
 
 import os
 
@@ -21,14 +22,14 @@ class Net(nn.Module):
         self.fc2 = nn.Linear(48, 24)
         self.fc3 = nn.Linear(24, n_actions)
 
-    def forward(self, x, compass=torch.zeros(4, dtype=torch.float64)):
+    def forward(self, x, compass):
         x = self.pool(F.relu(self.conv1(x)))
         x = F.relu(self.conv2(x))
-        x = x.view(32 * 3)
-        x = torch.cat((x, compass))
+        x = x.view(len(x), 32 * 3)
+        x = torch.cat([x, compass], dim=1)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        x = F.softmax(self.fc3(x), dim=0) #dim = 0 since array was flattened
+        x = F.softmax(self.fc3(x), dim=1) #dim = 0 since array was flattened
         return x
 
 class NNagent(Agent):
@@ -65,6 +66,7 @@ class NNagent(Agent):
                                   depth=depth)
        
         self.nn.double()
+        self.compass_info = np.array([0, 0, 0, 1])
 
     def evaluate(self, env=None, rl=False):
         """Run self agent on current generator level.
@@ -90,24 +92,18 @@ class NNagent(Agent):
         del self.__dict__['state_dict']
         
     
-    def get_action(self, state):
+    def get_action(self, state, compass):
         """Select an action by running a tile-input through the neural network.
 
         :param state: tile-grid; numpy tensor
         :return: int of selected action
         """
-        # the grid needs to be part of a 'batch', so we make state the only element in a list.
-        inp = Variable(torch.from_numpy(np.array([state])), requires_grad=False)
-        
-        if hasattr(self, '_env'):
-            # get one-hot encoding of the direction the agent is facing. note: self.env.orientation is 0-indexed
-            compass = Variable(torch.from_numpy(self.env.orientation[self.env.prev_move - 1]), requires_grad=False)
-        else:
-            compass = Variable(torch.from_numpy(self.orientation[self.prev_move - 1]), requires_grad=False)
-            
+  
         with torch.no_grad():
-            outputs = self.nn(inp.double(), compass.double())
+            outputs = self.nn(state, compass).squeeze()
+            
             _, predicted = torch.max(outputs, 0)
+        
         # break data out of tensor
         action = predicted.data.numpy()
         
@@ -115,35 +111,32 @@ class NNagent(Agent):
         if not hasattr(self, '_env') and action != self.prev_move and action in self.rotating_actions:
             self.prev_move = action
         
-        return action
+        return action, _, _
    
-    def rl_get_action(self, state):
+    def rl_get_action(self, state, compass):
         """Select an action by running a tile-input through the neural network.
 
         :param state: tile-grid; numpy tensor
         :return: int of selected action
         """
-        # the grid needs to be part of a 'batch', so we make state the only element in a list.
-        inp = Variable(torch.from_numpy(np.array([state])))
-        
-        if hasattr(self, '_env'):
-            # get one-hot encoding of the direction the agent is facing. note: self.env.orientation is 0-indexed
-            c = self.env.orientation[self.env.prev_move - 1]
-            compass = Variable(torch.from_numpy(c))
-        else:
-            c = self.orientation[self.prev_move - 1]
-            compass = Variable(torch.from_numpy(c))
-        
-        self.compass_info = c
-        
-        probs = self.nn(inp.double(), compass.double())
-        _, predicted = torch.max(probs, 0)
-        # break data out of tensor
-        a = predicted.data.numpy()
 
-        # update orientation
-        if not hasattr(self, '_env') and a != self.prev_move and a in self.rotating_actions:
-            self.prev_move = a
+        logits = self.nn(state, compass)
         
-        return probs
+        probs = Categorical(logits=logits)
+        action = probs.sample()
         
+        if state.shape[0] == 1:
+            a2 = action.item()
+
+            # update orientation
+            if not hasattr(self, '_env') and a2 != self.prev_move:
+                if a2 in self.rotating_actions:
+                    self.prev_move = action
+                else:
+                    pass
+                self.compass_info = self.orientation[self.prev_move - 1]
+
+            elif hasattr(self, '_env'):
+                self.compass_info = self.env.orientation[self.env.prev_move - 1]
+        
+        return action, -probs.log_prob(action), probs.entropy()        

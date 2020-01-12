@@ -120,6 +120,8 @@ class GridGame(gym.Wrapper):
         state = np.transpose(tile, (2, 0, 1))
         
         self.steps += 1
+        reward -= 1e-5       # punish just randomly moving around
+                             # This should add some gradient signal.
         self.score += reward
         
         # update orientation

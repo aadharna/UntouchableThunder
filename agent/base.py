@@ -1,6 +1,8 @@
 import numpy as np
 from utils.utils import add_noise
 
+import torch
+from torch.autograd import Variable
 from torch.distributions import Categorical
 
 class Agent:
@@ -46,10 +48,11 @@ class Agent:
         rewards = []
         state = add_noise(env.reset()) if self.noisy else env.reset()
         while not done:
-            action = self.get_action(state) if not rl else self.rl_get_action(state)
-            if rl:
-                c = Categorical(action)
-                action = c.sample()
+            c = env.orientation[env.prev_move - 1]
+            state = torch.DoubleTensor(np.array([state]))
+            c = torch.DoubleTensor(np.array([c]))
+            
+            action, nlogpob, ent = self.get_action(state, c) if not rl else self.rl_get_action(state, c)
             
             state, reward, done, info = env.step(action)
             if self.noisy:
@@ -84,7 +87,7 @@ class Agent:
 
     def get_action(self, state):
         # randomly for now
-        return np.random.choice(self.action_space)
+        return np.random.choice(self.action_space), _, _
     
     def fitness(self, noisy=False, fn=None, rl=False):
         """run this agent through the current generator env once and store result into 
