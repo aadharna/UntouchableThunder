@@ -32,6 +32,7 @@ class GridGame(gym.Wrapper):
         """
         self.game = game
         self.dir_path = path # gvgai.dir path + envs/games/zelda_v0
+        self.lvl_name = lvl_name
         self.lvl_path = os.path.join(path, lvl_name)
         self.mechanics = mechanics
         
@@ -177,6 +178,7 @@ class GridGame(gym.Wrapper):
         self.__dict__ = d
         
         #since we skipped the gvgai env, we need to create a new one. 
+        # NOTE: THIS IS SUPER-FUCKING-EXPENSIVE
         self.__dict__['env'] = gym.make(f'gvgai-{self.game}-custom-v0',
                                         level_data=self.lvl_data,
                                         pixel_observations=self.pics,
