@@ -3,8 +3,6 @@ import ctypes
 import numpy as np
 from functools import reduce
 from collections import OrderedDict
-from utils.diff_evo import differential_evolution
-# from devo import *
 
 class PyTorchObjective():
     """PyTorch objective function, wrapped to be called by scipy.optimize."""
@@ -137,42 +135,4 @@ class PyTorchObjective():
             f = fitness_values[j]
             self.out_fitnesses[j] = f
         return
-        
 
-    
-    
-def run_TJ_DE(_de, pair, n=3, popsize=99):
-    """run Tae Jong's DE
-    _de:  which DE algorithm do we want to use?
-    pair: PyTorchObjective wrapper of paired NNAgent_Environment object
-    n: number of function evaluations
-    """
-    return _de.run(
-                    n,
-                    pair.popsize,
-                    0.5,
-                    0.1,
-                    pair.fun,
-                    pair.x0.shape[0],
-                    -5.0,
-                    5.0,
-                    pair.create_population().ctypes.data_as(c.POINTER(c.c_double)),
-                    pair.init_fitnesses.ctypes.data_as(c.POINTER(c.c_double)),
-                    pair.results_callback
-                    )
-    
-# def run_opt_n_steps(pair, n=3, popsize=99, strategy='rand1bin'):
-#     """run n steps on the evolution optimizer
-
-#     :param pair: PyTorchObjective wrapper of paired NNAgent_Environment object
-#     :param n: number of generations
-#     :param popsize: size of population - 1
-#     :param strategy: weight update strat
-#     :return: 'best' weights found
-#     """
-#     return differential_evolution(pair.fun, pair.bounds,
-#                                  strategy=strategy,
-#                                  popsize=popsize,
-#                                  maxiter=n,
-#                                  polish=False,
-#                                  x0=pair.x0)
