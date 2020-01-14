@@ -10,27 +10,8 @@ import numpy as np
 from copy import deepcopy
 
 from agent.base import Agent
-
-class Net(nn.Module):
-    def __init__(self, n_actions, depth):
-        super(Net, self).__init__()
-        self.conv1 = nn.Conv2d(in_channels=depth, out_channels=8, kernel_size=3)
-        self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(in_channels=8, out_channels=32, kernel_size=3)
-        self.fc1 = nn.Linear((32 * 3) + 4, 48)
-                        # neurons from conv layer + neurons to enter compass info
-        self.fc2 = nn.Linear(48, 24)
-        self.fc3 = nn.Linear(24, n_actions)
-
-    def forward(self, x, compass):
-        x = self.pool(F.relu(self.conv1(x)))
-        x = F.relu(self.conv2(x))
-        x = x.view(len(x), 32 * 3)
-        x = torch.cat([x, compass], dim=1)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = F.softmax(self.fc3(x), dim=1) #dim = 0 since array was flattened
-        return x
+from agent.models import Net
+# from agent.models import Actor
 
 class NNagent(Agent):
 
@@ -132,11 +113,15 @@ class NNagent(Agent):
             if not hasattr(self, '_env') and a2 != self.prev_move:
                 if a2 in self.rotating_actions:
                     self.prev_move = action
-                else:
-                    pass
+                
                 self.compass_info = self.orientation[self.prev_move - 1]
 
             elif hasattr(self, '_env'):
                 self.compass_info = self.env.orientation[self.env.prev_move - 1]
         
+        else:
+            actions = action.data.numpy()
+            for act in actions:
+                pass
+            
         return action, -probs.log_prob(action), probs.entropy()        
