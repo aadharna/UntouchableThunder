@@ -39,6 +39,19 @@ class Generator:
         # self.chars = np.unique(np.unique(self.tile_world).tolist() + self.mechanics)
         # self.chars = list(set(self.chars) - {'A'}) # do not place more agents
 
+    def update_from_lvl_string(self, new_lvl):
+        """
+        Update Generator from flat lvl string
+        :param new_lvl: flat lvl string with \n chars
+        :return:
+        """
+        split_lvl = new_lvl.split('\n')[:-1] #remove empty '' at the end
+
+        o = np.array([['0'] * self._height] * self._length, dtype=str)
+        for i in range(self._length):
+            for j in range(self._height):
+                o[i][j] = split_lvl[i][j]
+        self.locations = self._parse_tile_world(o)
 
     def _parse_tile_world(self, tile_world):
         locations = {}
