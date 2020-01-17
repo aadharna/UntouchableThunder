@@ -1,7 +1,7 @@
 import os
 import shutil
 import numpy as np
-from utils.utils import save_obj
+from utils.utils import save_obj, load_obj
 
 
 class ADPParent:
@@ -19,6 +19,7 @@ class ADPParent:
             'busy_signals': 'busy'
         }
         self.createFolders()
+        self.resetFolders()
 
     def createFolders(self):
         for f in self.subfolders.keys():
@@ -39,14 +40,23 @@ class ADPParent:
                               self.subfolders['sent_by_child'])
 
         for c in children:
-            if not os.path.exists(os.path.join(folder, c) + '.pkl'):
+            if not os.path.exists(os.path.join(folder, f'answer{c}') + '.pkl'):
                 return False
         return True
 
     def readChildAnswer(self, response_file):
-        pass
+        folder = os.path.join(self.root,
+                              self.subfolders['sent_by_child'])
+        answer = load_obj(folder, response_file)
+        # remove answer from folder
+        os.remove(os.path.join(folder, response_file))
+        return answer
 
     def pickupChildren(self):
+        """
+        Picks up all of the alive children.
+        :return:
+        """
         alive_signals = os.listdir(
             os.path.join(self.root, self.subfolders['alive_signals'])
         )
@@ -57,25 +67,14 @@ class ADPParent:
 
         return sorted(children)
 
-
-    def pick_available_child(self):
-        alive = os.listdir(os.path.join(self.root,
-                                        self.subfolders['alive_signals']))
-        busy = os.listdir(os.path.join(self.root,
-                                       self.subfolders['busy_signals']))
-
-        for c in self.child_ids:
-            path = f'{c}.txt'
-            if path in alive and path not in busy:
-                return c
-
-    def createChildTask(self, nn, env, task_type, child_id, **kwargs):
+    def createChildTask(self, nn, env, task_type, chromosome_id, child_id, **kwargs):
         """
 
         :param nn:        PyTorch NN
         :param env:       GridGame env
         :param task_type: ADPTASK ID
-        :param id:        child id
+        :param chromosome_id: chromosome_id (int)
+        :param child_id:  child id (int)
         :return:
         """
 
@@ -83,11 +82,9 @@ class ADPParent:
             'nn': nn.state_dict(),
             'lvl': str(env.generator),
             'task_id': task_type,
-            'chromosome_id': id,
+            'chromosome_id': chromosome_id,
             'kwargs': kwargs
         }
-
-        #child_id = self.pick_available_child()
 
         save_obj(sample,
                  os.path.join(self.root, self.subfolders['send_to_child']),

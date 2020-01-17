@@ -1,5 +1,5 @@
+import os
 import time
-import argparse
 
 from utils.ADPParent import ADPParent
 from utils.ADPTASK_ENUM import ADPTASK
@@ -42,19 +42,34 @@ if __name__ == "__main__":
                             )
                    )
 
-    while True:
+    done = False
+    i = 0
+    while not done:
         try:
             children = callOut(parent)
             print(children)
-            parent.createChildTask(pair.nn, pair.env, ADPTASK.EVALUATE, children[0], rl=True)
-            break
+            parent.createChildTask(pair.nn, pair.env, ADPTASK.EVALUATE, pair.id, children[0], rl=True)
+
+            while not parent.checkChildResponseStatus(children):
+                time.sleep(5)
+
+            answer_pointers = os.listdir(os.path.join(
+                parent.root,
+                parent.subfolders['sent_by_child']
+            ))
+            answers = [parent.readChildAnswer(answer) for answer in answer_pointers]
+
+            print(answers)
+
+            i += 1
+            if i >= 3:
+                done = True
+
         except KeyboardInterrupt as e:
             print(e)
             pair.env.close()
             import sys
             sys.exit(0)
-
-
 
     pair.env.close()
 

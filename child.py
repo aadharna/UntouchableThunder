@@ -10,8 +10,8 @@ args = parser.parse_args()
 if __name__ == "__main__":
 
     child = ADPChild(args.id)
-
-    while True:
+    done = False
+    while not done:
         try:
             while not child.hasTask():
                 time.sleep(5)
@@ -23,3 +23,7 @@ if __name__ == "__main__":
             child.pair.env.close()
             import sys
             sys.exit(0)
+
+        done = True
+
+    child.pair.env.close()

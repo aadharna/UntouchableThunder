@@ -9,7 +9,7 @@ def save_obj(obj, folder, name):
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 def load_obj(folder, name):
-    path = os.path.join(folder, name) + '.pkl'
+    path = os.path.join(folder, name)
     with open(path, 'rb') as f:
         return pickle.load(f)
 

@@ -26,9 +26,9 @@ class ADPChild:
                                   self.subfolders['busy_signals'],
                                   f'{self.id}.txt')
 
-        self.mark_availability(self.alive)
+        self.placeChildFlag(self.alive)
         print(f"child {self.id} alive signal sent")
-        self.mark_availability(self.busy)
+        self.placeChildFlag(self.busy)
 
         self.args = {}
 
@@ -59,7 +59,7 @@ class ADPChild:
             if not os.path.exists(path):
                 os.mkdir(path)
 
-    def mark_availability(self, path):
+    def placeChildFlag(self, path):
         with open(path, 'w+') as f:
             pass
 
@@ -67,7 +67,7 @@ class ADPChild:
         if taskID == ADPTASK.EVALUATE:
             rl = False
             if hasattr(self.args, 'rl'):
-                rl = True
+                rl = self.args['rl']
             score = self.pair.evaluate(rl=rl)
             return {
                 'chromosome_id': self.chromosome_id,
@@ -87,7 +87,8 @@ class ADPChild:
         path = os.path.join(self.root,
                             self.subfolders['sent_by_parent'])
 
-        task_params = load_obj(path, f'child{self.id}')
+        task_params = load_obj(path, f'child{self.id}.pkl')
+        os.remove(os.path.join(path, f'child{self.id}') + '.pkl')
         self.pair.env.generator.update_from_lvl_string(task_params['lvl'])
         self.pair.nn.load_state_dict(task_params['nn'])
         self.chromosome_id = task_params['chromosome_id']
@@ -101,7 +102,7 @@ class ADPChild:
         save_obj(answer, path, f'answer{self.id}')
 
     def recieveTaskAndReturnAnswer(self):
-        self.mark_availability(self.busy)
+        self.placeChildFlag(self.busy)
         answer = self.parseRecievedTask()
         self.returnAnswer(answer)
         os.remove(self.busy)
