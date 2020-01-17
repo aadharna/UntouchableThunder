@@ -27,6 +27,7 @@ class ADPChild:
                                   f'{self.id}.txt')
 
         self.mark_availability(self.alive)
+        print(f"child {self.id} alive signal sent")
         self.mark_availability(self.busy)
 
         self.args = {}
@@ -41,6 +42,16 @@ class ADPChild:
                         # monsters, key, door, wall
                         )
                )
+
+    def hasTask(self):
+        path = os.path.join(self.root,
+                            self.subfolders['sent_by_parent'],
+                            f'child{self.id}') + '.pkl'
+        if os.path.exists(path):
+            print(f"child{self.id} has a task")
+            return True
+        return False
+
 
     def createFolders(self):
         for f in self.subfolders.keys():
@@ -97,5 +108,5 @@ class ADPChild:
 
     def __del__(self):
         self.pair.env.close()
-        os.remove(self.busy)
         os.remove(self.alive)
+        os.remove(self.busy)
