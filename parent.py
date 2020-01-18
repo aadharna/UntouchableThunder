@@ -48,7 +48,22 @@ if __name__ == "__main__":
         try:
             children = callOut(parent)
             print(children)
-            parent.createChildTask(pair.nn, pair.env, ADPTASK.EVALUATE, pair.id, children[0], rl=True)
+
+
+
+            childIsAvailble, availableChildren = parent.isChildAvailable(children)
+            while not childIsAvailble:
+                time.sleep(5)
+                childIsAvailble, availableChildren = parent.isChildAvailable(children)
+
+            child = parent.selectAvailableChild(availableChildren)
+
+            parent.createChildTask(nn           = pair.nn,
+                                   env          = pair.env,
+                                   task_type    = ADPTASK.EVALUATE,
+                                   chromosome_id= pair.id,
+                                   child_id     = child,
+                                   rl           = True)
 
             while not parent.checkChildResponseStatus(children):
                 time.sleep(5)

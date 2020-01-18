@@ -44,6 +44,24 @@ class ADPParent:
                 return False
         return True
 
+    def selectAvailableChild(self, availableChildren):
+        return np.random.choice(availableChildren)
+
+    def isChildAvailable(self, children):
+        availableChildren = []
+        alive_signals = [c.split('.')[0] for c in os.listdir(
+            os.path.join(self.root, self.subfolders['alive_signals'])
+        )]
+
+        busy_signals = [c.split('.')[0] for c in os.listdir(
+            os.path.join(self.root, self.subfolders['busy_signals'])
+        )]
+
+        for child in children:
+            if child in alive_signals and child not in busy_signals:
+                availableChildren.append(child)
+        return np.all(availableChildren), availableChildren
+
     def readChildAnswer(self, response_file):
         folder = os.path.join(self.root,
                               self.subfolders['sent_by_child'])
