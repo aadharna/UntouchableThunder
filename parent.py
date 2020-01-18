@@ -23,10 +23,19 @@ def callOut(parent):
     print(f'children alive: {len(children)}')
     return children
 
+def waitForAndCollectAnswers(parent, children):
 
+    while not parent.checkChildResponseStatus(children):
+        time.sleep(5)
 
+    answer_pointers = os.listdir(os.path.join(
+        parent.root,
+        parent.subfolders['sent_by_child']
+    ))
 
+    answers = [parent.readChildAnswer(answer) for answer in answer_pointers]
 
+    return answers
 
 if __name__ == "__main__":
 
@@ -51,10 +60,12 @@ if __name__ == "__main__":
 
 
 
-            childIsAvailble, availableChildren = parent.isChildAvailable(children)
-            while not childIsAvailble:
+            availableChildren = parent.isChildAvailable(children)
+
+            # if list is empty, wait and check again
+            while not bool(availableChildren):
                 time.sleep(5)
-                childIsAvailble, availableChildren = parent.isChildAvailable(children)
+                availableChildren = parent.isChildAvailable(children)
 
             child = parent.selectAvailableChild(availableChildren)
 
@@ -62,19 +73,21 @@ if __name__ == "__main__":
                                    env          = pair.env,
                                    task_type    = ADPTASK.EVALUATE,
                                    chromosome_id= pair.id,
-                                   child_id     = child,
+                                   child_id     = int(child),  # str 4 --> int 4
                                    rl           = True)
 
-            while not parent.checkChildResponseStatus(children):
-                time.sleep(5)
+            evalAnswers = waitForAndCollectAnswers(parent, children)
 
-            answer_pointers = os.listdir(os.path.join(
-                parent.root,
-                parent.subfolders['sent_by_child']
-            ))
-            answers = [parent.readChildAnswer(answer) for answer in answer_pointers]
+            print(evalAnswers)
 
-            print(answers)
+            parent.createChildTask(nn=pair.nn,
+                                   env=pair.env,
+                                   task_type=ADPTASK.OPTIMIZE,
+                                   chromosome_id=pair.id,
+                                   child_id=int(child),  # str 4 --> int 4
+                                   rl=True)
+
+            optAnswers = waitForAndCollectAnswers(parent, children)
 
             i += 1
             if i >= 3:
