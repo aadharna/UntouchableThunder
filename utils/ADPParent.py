@@ -58,9 +58,11 @@ class ADPParent:
         )]
 
         for child in children:
+            # if child is alive and not busy
             if child in alive_signals and child not in busy_signals:
                 availableChildren.append(child)
-        return np.all(availableChildren), availableChildren
+
+        return availableChildren
 
     def readChildAnswer(self, response_file):
         folder = os.path.join(self.root,
