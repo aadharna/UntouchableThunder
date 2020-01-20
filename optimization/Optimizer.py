@@ -7,7 +7,7 @@ from collections import OrderedDict
 class PyTorchObjective():
     """PyTorch objective function, wrapped to be called by scipy.optimize."""
 
-    def __init__(self, agent, bound_limits=(-5, 5), popsize=100):
+    def __init__(self, agent, popsize=100, minimize=True):
         self.agent = agent
         # make an x0 from the parameters in this module
         parameters = OrderedDict(agent.nn.named_parameters())
@@ -18,13 +18,13 @@ class PyTorchObjective():
         
         self.eval_fn = agent.evaluate # produces a scalar loss when run that evalutes the nn
                                  # NEGATIVE VALUES ARE GOOD HERE. We're trying to minimize the loss surface.
-            
-        #self.id = agent.name
+
+        self.minimize = minimize
         self.c = 0
-        #self.bounds = [bound_limits]*self.x0.shape[0]
         self.popsize = popsize
         
-        self.best_score = np.inf
+        self.best_score = np.inf if minimize else -np.inf
+        self.best_individual = self.x0
         
         _min = -1.0  # min
         _max = 1.0  # max
@@ -53,15 +53,6 @@ class PyTorchObjective():
             i += param_len
         return named_parameters
 
-    def pack_grads(self):
-        """pack all the gradients from the parameters in the module into a
-        numpy array."""
-        grads = []
-        for p in self.nn.parameters():
-            grad = p.grad.data.numpy()
-            grads.append(grad.ravel())
-        return np.concatenate(grads)
-
     def is_new(self, x):
         # if this is the first thing we've seen
         if not hasattr(self, 'cached_x'):
@@ -80,7 +71,10 @@ class PyTorchObjective():
         self.cached_x = x
         # calculate the objective using x
         score = self.eval_fn()
-        self.cached_score = -1 * score
+        self.cached_score = score
+
+        if self.minimize:
+            self.cached_score = -1 * self.cached_score
         
 
     def fun(self, x, dimension):
@@ -96,7 +90,8 @@ class PyTorchObjective():
     def fun_c(self, x, dimension):
         score = self.fun(x, dimension)
         # add global best variables
-        if score < self.best_score:
+        if (score < self.best_score and self.minimize) or \
+           (score > self.best_score and not self.minimize):
             self.best_score = score
             self.best_individual = self.cached_x
         return ctypes.c_double(self.cached_score)
