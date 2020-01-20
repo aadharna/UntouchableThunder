@@ -1,9 +1,10 @@
-from utils.diff_evo import differential_evolution
+import ctypes as c
+
 from utils.ppo import ppo
-from devo import *
 
 #-------------------------OPTIMIZATION RUNNER FUNCTIONS---------------------------------#
-    
+
+
 def run_ppo(policy_agent, env_fn, path, n_concurrent_games=1, frames=100000):
     """Run Proximal Policy optimization:
        Adapted from: https://github.com/vwxyzjn/cleanrl/blob/master/cleanrl/ppo.py
@@ -21,22 +22,52 @@ def run_ppo(policy_agent, env_fn, path, n_concurrent_games=1, frames=100000):
                total_frames  = frames)
     
     
-def run_TJ_DE(_de, pair, n=3, popsize=99):
+def run_TJ_DE(opt_name, pair, n,
+              scaling_factor=0.5,
+              crossover_rate=0.1,
+              min_weight=-5,
+              max_weight=5,
+              ):
     """run Tae Jong's DE
-    _de:  which DE algorithm do we want to use?
+    opt_name:  which DE algorithm do we want to use?. string. e.g. 'jDE'
     pair: PyTorchObjective wrapper of paired NNAgent_Environment object
     n: number of function evaluations
     """
-    return _de.run(
-                    n,
-                    pair.popsize,
-                    0.5,
-                    0.1,
-                    pair.fun,
-                    pair.x0.shape[0],
-                    -5.0,
-                    5.0,
-                    pair.create_population().ctypes.data_as(c.POINTER(c.c_double)),
-                    pair.init_fitnesses.ctypes.data_as(c.POINTER(c.c_double)),
-                    pair.results_callback
-                    )
+
+    #import devo
+    #_de = getattr(devo, opt_name)
+    _de = None # TEMPORARY for while on personal laptop
+
+    generations = n // pair.popsize
+    x_c = pair.create_population().ctypes.data_as(c.POINTER(c.c_double))
+    y_c = pair.init_fitnesses.ctypes.data_as(c.POINTER(c.c_double))
+    scores = {}
+    for g in range(generations):
+        # # Using Adaptive-DEs
+        _de.run(
+            pair.popsize,
+            pair.popsize,  # population size
+            scaling_factor,  # scaling factor
+            crossover_rate,  # crossover rate
+            pair.fun_c,
+            pair.x0.shape[0],  # problem size
+            min_weight,  # unused value
+            max_weight,  # unused value
+            x_c,
+            y_c,
+            pair.results_callback  # no results callback needed
+        )
+
+        scores[g] = -pair.out_fitnesses.squeeze() if pair.minimize else pair.out_fitnesses.squeeze()
+
+        x_c = pair.out_population.ctypes.data_as(
+            c.POINTER(c.c_double))
+        y_c = pair.out_fitnesses.ctypes.data_as(
+            c.POINTER(c.c_double))
+
+    # save scores
+    import pandas
+    df = pandas.DataFrame.from_dict(scores)
+    df.to_csv(f'./results/EC/jDE_{generations}gens_{pair.popsize}pop_scores.csv')
+
+    return

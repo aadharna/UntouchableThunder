@@ -32,8 +32,8 @@ class PyTorchObjective():
         
         self.init_fitnesses = (_max - _min) * np.random.uniform(size=popsize) + _min
         
-        self.out_population = np.zeros((popsize, dimension), dtype='float32')
-        self.out_fitnesses  = np.zeros((popsize, 1), dtype='float32')
+        self.out_population = np.zeros((popsize, dimension), dtype='float64')
+        self.out_fitnesses  = np.zeros((popsize, 1), dtype='float64')
         
         self.watching = []
         
@@ -123,16 +123,17 @@ class PyTorchObjective():
         return self.init_population
     
     def results_callback(self, population, fitness_values, population_size, problem_size):
+
         # Store results to python memory containers
         # Store population
         for i in range(0, population_size * problem_size):
-            row = int(i / problem_size)
+            row = i // problem_size
             col = i % problem_size
-            self.out_population[row][col] = population[i]
+            self.out_population[row][col] = np.float64(population[i])
 
         # Store fitness values
         for j in range(0, population_size):
             f = fitness_values[j]
-            self.out_fitnesses[j] = f
+            self.out_fitnesses[j] = np.float64(f)
         return
 
