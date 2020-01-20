@@ -166,8 +166,8 @@ class ADPChild:
                                                  popsize=popsize)
 
         # execute the asked for task
-        import pdb
-        pdb.set_trace()
+        # import pdb
+        # pdb.set_trace()
         return answers
 
     def returnAnswer(self, answer):
