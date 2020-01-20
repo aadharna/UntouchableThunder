@@ -87,22 +87,22 @@ class ADPParent:
 
         return sorted(children)
 
-    def createChildTask(self, nn, env, task_type, chromosome_id, child_id, **kwargs):
+    def createChildTask(self, nns, envs, task_types, chromosome_ids, child_id, **kwargs):
         """
 
-        :param nn:        PyTorch NN
-        :param env:       GridGame env
-        :param task_type: ADPTASK ID
-        :param chromosome_id: chromosome_id (int)
+        :param nns:        PyTorch NN
+        :param envs:       GridGame env
+        :param task_types: ADPTASK ID
+        :param chromosome_ids: chromosome_id (int)
         :param child_id:  child id (int)
         :return:
         """
 
         sample = {
-            'nn': nn.state_dict(),
-            'lvl': str(env.generator),
-            'task_id': task_type,
-            'chromosome_id': chromosome_id,
+            'nns': [nn.state_dict() for nn in nns],
+            'lvls': [str(env.generator) for env in envs],
+            'task_ids': [task_type for task_type in task_types],
+            'chromosome_ids': [chromosome_id for chromosome_id in chromosome_ids],
             'kwargs': kwargs
         }
 

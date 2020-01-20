@@ -21,7 +21,7 @@ class ADPChild:
         self.createFolders()
 
         self.id = child_id
-        self.chromosome_id = None
+
         self.alive = os.path.join(self.root,
                                   self.subfolders['alive_signals'],
                                   f'{self.id}.txt')
@@ -34,8 +34,6 @@ class ADPChild:
         print(f"child {self.id} alive signal sent")
         # self.placeChildFlag(self.busy)
 
-        self.args = {}
-
         self.pair = \
             NNagent(
                 GridGame(game='zelda',
@@ -46,6 +44,8 @@ class ADPChild:
                         # monsters, key, door, wall
                         )
                )
+
+        self.game_length = self.pair.env.play_length
 
     ########### END CONSTRUCTOR #############
 
@@ -72,25 +72,32 @@ class ADPChild:
         with open(path, 'w+') as f:
             pass
 
-    def doTask(self, taskID):
+    def doTask(self, nn, lvl, task_id, chromosome_id, rl,
+               algo='jDE',
+               ngames=1000,
+               popsize=100):
         """
-        Execute the asked for task
 
-        :param taskID: EVALUATE the NN or OPTIMIZE it
-        :return: result dict
+        :param nn: PyTorch nn state_dict
+        :param lvl: flat lvl string
+        :param task_id: EVALUATE the NN or OPTIMIZE it
+        :param chromosome_id: id of NN-GG pair
+        :param rl: use RL?
+        :return:
         """
-        rl = False
-        if hasattr(self.args, 'rl'):
-            rl = self.args['rl']
 
-        if taskID == ADPTASK.EVALUATE:
+        # update network and env to execute on task
+        self.pair.env.generator.update_from_lvl_string(lvl)
+        self.pair.nn.load_state_dict(nn)
+
+        if task_id == ADPTASK.EVALUATE:
             score = self.pair.evaluate(rl=rl)
             return {
-                'chromosome_id': self.chromosome_id,
+                'chromosome_id': chromosome_id,
                 'score': score,
             }
 
-        elif taskID == ADPTASK.OPTIMIZE:
+        elif task_id == ADPTASK.OPTIMIZE:
             # run optimization here
             if rl:
                 # optimizes in place
@@ -98,17 +105,17 @@ class ADPChild:
                         env_fn             = self.pair.env.make,
                         path               = './runs',
                         n_concurrent_games = 1,
-                        frames             = 100000)
+                        frames             = ngames * self.game_length)
             else:
-                objective = PyTorchObjective(agent=self.pair)
-                # run_TJ_DE(_de=devo.jDE,
+                objective = PyTorchObjective(agent=self.pair, popsize=popsize)
+                # run_TJ_DE(_de=self.algo,
                 #           pair=objective,
-                #           n=10000)
+                #           n=ngames)
                 # objective.update_nn(objective.best_individual)
             score = self.pair.evaluate(rl=rl)
             return {
                 'score': score,
-                'chromosome_id': self.chromosome_id,
+                'chromosome_id': chromosome_id,
                 'nn': self.pair.nn.state_dict()
             }
         else:
@@ -121,16 +128,47 @@ class ADPChild:
         task_params = load_obj(path, f'child{self.id}.pkl')
         os.remove(os.path.join(path, f'child{self.id}') + '.pkl')
 
-        # update network and env to execute on task
-        self.pair.env.generator.update_from_lvl_string(task_params['lvl'])
-        self.pair.nn.load_state_dict(task_params['nn'])
-        # save id of PAIR to pass back
-        self.chromosome_id = task_params['chromosome_id']
-        # get additional arguments passed in
-        self.args.update(task_params['kwargs'])
+        lvls = task_params['lvls']
+        nns = task_params['nns']
+        chromosome_ids = task_params['chromosome_ids']
+        kwargs = task_params['kwargs']
+        task_ids = task_params['task_ids']
+
+        answers = {}
+
+        for i in range(len(nns)):
+            nn = nns[i]
+            lvl = lvls[i]
+            task_id = task_ids[i]
+            chromosome_id = chromosome_ids[i]
+
+            # key word args
+            rl = False
+            ngames = 1000
+            popsize = 100
+            algo='jDE'
+            if hasattr(kwargs, 'rl'):
+                rl = kwargs['rl'][i]
+
+            if hasattr(kwargs, 'ngames'):
+                ngames = kwargs['ngames'][i]
+
+            if not rl and task_id == ADPTASK.OPTIMIZE:
+                if hasattr(kwargs, 'algo'):
+                    algo = kwargs['algo'][i]
+                if hasattr(kwargs, 'popsize'):
+                    popsize = kwargs['popsize'][i]
+
+
+            answers[chromosome_id] = self.doTask(nn, lvl, task_id, chromosome_id, rl,
+                                                 algo=algo,
+                                                 ngames=ngames,
+                                                 popsize=popsize)
 
         # execute the asked for task
-        return self.doTask(task_params['task_id'])
+        import pdb
+        pdb.set_trace()
+        return answers
 
     def returnAnswer(self, answer):
         path = os.path.join(self.root,
@@ -145,6 +183,7 @@ class ADPChild:
 
     def __del__(self):
         os.remove(self.alive)
-        os.remove(self.busy)
+        if os.path.exists(self.busy):
+            os.remove(self.busy)
         self.pair.env.close()
 

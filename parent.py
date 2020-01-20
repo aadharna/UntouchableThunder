@@ -23,6 +23,7 @@ def callOut(parent):
     print(f'children alive: {len(children)}')
     return children
 
+
 def waitForAndCollectAnswers(parent, children):
 
     while not parent.checkChildResponseStatus(children):
@@ -37,12 +38,12 @@ def waitForAndCollectAnswers(parent, children):
 
     return answers
 
+
 if __name__ == "__main__":
 
     parent = ADPParent()
 
-
-    pair = NNagent(GridGame(game='zelda',
+    pairs = [NNagent(GridGame(game='zelda',
                             play_length=250,
                             path='./levels',
                             lvl_name='start.txt',
@@ -50,16 +51,21 @@ if __name__ == "__main__":
                             # monsters, key, door, wall
                             )
                    )
+             ]
 
     done = False
     i = 0
     while not done:
         try:
+            # mutate environment
+            if i == 2:
+                pairs.append(pairs[0].mutate(1))
+
+            # check if children are alive
             children = callOut(parent)
             print(children)
 
-
-
+            # get available children
             availableChildren = parent.isChildAvailable(children)
 
             # if list is empty, wait and check again
@@ -67,27 +73,31 @@ if __name__ == "__main__":
                 time.sleep(5)
                 availableChildren = parent.isChildAvailable(children)
 
+            # pick from available chidren
             child = parent.selectAvailableChild(availableChildren)
 
-            parent.createChildTask(nn           = pair.nn,
-                                   env          = pair.env,
-                                   task_type    = ADPTASK.EVALUATE,
-                                   chromosome_id= pair.id,
+            # parent.createChildTask(nns           = [pairs[0].nn],
+            #                        envs          = [pairs[0].env],
+            #                        task_types    = [ADPTASK.EVALUATE],
+            #                        chromosome_ids= [pairs[0].id],
+            #                        child_id     = int(child),  # str 4 --> int 4
+            #                        rl           = [True])
+            #
+            # evalAnswers = waitForAndCollectAnswers(parent, children)
+            #
+            # print(evalAnswers)
+
+            parent.createChildTask(nns           = [pairs[0].nn, pairs[0].nn],
+                                   envs          = [pairs[0].env, pairs[0].env],
+                                   task_types    = [ADPTASK.OPTIMIZE, ADPTASK.OPTIMIZE],
+                                   chromosome_ids= [pairs[0].id, 2],
                                    child_id     = int(child),  # str 4 --> int 4
-                                   rl           = True)
-
-            evalAnswers = waitForAndCollectAnswers(parent, children)
-
-            print(evalAnswers)
-
-            parent.createChildTask(nn=pair.nn,
-                                   env=pair.env,
-                                   task_type=ADPTASK.OPTIMIZE,
-                                   chromosome_id=pair.id,
-                                   child_id=int(child),  # str 4 --> int 4
-                                   rl=True)
+                                   rl           = [True, True],
+                                   ngames       = [100, 400])
 
             optAnswers = waitForAndCollectAnswers(parent, children)
+
+            print(optAnswers)
 
             i += 1
             if i >= 3:
@@ -95,11 +105,11 @@ if __name__ == "__main__":
 
         except KeyboardInterrupt as e:
             print(e)
-            pair.env.close()
+            [pair.env.close() for pair in pairs]
             import sys
             sys.exit(0)
 
-    pair.env.close()
+    [pair.env.close() for pair in pairs]
 
 
 
