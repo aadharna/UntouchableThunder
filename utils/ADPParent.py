@@ -35,14 +35,21 @@ class ADPParent:
                 for f in files:
                     os.remove(os.path.join(path, f))
 
-    def checkChildResponseStatus(self, children):
-        folder = os.path.join(self.root,
-                              self.subfolders['sent_by_child'])
+    def checkChildResponseStatus(self, allChildren):        
+        response_folder = os.path.join(self.root,
+                                       self.subfolders['sent_by_child'])
+        
+        busy_folder = os.listdir(os.path.join(self.root, 
+                                   self.subfolders['busy_signals']))
+        
+        dones = [False]*len(allChildren)
 
-        for c in children:
-            if not os.path.exists(os.path.join(folder, f'answer{c}') + '.pkl'):
-                return False
-        return True
+        for i, c in enumerate(allChildren):
+            if os.path.exists(os.path.join(response_folder, f'answer{c}') + '.pkl') or \
+               f'{c}.txt' not in busy_folder:
+                dones[i] = True
+        
+        return np.all(dones)
 
     def selectAvailableChild(self, availableChildren):
         return np.random.choice(availableChildren)

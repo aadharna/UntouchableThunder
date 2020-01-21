@@ -85,7 +85,7 @@ class ADPChild:
         :param rl: use RL?
         :return:
         """
-
+        
         # update network and env to execute on task
         self.pair.env.generator.update_from_lvl_string(lvl)
         self.pair.nn.load_state_dict(nn)
@@ -108,10 +108,10 @@ class ADPChild:
                         frames             = ngames * self.game_length)
             else:
                 objective = PyTorchObjective(agent=self.pair, popsize=popsize)
-                # run_TJ_DE(_de=self.algo,
-                #           pair=objective,
-                #           n=ngames)
-                # objective.update_nn(objective.best_individual)
+                run_TJ_DE(opt_name  = algo,
+                          pair      = objective,
+                          n         = ngames)
+                objective.update_nn(objective.best_individual)
             score = self.pair.evaluate(rl=rl)
             return {
                 'score': score,
@@ -133,10 +133,11 @@ class ADPChild:
         chromosome_ids = task_params['chromosome_ids']
         kwargs = task_params['kwargs']
         task_ids = task_params['task_ids']
-
+        
         answers = {}
 
         for i in range(len(nns)):
+            print(i)
             nn = nns[i]
             lvl = lvls[i]
             task_id = task_ids[i]
@@ -146,17 +147,18 @@ class ADPChild:
             rl = False
             ngames = 1000
             popsize = 100
-            algo='jDE'
-            if hasattr(kwargs, 'rl'):
+            algo=None
+            
+            if 'rl' in kwargs:
                 rl = kwargs['rl'][i]
 
-            if hasattr(kwargs, 'ngames'):
+            if 'ngames' in kwargs:
                 ngames = kwargs['ngames'][i]
 
             if not rl and task_id == ADPTASK.OPTIMIZE:
-                if hasattr(kwargs, 'algo'):
+                if 'algo' in kwargs:
                     algo = kwargs['algo'][i]
-                if hasattr(kwargs, 'popsize'):
+                if 'popsize' in kwargs:
                     popsize = kwargs['popsize'][i]
 
 
@@ -180,6 +182,7 @@ class ADPChild:
         answer = self.parseRecievedTask()
         self.returnAnswer(answer)
         os.remove(self.busy)
+        print('waiting')
 
     def __del__(self):
         os.remove(self.alive)
