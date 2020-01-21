@@ -1,6 +1,10 @@
 import ctypes as c
-
 from utils.ppo import ppo
+import devo.DE
+import devo.SHADE
+import devo.JADE
+import devo.jDE
+import devo.CoDE
 
 #-------------------------OPTIMIZATION RUNNER FUNCTIONS---------------------------------#
 
@@ -34,9 +38,8 @@ def run_TJ_DE(opt_name, pair, n,
     n: number of function evaluations
     """
 
-    #import devo
-    #_de = getattr(devo, opt_name)
-    _de = None # TEMPORARY for while on personal laptop
+    import devo
+    _de = getattr(devo, opt_name)
 
     generations = n // pair.popsize
     x_c = pair.create_population().ctypes.data_as(c.POINTER(c.c_double))
@@ -68,6 +71,6 @@ def run_TJ_DE(opt_name, pair, n,
     # save scores
     import pandas
     df = pandas.DataFrame.from_dict(scores)
-    df.to_csv(f'./results/EC/jDE_{generations}gens_{pair.popsize}pop_scores.csv')
+    df.to_csv(f'./results/EC/{opt_name}_{generations}gens_{pair.popsize}pop_scores.csv')
 
     return
