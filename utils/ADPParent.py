@@ -1,4 +1,5 @@
 import os
+import time
 import shutil
 import numpy as np
 from utils.utils import save_obj, load_obj
@@ -100,15 +101,15 @@ class ADPParent:
     def createChildTask(self, nns, envs, task_types, chromosome_ids, child_id, **kwargs):
         """
 
-        :param nns:        PyTorch NN
-        :param envs:       GridGame env
-        :param task_types: ADPTASK ID
-        :param chromosome_ids: chromosome_id (int)
+        :param nns:        list of PyTorch NN
+        :param envs:       list of GridGame env
+        :param task_types: list of ADPTASK ID
+        :param chromosome_ids: chromosome_id (list of ints)
         :param child_id:  child id (int)
         :return:
         """
 
-        sample = {
+        work = {
             'nns': [nn.state_dict() for nn in nns],
             'lvls': [str(env.generator) for env in envs],
             'task_ids': [task_type for task_type in task_types],
@@ -116,6 +117,8 @@ class ADPParent:
             'kwargs': kwargs
         }
 
-        save_obj(sample,
+        save_obj(work,
                  os.path.join(self.root, self.subfolders['send_to_child']),
                  f'child{child_id}')
+        
+        time.sleep(3)

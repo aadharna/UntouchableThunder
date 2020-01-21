@@ -137,7 +137,6 @@ class ADPChild:
         answers = {}
 
         for i in range(len(nns)):
-            print(i)
             nn = nns[i]
             lvl = lvls[i]
             task_id = task_ids[i]
