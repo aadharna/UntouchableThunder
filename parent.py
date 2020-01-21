@@ -89,15 +89,16 @@ if __name__ == "__main__":
 
             parent.createChildTask(nns           = [pairs[0].nn, pairs[0].nn],
                                    envs          = [pairs[0].env, pairs[0].env],
-                                   task_types    = [ADPTASK.OPTIMIZE, ADPTASK.OPTIMIZE],
+                                   task_types    = [ADPTASK.OPTIMIZE, ADPTASK.EVALUATE],
                                    chromosome_ids= [pairs[0].id, 2],
-                                   child_id     = int(child),  # str 4 --> int 4
-                                   rl           = [True, True],
-                                   ngames       = [100, 400])
+                                   child_id      = int(child),  # str 4 --> int 4
+                                   rl            = [True, False],
+                                   algo          = [None, 'jDE'],
+                                   ngames        = [1000, 400])
 
             optAnswers = waitForAndCollectAnswers(parent, children)
 
-            print(optAnswers)
+            # print(optAnswers)
 
             i += 1
             if i >= 3:
