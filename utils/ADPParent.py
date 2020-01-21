@@ -12,6 +12,9 @@ class ADPParent:
     """
     def __init__(self):
         self.root = os.path.join('.', 'communication')
+        if not os.path.exists(self.root):
+            os.mkdir(self.root)
+        
         self.subfolders = {
             'send_to_child': 'outgoing',
             'sent_by_child': 'incoming',
