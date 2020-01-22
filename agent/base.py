@@ -35,7 +35,8 @@ class Agent:
         if master:
             if not os.path.exists('./results/'):
                 os.mkdir('./results/')
-            os.mkdir(f'./results/{self.id}')
+            if not os.path.exists(f'./results/{self.id}'):
+                os.mkdir(f'./results/{self.id}')
             with open(f'./results/{self.id}/lvl.txt', 'w+') as fname:
                 fname.write(str(self._env.generator))
         
