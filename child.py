@@ -20,19 +20,22 @@ if __name__ == "__main__":
                 # kill yourself. 
                 if not os.path.exists(child.alive):
                     done = True
+                    break
                     
                 time.sleep(5)
-            print("found task")
-            child.recieveTaskAndReturnAnswer()
+            
+            if not done:
+                print("found task")
+                child.recieveTaskAndReturnAnswer()
             
             
 
         except KeyboardInterrupt as e:
             print(e)
-            # happens in del child child.pair.env.close()
+            # happens in del child: child.pair.env.close()
             import sys
             sys.exit(0)
 
         # done = True
 
-    # happens in del child: child.pair.env.close()
+    child.pair.env.close()
