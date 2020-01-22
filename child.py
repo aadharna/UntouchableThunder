@@ -1,3 +1,4 @@
+import os
 import time
 from utils.ADPChild import ADPChild
 
@@ -14,16 +15,24 @@ if __name__ == "__main__":
     while not done:
         try:
             while not child.hasTask():
+                # if you're waiting for a task and 
+                # your alive flag is removed by the parent
+                # kill yourself. 
+                if not os.path.exists(child.alive):
+                    done = True
+                    
                 time.sleep(5)
             print("found task")
             child.recieveTaskAndReturnAnswer()
+            
+            
 
         except KeyboardInterrupt as e:
             print(e)
-            child.pair.env.close()
+            # happens in del child child.pair.env.close()
             import sys
             sys.exit(0)
 
         # done = True
 
-    child.pair.env.close()
+    # happens in del child: child.pair.env.close()

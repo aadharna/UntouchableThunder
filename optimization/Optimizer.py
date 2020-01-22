@@ -81,7 +81,7 @@ class PyTorchObjective():
         self.c += 1
         z = np.zeros(dimension, dtype=np.float64)
         for i in range(dimension):
-            z[i] = x[i] + 0.
+            z[i] = np.float64(x[i])
         if self.is_new(z):
             self.cache(z)
             

@@ -50,10 +50,12 @@ def divideWorkBetweenChildren(pairs, children):
     for job in pairs:
         tasks[next(dispensor)].append(job)
     
+    print(tasks)
     return tasks
 
+
 def prepareWorkForChild(pairs, ADPTASK_TYPE):
-    
+
     nns = []
     envs = []
     task_types = []
@@ -70,8 +72,27 @@ def prepareWorkForChild(pairs, ADPTASK_TYPE):
         rl.append(args.rl)
         algo.append(args.DE_algo)
         ngames.append(args.n_games)
-    
+
     return nns, envs, task_types, chromosome_ids, rl, algo, ngames
+
+
+def updatePairs(pairs, answers, task_type):
+    print("updating")
+    # do something with the answers.
+    # for each dict from the children
+    for each_answer, flag in answers:
+        # for each answer in the top dict from each child
+        if flag:
+            for chromosome_ids in each_answer:
+                score = each_answer[chromosome_ids]['score']
+                _id = each_answer[chromosome_ids]['chromosome_id']
+
+                for each_pair in pairs:
+                    if _id == each_pair.id:
+                        each_pair.score = score
+                        if task_type == ADPTASK.OPTIMIZE:
+                            nn = each_answer[_id]['nn'] # this is a state_dict
+                            each_pair.nn.load_state_dict(nn)
 
 ####################### HELPER FUNCTIONS ##########################
 
@@ -112,12 +133,6 @@ if __name__ == "__main__":
     i = 0
     while not done:
         try:
-            # mutate environment
-            if (i+1) % args.mutation_timer == 0:
-                for pair in pairs:
-                    pairs.append(pair.mutate(args.mutation_rate))
-
-
             # check if children are alive
             children = callOut(parent)
             print(children)
@@ -129,12 +144,15 @@ if __name__ == "__main__":
             while not bool(availableChildren):
                 time.sleep(5)
                 availableChildren = parent.isChildAvailable(children)
-            
+
             distributed_work = divideWorkBetweenChildren(pairs, availableChildren)
             
+            print("evaluating")
             for worker_id in distributed_work:
-                (nns, envs, task_types, chromosome_ids, rl, algo, ngames) = prepareWorkForChild(distributed_work[worker_id], ADPTASK.EVALUATE)
-                    
+                (nns, envs, task_types,
+                 chromosome_ids, rl, algo, ngames) = prepareWorkForChild(distributed_work[worker_id],
+                                                                         ADPTASK.EVALUATE)
+
                 parent.createChildTask(nns            = nns,
                                        envs           = envs,
                                        task_types     = task_types,
@@ -143,26 +161,63 @@ if __name__ == "__main__":
                                        rl             = rl,
                                        algo           = algo,
                                        ngames         = ngames)
-                                       
-            
-            eval_answers = waitForAndCollectAnswers(parent, children)
-            
 
-#             parent.createChildTask(nns           = [pairs[0].nn, pairs[0].nn],
-#                                    envs          = [pairs[0].env, pairs[0].env],
-#                                    task_types    = [ADPTASK.OPTIMIZE, ADPTASK.EVALUATE],
-#                                    chromosome_ids= [pairs[0].id, 2],
-#                                    child_id      = int(child),  # str 4 --> int 4
-#                                    rl            = [True, False],
-#                                    algo          = [None, 'jDE'],
-#                                    ngames        = [1000, 400])
+            # get answers from children
+            eval_answers = waitForAndCollectAnswers(parent, availableChildren)
 
-#             optAnswers = waitForAndCollectAnswers(parent, children)
+            updatePairs(pairs, eval_answers, ADPTASK.EVALUATE)
+
+            # mutate environment
+            new_envs = []
+            if (i+1) % args.mutation_timer == 0:
+                for pair in pairs:
+                    print(f"mutating {pair.id}")
+                    new_envs.append(pair.mutate(args.mutation_rate))
+            
+            pairs.extend(new_envs)
+            del new_envs # this does not delete the pairs that have now been placed in pairs.
+            print(len(pairs))
+            
+            # kill extra population.
+            #
+            # CODE GOES HERE ?
+            #
+            
+            print("optimizing")
+            distributed_work = divideWorkBetweenChildren(pairs, availableChildren)
+
+            for worker_id in distributed_work:
+                # create work for everyone, even if there is no work to do
+                
+                (nns, envs, task_types,
+                 chromosome_ids, rl, algo, ngames) = prepareWorkForChild(distributed_work[worker_id],
+                                                                         ADPTASK.OPTIMIZE)
+
+                parent.createChildTask(nns=nns,
+                                       envs=envs,
+                                       task_types=task_types,
+                                       chromosome_ids=chromosome_ids,
+                                       child_id=int(worker_id),
+                                       rl=rl,
+                                       algo=algo,
+                                       ngames=ngames)
+
+
+            # get answers from children
+            opt_answers = waitForAndCollectAnswers(parent, availableChildren)
+
+            updatePairs(pairs, opt_answers, ADPTASK.OPTIMIZE)
+
+            # TRANSFER NNs between ENVS,
+            # EVALUATE each NN with each ENV.
+            #
+            # CODE GOES HERE
+            #
 
             # print(optAnswers)
 
             i += 1
-            if i >= 3:
+            if i >= 4:
                 done = True
 
         except KeyboardInterrupt as e:
@@ -172,6 +227,13 @@ if __name__ == "__main__":
             sys.exit(0)
 
     [pair.env.close() for pair in pairs]
-
-
     
+    path = os.path.join(parent.root,
+                        parent.subfolders['alive_signals'])
+
+    alive = os.listdir(path)
+    
+    for a in alive:
+        os.remove(os.path.join(path, a))
+
+

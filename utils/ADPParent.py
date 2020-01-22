@@ -20,7 +20,7 @@ class ADPParent:
             'send_to_child': 'outgoing',
             'sent_by_child': 'incoming',
             'alive_signals': 'alive',
-            'busy_signals': 'busy'
+            'available_signals': 'available'
         }
         self.createFolders()
         self.resetFolders()
@@ -43,14 +43,14 @@ class ADPParent:
         response_folder = os.path.join(self.root,
                                        self.subfolders['sent_by_child'])
         
-        busy_folder = os.listdir(os.path.join(self.root, 
-                                   self.subfolders['busy_signals']))
+        available_signals = os.listdir(os.path.join(self.root,
+                                   self.subfolders['available_signals']))
         
         dones = [False]*len(allChildren)
 
         for i, c in enumerate(allChildren):
-            if os.path.exists(os.path.join(response_folder, f'answer{c}') + '.pkl') or \
-               f'{c}.txt' not in busy_folder:
+            if os.path.exists(os.path.join(response_folder, f'answer{c}') + '.pkl') and \
+               f'{c}.txt' in available_signals:
                 dones[i] = True
         
         return np.all(dones)
@@ -64,13 +64,13 @@ class ADPParent:
             os.path.join(self.root, self.subfolders['alive_signals'])
         )]
 
-        busy_signals = [c.split('.')[0] for c in os.listdir(
-            os.path.join(self.root, self.subfolders['busy_signals'])
+        available_signals = [c.split('.')[0] for c in os.listdir(
+            os.path.join(self.root, self.subfolders['available_signals'])
         )]
 
         for child in children:
-            # if child is alive and not busy
-            if child in alive_signals and child not in busy_signals:
+            # if child is alive and available
+            if child in alive_signals and child in available_signals:
                 availableChildren.append(child)
 
         return availableChildren
@@ -81,7 +81,7 @@ class ADPParent:
         answer = load_obj(folder, response_file)
         # remove answer from folder
         os.remove(os.path.join(folder, response_file))
-        return answer
+        return answer, bool(answer)
 
     def pickupChildren(self):
         """
@@ -120,5 +120,10 @@ class ADPParent:
         save_obj(work,
                  os.path.join(self.root, self.subfolders['send_to_child']),
                  f'child{child_id}')
+
+        available = os.path.join(self.root,
+                                 self.subfolders['available_signals'],
+                                 f'{child_id}.txt')
+        os.remove(available)
         
         time.sleep(3)

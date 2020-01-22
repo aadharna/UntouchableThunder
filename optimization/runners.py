@@ -9,7 +9,11 @@ import devo.CoDE
 #-------------------------OPTIMIZATION RUNNER FUNCTIONS---------------------------------#
 
 
-def run_ppo(policy_agent, env_fn, path, n_concurrent_games=1, frames=100000):
+def run_ppo(policy_agent, env_fn, path, 
+            pair_id, 
+            outer_poet_loop_count, 
+            n_concurrent_games=1, 
+            frames=100000):
     """Run Proximal Policy optimization:
        Adapted from: https://github.com/vwxyzjn/cleanrl/blob/master/cleanrl/ppo.py
        
@@ -20,13 +24,15 @@ def run_ppo(policy_agent, env_fn, path, n_concurrent_games=1, frames=100000):
        return: optimized neural network
     """
     return ppo(pg            = policy_agent, 
-               env_fn        = env_fn(), # this removes the other function from GridGameObject.make()
+               env_fn        = env_fn(), # this removes the outer function from GridGameObject.make()
                num_envs      = n_concurrent_games,
                path_to_runs  = path, 
-               total_frames  = frames)
+               total_frames  = frames,
+               pair_id       = pair_id,
+               outer_poet_loop_count = outer_poet_loop_count)
     
     
-def run_TJ_DE(opt_name, pair, n,
+def run_TJ_DE(opt_name, pair, n, pair_id,
               scaling_factor=0.5,
               crossover_rate=0.1,
               min_weight=-5,
@@ -71,6 +77,6 @@ def run_TJ_DE(opt_name, pair, n,
     # save scores
     import pandas
     df = pandas.DataFrame.from_dict(scores)
-    df.to_csv(f'./results/EC/{opt_name}_{generations}gens_{pair.popsize}pop_scores.csv')
+    df.to_csv(f'./results/{pair_id}/{opt_name}_{generations}gens_{pair.popsize}pop_scores.csv')
 
     return

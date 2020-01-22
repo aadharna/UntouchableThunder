@@ -16,7 +16,7 @@ class ADPChild:
             'sent_by_parent': 'outgoing',
             'send_to_parent': 'incoming',
             'alive_signals': 'alive',
-            'busy_signals': 'busy'
+            'available_signals': 'available'
         }
         self.createFolders()
 
@@ -26,13 +26,13 @@ class ADPChild:
                                   self.subfolders['alive_signals'],
                                   f'{self.id}.txt')
 
-        self.busy = os.path.join(self.root,
-                                  self.subfolders['busy_signals'],
-                                  f'{self.id}.txt')
+        self.available = os.path.join(self.root,
+                                      self.subfolders['available_signals'],
+                                      f'{self.id}.txt')
 
+        self.placeChildFlag(self.available)
         self.placeChildFlag(self.alive)
         print(f"child {self.id} alive signal sent")
-        # self.placeChildFlag(self.busy)
 
         self.pair = \
             NNagent(
@@ -110,7 +110,8 @@ class ADPChild:
                 objective = PyTorchObjective(agent=self.pair, popsize=popsize)
                 run_TJ_DE(opt_name  = algo,
                           pair      = objective,
-                          n         = ngames)
+                          n         = ngames,
+                          pair_id   = chromosome_id)
                 objective.update_nn(objective.best_individual)
             score = self.pair.evaluate(rl=rl)
             return {
@@ -135,36 +136,37 @@ class ADPChild:
         task_ids = task_params['task_ids']
         
         answers = {}
+        if bool(nns):
+            for i in range(len(nns)):
+                nn = nns[i]
+                lvl = lvls[i]
+                task_id = task_ids[i]
+                chromosome_id = chromosome_ids[i]
 
-        for i in range(len(nns)):
-            nn = nns[i]
-            lvl = lvls[i]
-            task_id = task_ids[i]
-            chromosome_id = chromosome_ids[i]
+                # key word args
+                rl = False
+                ngames = 1000
+                popsize = 100
+                algo=None
 
-            # key word args
-            rl = False
-            ngames = 1000
-            popsize = 100
-            algo=None
-            
-            if 'rl' in kwargs:
-                rl = kwargs['rl'][i]
+                if 'rl' in kwargs:
+                    rl = kwargs['rl'][i]
 
-            if 'ngames' in kwargs:
-                ngames = kwargs['ngames'][i]
+                if 'ngames' in kwargs:
+                    ngames = kwargs['ngames'][i]
 
-            if not rl and task_id == ADPTASK.OPTIMIZE:
-                if 'algo' in kwargs:
-                    algo = kwargs['algo'][i]
-                if 'popsize' in kwargs:
-                    popsize = kwargs['popsize'][i]
+                if not rl and task_id == ADPTASK.OPTIMIZE:
+                    if 'algo' in kwargs:
+                        algo = kwargs['algo'][i]
+                    if 'popsize' in kwargs:
+                        popsize = kwargs['popsize'][i]
 
 
-            answers[chromosome_id] = self.doTask(nn, lvl, task_id, chromosome_id, rl,
-                                                 algo=algo,
-                                                 ngames=ngames,
-                                                 popsize=popsize)
+                answers[chromosome_id] = self.doTask(nn, lvl, task_id, chromosome_id, rl,
+                                                     algo=algo,
+                                                     ngames=ngames,
+                                                     popsize=popsize)
+        
 
         # execute the asked for task
         # import pdb
@@ -177,15 +179,13 @@ class ADPChild:
         save_obj(answer, path, f'answer{self.id}')
 
     def recieveTaskAndReturnAnswer(self):
-        self.placeChildFlag(self.busy)
         answer = self.parseRecievedTask()
         self.returnAnswer(answer)
-        os.remove(self.busy)
+        self.placeChildFlag(self.available)
         print('waiting')
 
     def __del__(self):
-        os.remove(self.alive)
-        if os.path.exists(self.busy):
-            os.remove(self.busy)
+        if os.path.exists(self.available):
+            os.remove(self.available)
         self.pair.env.close()
 
