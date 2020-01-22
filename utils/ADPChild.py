@@ -1,4 +1,6 @@
 import os
+from torch import save as torch_save
+
 from agent.NNagent import NNagent
 from generator.env_gen_wrapper import GridGame
 from optimization.Optimizer import PyTorchObjective
@@ -119,11 +121,17 @@ class ADPChild:
                           pair_id           = chromosome_id,
                           poet_loop_counter = poet_loop_counter)
                 objective.update_nn(objective.best_individual)
+            
+            # get score of optimized weights
             score = self.pair.evaluate(rl=rl)
+            state_dict = self.pair.nn.state_dict()
+            
+            # save best weights
+            torch_save(state_dict, f"./results/{chromosome_id}/final_weights_poet{poet_loop_counter}.pt")
             return {
                 'score': score,
                 'chromosome_id': chromosome_id,
-                'nn': self.pair.nn.state_dict()
+                'nn': state_dict
             }
         else:
             raise ValueError('unspecified task requested')
@@ -140,7 +148,7 @@ class ADPChild:
         chromosome_ids = task_params['chromosome_ids']
         kwargs = task_params['kwargs']
         task_ids = task_params['task_ids']
-        poet_loop_counter = task_params['poet_counter'] # int
+        poet_loop_counter = task_params['poet'] # int
         
         answers = {}
         if bool(nns):
@@ -191,8 +199,8 @@ class ADPChild:
         self.placeChildFlag(self.available)
         print('waiting')
 
-    def __del__(self):
-        if os.path.exists(self.available):
-            os.remove(self.available)
-        self.pair.env.close()
+#     def __del__(self):
+#         if os.path.exists(self.available):
+#             os.remove(self.available)
+#         self.pair.env.close()
 
