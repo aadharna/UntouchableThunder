@@ -34,6 +34,7 @@ class ADPChild:
         self.placeChildFlag(self.alive)
         print(f"child {self.id} alive signal sent")
 
+        # this pair is for useage by children. It does not count as a POET pair.
         self.pair = \
             NNagent(
                 GridGame(game='zelda',
@@ -42,7 +43,8 @@ class ADPChild:
                         lvl_name='start.txt',
                         mechanics=['+', 'g'],
                         # monsters, key, door, wall
-                        )
+                        ),
+                master=False,
                )
 
         self.game_length = self.pair.env.play_length
@@ -72,7 +74,7 @@ class ADPChild:
         with open(path, 'w+') as f:
             pass
 
-    def doTask(self, nn, lvl, task_id, chromosome_id, rl,
+    def doTask(self, nn, lvl, task_id, chromosome_id, rl, poet_loop_counter,
                algo='jDE',
                ngames=1000,
                popsize=100):
@@ -83,6 +85,7 @@ class ADPChild:
         :param task_id: EVALUATE the NN or OPTIMIZE it
         :param chromosome_id: id of NN-GG pair
         :param rl: use RL?
+        :param poet_loop_counter: poet number loop
         :return:
         """
         
@@ -104,14 +107,17 @@ class ADPChild:
                 run_ppo(policy_agent       = self.pair,
                         env_fn             = self.pair.env.make,
                         path               = './runs',
+                        pair_id            = chromosome_id,
+                        outer_poet_loop_count= poet_loop_counter,
                         n_concurrent_games = 1,
                         frames             = ngames * self.game_length)
             else:
                 objective = PyTorchObjective(agent=self.pair, popsize=popsize)
-                run_TJ_DE(opt_name  = algo,
-                          pair      = objective,
-                          n         = ngames,
-                          pair_id   = chromosome_id)
+                run_TJ_DE(opt_name          = algo,
+                          pair              = objective,
+                          n                 = ngames,
+                          pair_id           = chromosome_id,
+                          poet_loop_counter = poet_loop_counter)
                 objective.update_nn(objective.best_individual)
             score = self.pair.evaluate(rl=rl)
             return {
@@ -134,6 +140,7 @@ class ADPChild:
         chromosome_ids = task_params['chromosome_ids']
         kwargs = task_params['kwargs']
         task_ids = task_params['task_ids']
+        poet_loop_counter = task_params['poet_counter'] # int
         
         answers = {}
         if bool(nns):
@@ -162,7 +169,7 @@ class ADPChild:
                         popsize = kwargs['popsize'][i]
 
 
-                answers[chromosome_id] = self.doTask(nn, lvl, task_id, chromosome_id, rl,
+                answers[chromosome_id] = self.doTask(nn, lvl, task_id, chromosome_id, rl, poet_loop_counter,
                                                      algo=algo,
                                                      ngames=ngames,
                                                      popsize=popsize)

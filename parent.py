@@ -158,6 +158,7 @@ if __name__ == "__main__":
                                        task_types     = task_types,
                                        chromosome_ids = chromosome_ids,
                                        child_id       = int(worker_id),
+                                       poet_loop_counter = i,
                                        rl             = rl,
                                        algo           = algo,
                                        ngames         = ngames)
@@ -198,6 +199,7 @@ if __name__ == "__main__":
                                        task_types=task_types,
                                        chromosome_ids=chromosome_ids,
                                        child_id=int(worker_id),
+                                       poet_loop_counter=i,
                                        rl=rl,
                                        algo=algo,
                                        ngames=ngames)

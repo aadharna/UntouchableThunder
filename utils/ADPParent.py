@@ -98,7 +98,7 @@ class ADPParent:
 
         return sorted(children)
 
-    def createChildTask(self, nns, envs, task_types, chromosome_ids, child_id, **kwargs):
+    def createChildTask(self, nns, envs, task_types, chromosome_ids, child_id, poet_loop_counter, **kwargs):
         """
 
         :param nns:        list of PyTorch NN
@@ -106,6 +106,7 @@ class ADPParent:
         :param task_types: list of ADPTASK ID
         :param chromosome_ids: chromosome_id (list of ints)
         :param child_id:  child id (int)
+        :param poet_loop_counter: poet number loop
         :return:
         """
 
@@ -114,6 +115,7 @@ class ADPParent:
             'lvls': [str(env.generator) for env in envs],
             'task_ids': [task_type for task_type in task_types],
             'chromosome_ids': [chromosome_id for chromosome_id in chromosome_ids],
+            'poet': poet_loop_counter,
             'kwargs': kwargs
         }
 
