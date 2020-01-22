@@ -91,9 +91,12 @@ class Agent:
         childGG = self.env.mutate(mutationRate)
         return Agent(childGG)
 
-    def get_action(self, state):
+    def get_action(self, state, c):
         # randomly for now
-        return np.random.choice(self.action_space), _, _
+        return np.random.choice(self.action_space), None, None
+
+    def rl_get_action(self, state, c):
+        return self.get_action(state, c)
     
     def fitness(self, noisy=False, fn=None, rl=False):
         """run this agent through the current generator env once and store result into 
