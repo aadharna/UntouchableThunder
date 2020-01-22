@@ -174,6 +174,11 @@ if __name__ == "__main__":
                 for pair in pairs:
                     print(f"mutating {pair.id}")
                     new_envs.append(pair.mutate(args.mutation_rate))
+                    
+                    # CODE TO TEST NEW ENV GOES HERE.
+                    
+                    with open(f'./results/{new_envs[-1].id}/parent_is_{pair.id}.txt', 'w+') as fname:
+                        pass
             
             pairs.extend(new_envs)
             del new_envs # this does not delete the pairs that have now been placed in pairs.
