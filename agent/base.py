@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from utils.utils import add_noise
 
@@ -10,7 +11,7 @@ class Agent:
     Wrap each env with a game-playing agent
     """
     agent_count = 0
-    def __init__(self, GG, max_steps=250):
+    def __init__(self, GG, master=True):
         """Wrap environment with a game-playing agent
         
         :param GG: GridGame Class (contains gym_gvgai env and a level generator)
@@ -21,24 +22,29 @@ class Agent:
         self.depth = GG.depth
         self.envs_through_time = []
         self.action_space = GG.env.action_space.n
-        self.max_steps = max_steps
+        self.max_steps = GG.play_length
         # total reward of agent playing env
         self.max_achieved_score = 0
+        self.score = 0
         self.noisy = False
         self.vis = None
         self.images = []        
         self.id = Agent.agent_count
         Agent.agent_count += 1
         
+        if master:
+            if not os.path.exists('./results/'):
+                os.mkdir('./results/')
+            os.mkdir(f'./results/{self.id}')
+            with open(f'./results/{self.id}/lvl.txt', 'w+') as fname:
+                fname.write(str(self._env.generator))
+        
 
     @property
     def env(self):
         return self._env
 
-    @property
-    def name(self):
-        return f'{self.env.game}_{self.env.id}_{self.env.generator.generation}'
-
+    
     def evaluate(self, env, rl=False):
         """Run self agent on current generator level. 
         """

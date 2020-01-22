@@ -15,13 +15,13 @@ from agent.models import Net
 
 class NNagent(Agent):
 
-    def __init__(self, GG=None, parent=None, max_steps=1000, actions=6, depth=13):
+    def __init__(self, GG=None, parent=None, actions=6, depth=13, master=True):
         
         self.compass_info = []
         
         # GG exists, use it.
         if GG:
-                super(NNagent, self).__init__(GG, max_steps)
+                super(NNagent, self).__init__(GG, master)
                 
                 if parent:
                     self.nn = deepcopy(parent)
