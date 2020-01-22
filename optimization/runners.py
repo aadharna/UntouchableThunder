@@ -17,9 +17,14 @@ def run_ppo(policy_agent, env_fn, path,
     """Run Proximal Policy optimization:
        Adapted from: https://github.com/vwxyzjn/cleanrl/blob/master/cleanrl/ppo.py
        
-       :param policy_network: Pass the NNagent directly
-       :param env: pass in the outer GridGame env.make fn
-       :param frames: number of frames you want ppo to run for. 
+       :param policy_agent: Pass the NNagent directly
+       :param env_fn: pass in the outer GridGame env.make fn
+       :param path: path to director to store ppo graphs in. ./runs
+       :param frames: number of frames you want ppo to run for.
+       :param outer_poet_loop_count: poet number loop
+       :param n_concurrent_games: number of vectorized games
+
+
        
        return: optimized neural network
     """
@@ -32,7 +37,7 @@ def run_ppo(policy_agent, env_fn, path,
                outer_poet_loop_count = outer_poet_loop_count)
     
     
-def run_TJ_DE(opt_name, pair, n, pair_id,
+def run_TJ_DE(opt_name, pair, n, pair_id, poet_loop_counter,
               scaling_factor=0.5,
               crossover_rate=0.1,
               min_weight=-5,
@@ -77,6 +82,6 @@ def run_TJ_DE(opt_name, pair, n, pair_id,
     # save scores
     import pandas
     df = pandas.DataFrame.from_dict(scores)
-    df.to_csv(f'./results/{pair_id}/{opt_name}_{generations}gens_{pair.popsize}pop_scores.csv')
+    df.to_csv(f'./results/{pair_id}/{opt_name}_poet{poet_loop_counter}_{generations}gens_{pair.popsize}pop_scores.csv')
 
     return
