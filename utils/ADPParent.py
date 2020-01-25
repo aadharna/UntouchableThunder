@@ -81,7 +81,7 @@ class ADPParent:
         answer = load_obj(folder, response_file)
         # remove answer from folder
         os.remove(os.path.join(folder, response_file))
-        return answer, bool(answer)
+        return answer
 
     def pickupChildren(self):
         """
@@ -98,34 +98,33 @@ class ADPParent:
 
         return sorted(children)
 
-    def createChildTask(self, nns, envs, task_types, chromosome_ids, child_id, poet_loop_counter, **kwargs):
+    def createChildTask(self, work_dict, worker_id, task_id, poet_loop_counter, **kwargs):
         """
 
-        :param nns:        list of PyTorch NN
-        :param envs:       list of GridGame env
-        :param task_types: list of ADPTASK ID
-        :param chromosome_ids: chromosome_id (list of ints)
-        :param child_id:  child id (int)
+        :param work_dict: dict of nns, envs, nn_ids, env_ids
+        :param worker_id:  child id (int)
+        :param task_id: ADP TASK TYPE
         :param poet_loop_counter: poet number loop
         :return:
         """
 
         work = {
-            'nns': [nn.state_dict() for nn in nns],
-            'lvls': [str(env.generator) for env in envs],
-            'task_ids': [task_type for task_type in task_types],
-            'chromosome_ids': [chromosome_id for chromosome_id in chromosome_ids],
+            'nns': [nn.state_dict() for nn in work_dict['nn']],
+            'lvls': [str(env.generator) for env in work_dict['env']],
+            'task_ids': [task_id for _ in range(len(work_dict['nn']))],
+            'chromosome_ids': work_dict['nn_id'],
+            'env_ids': work_dict['env_id'],
             'poet': poet_loop_counter,
             'kwargs': kwargs
         }
 
         save_obj(work,
                  os.path.join(self.root, self.subfolders['send_to_child']),
-                 f'child{child_id}')
+                 f'child{worker_id}')
 
         available = os.path.join(self.root,
                                  self.subfolders['available_signals'],
-                                 f'{child_id}.txt')
+                                 f'{worker_id}.txt')
         os.remove(available)
         
         time.sleep(3)

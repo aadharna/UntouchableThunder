@@ -76,7 +76,7 @@ class ADPChild:
         with open(path, 'w+') as f:
             pass
 
-    def doTask(self, nn, lvl, task_id, chromosome_id, rl, poet_loop_counter,
+    def doTask(self, nn, lvl, task_id, chromosome_id, env_id, rl, poet_loop_counter,
                algo='jDE',
                ngames=1000,
                popsize=100):
@@ -99,6 +99,7 @@ class ADPChild:
             score = self.pair.evaluate(rl=rl)
             return {
                 'chromosome_id': chromosome_id,
+                'env_id': env_id,
                 'score': score,
             }
 
@@ -131,6 +132,7 @@ class ADPChild:
             return {
                 'score': score,
                 'chromosome_id': chromosome_id,
+                'env_id': env_id,
                 'nn': state_dict
             }
         else:
@@ -146,6 +148,7 @@ class ADPChild:
         lvls = task_params['lvls']
         nns = task_params['nns']
         chromosome_ids = task_params['chromosome_ids']
+        env_ids = task_params['env_ids']
         kwargs = task_params['kwargs']
         task_ids = task_params['task_ids']
         poet_loop_counter = task_params['poet'] # int
@@ -157,6 +160,7 @@ class ADPChild:
                 lvl = lvls[i]
                 task_id = task_ids[i]
                 chromosome_id = chromosome_ids[i]
+                env_id = env_ids[i]
 
                 # key word args
                 rl = False
@@ -168,16 +172,16 @@ class ADPChild:
                     rl = kwargs['rl'][i]
 
                 if 'ngames' in kwargs:
-                    ngames = kwargs['ngames'][i]
+                    ngames = kwargs['ngames']
 
                 if not rl and task_id == ADPTASK.OPTIMIZE:
                     if 'algo' in kwargs:
-                        algo = kwargs['algo'][i]
+                        algo = kwargs['algo']
                     if 'popsize' in kwargs:
-                        popsize = kwargs['popsize'][i]
+                        popsize = kwargs['popsize']
 
 
-                answers[chromosome_id] = self.doTask(nn, lvl, task_id, chromosome_id, rl, poet_loop_counter,
+                answers[chromosome_id] = self.doTask(nn, lvl, task_id, chromosome_id, env_id, rl, poet_loop_counter,
                                                      algo=algo,
                                                      ngames=ngames,
                                                      popsize=popsize)
