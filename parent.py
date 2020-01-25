@@ -62,7 +62,7 @@ def divideWorkBetweenChildren(agents, envs, children, transfer_eval=False):
     for agent, env in agent_env_work_pair:
         id = next(dispenser)
         tasks[id]['env'].append(str(env.generator))
-        tasks[id]['nn'].append(agent.nn)
+        tasks[id]['nn'].append(agent.nn.state_dict())
         tasks[id]['nn_id'].append(agent.id)
         tasks[id]['env_id'].append(env.id)
 
