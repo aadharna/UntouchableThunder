@@ -32,10 +32,6 @@ class ADPChild:
                                       self.subfolders['available_signals'],
                                       f'{self.id}.txt')
 
-        self.placeChildFlag(self.available)
-        self.placeChildFlag(self.alive)
-        print(f"child {self.id} alive signal sent")
-
         # this pair is for useage by children. It does not count as a POET pair.
         self.pair = \
             NNagent(
@@ -51,6 +47,10 @@ class ADPChild:
 
         self.game_length = self.pair.env.play_length
 
+        self.placeChildFlag(self.available)
+        self.placeChildFlag(self.alive)
+        print(f"child {self.id} alive signal sent")
+        
     ########### END CONSTRUCTOR #############
 
 
