@@ -1,5 +1,6 @@
 import os
 import time
+from itertools import product
 
 from utils.ADPParent import ADPParent
 from utils.ADPTASK_ENUM import ADPTASK
@@ -37,52 +38,44 @@ def waitForAndCollectAnswers(parent, children):
     print('collected answers')
     return answers
 
-def divideWorkBetweenChildren(pairs, children):
-    
+
+def divideWorkBetweenChildren(agents, envs, children, transfer_eval=False):
     # private function to implement circular queue for assigning tasks
     def dispenseChild(children):
         num_children = len(children)
         for i in range(1000000):
             yield children[i % num_children]
-    
-    dispensor = dispenseChild(children)
-    tasks = {next(dispensor): [] for _ in range(len(children))} 
-    for job in pairs:
-        tasks[next(dispensor)].append(job)
-    
-    print(tasks)
+
+    dispenser = dispenseChild(children)
+    tasks = {}
+    for _ in range(len(children)):
+        id = next(dispenser)
+        tasks[id] = {}
+        tasks[id]['nn'] = []
+        tasks[id]['env'] = []
+        tasks[id]['nn_id'] = []
+        tasks[id]['env_id'] = []
+
+                                                                    # itertools product
+    agent_env_work_pair = zip(agents, envs) if not transfer_eval else product(agents, envs)
+
+    for agent, env in agent_env_work_pair:
+        id = next(dispenser)
+        tasks[id]['env'].append(str(env.generator))
+        tasks[id]['nn'].append(agent.nn)
+        tasks[id]['nn_id'].append(agent.id)
+        tasks[id]['env_id'].append(env.id)
+
     return tasks
-
-
-def prepareWorkForChild(pairs, ADPTASK_TYPE):
-
-    nns = []
-    envs = []
-    task_types = []
-    chromosome_ids = []
-    rl = []
-    algo = []
-    ngames = []
-
-    for task in pairs:
-        nns.append(task.nn)
-        envs.append(task.env)
-        task_types.append(ADPTASK_TYPE)
-        chromosome_ids.append(task.id)
-        rl.append(args.rl)
-        algo.append(args.DE_algo)
-        ngames.append(args.n_games)
-
-    return nns, envs, task_types, chromosome_ids, rl, algo, ngames
 
 
 def updatePairs(pairs, answers, task_type):
     print("updating")
     # do something with the answers.
     # for each dict from the children
-    for each_answer, flag in answers:
+    for each_answer in answers:
         # for each answer in the top dict from each child
-        if flag:
+        if bool(each_answer):
             for chromosome_ids in each_answer:
                 score = each_answer[chromosome_ids]['score']
                 _id = each_answer[chromosome_ids]['chromosome_id']
@@ -93,6 +86,18 @@ def updatePairs(pairs, answers, task_type):
                         if task_type == ADPTASK.OPTIMIZE:
                             nn = each_answer[_id]['nn'] # this is a state_dict
                             each_pair.nn.load_state_dict(nn)
+
+def dieAndKillChildren(parent, pairs):
+
+    [pair.env.close() for pair in pairs]
+
+    path = os.path.join(parent.root,
+                        parent.subfolders['alive_signals'])
+
+    alive = os.listdir(path)
+
+    for a in alive:
+        os.remove(os.path.join(path, a))
 
 ####################### HELPER FUNCTIONS ##########################
 
@@ -145,23 +150,21 @@ if __name__ == "__main__":
                 time.sleep(5)
                 availableChildren = parent.isChildAvailable(children)
 
-            distributed_work = divideWorkBetweenChildren(pairs, availableChildren)
+            distributed_work = divideWorkBetweenChildren(pairs,  #  agents. We're not going to use the paired envs
+                                                         [pairs[i].GG for i in range(len(pairs))],
+                                                         availableChildren)
             
             print("evaluating")
             for worker_id in distributed_work:
-                (nns, envs, task_types,
-                 chromosome_ids, rl, algo, ngames) = prepareWorkForChild(distributed_work[worker_id],
-                                                                         ADPTASK.EVALUATE)
 
-                parent.createChildTask(nns            = nns,
-                                       envs           = envs,
-                                       task_types     = task_types,
-                                       chromosome_ids = chromosome_ids,
-                                       child_id       = int(worker_id),
-                                       poet_loop_counter = i,
-                                       rl             = rl,
-                                       algo           = algo,
-                                       ngames         = ngames)
+                parent.createChildTask(work_dict=distributed_work[worker_id],
+                                       worker_id=worker_id,
+                                       task_id=ADPTASK.EVALUATE,
+                                       poet_loop_counter=i,
+                                       rl=args.rl,
+                                       algo=args.DE_algo,
+                                       ngames=args.n_games)
+
 
             # get answers from children
             eval_answers = waitForAndCollectAnswers(parent, availableChildren)
@@ -190,24 +193,19 @@ if __name__ == "__main__":
             #
             
             print("optimizing")
-            distributed_work = divideWorkBetweenChildren(pairs, availableChildren)
+            distributed_work = divideWorkBetweenChildren(pairs,
+                                                         [pairs[i].GG for i in range(len(pairs))],
+                                                         availableChildren)
 
             for worker_id in distributed_work:
-                # create work for everyone, even if there is no work to do
-                
-                (nns, envs, task_types,
-                 chromosome_ids, rl, algo, ngames) = prepareWorkForChild(distributed_work[worker_id],
-                                                                         ADPTASK.OPTIMIZE)
 
-                parent.createChildTask(nns=nns,
-                                       envs=envs,
-                                       task_types=task_types,
-                                       chromosome_ids=chromosome_ids,
-                                       child_id=int(worker_id),
+                parent.createChildTask(work_dict=distributed_work[worker_id],
+                                       worker_id=worker_id,
+                                       task_id=ADPTASK.OPTIMIZE,
                                        poet_loop_counter=i,
-                                       rl=rl,
-                                       algo=algo,
-                                       ngames=ngames)
+                                       rl=args.rl,
+                                       algo=args.DE_algo,
+                                       ngames=args.n_games)
 
 
             # get answers from children
@@ -218,10 +216,30 @@ if __name__ == "__main__":
             # TRANSFER NNs between ENVS,
             # EVALUATE each NN with each ENV.
             #
-            # CODE GOES HERE
-            #
+            print("transferring?")
+            distributed_work = divideWorkBetweenChildren(pairs,
+                                                         [pairs[i].GG for i in range(len(pairs))],
+                                                         availableChildren,
+                                                         transfer_eval=True)
 
-            # print(optAnswers)
+            for worker_id in distributed_work:
+
+                parent.createChildTask(work_dict=distributed_work[worker_id],
+                                       worker_id=worker_id,
+                                       task_id=ADPTASK.EVALUATE,
+                                       poet_loop_counter=i,
+                                       rl=args.rl,
+                                       algo=args.DE_algo,
+                                       ngames=args.n_games)
+
+
+            # get answers from children
+            transfer_eval_answers = waitForAndCollectAnswers(parent, availableChildren)
+
+            # use information to determine if NN i should migrate to env j.
+
+
+
 
             i += 1
             if i >= 4:
@@ -229,18 +247,8 @@ if __name__ == "__main__":
 
         except KeyboardInterrupt as e:
             print(e)
-            [pair.env.close() for pair in pairs]
+            dieAndKillChildren(parent, pairs)
             import sys
             sys.exit(0)
 
-    [pair.env.close() for pair in pairs]
-    
-    path = os.path.join(parent.root,
-                        parent.subfolders['alive_signals'])
-
-    alive = os.listdir(path)
-    
-    for a in alive:
-        os.remove(os.path.join(path, a))
-
-
+    dieAndKillChildren(parent, pairs)
