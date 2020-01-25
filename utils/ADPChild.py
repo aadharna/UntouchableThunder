@@ -150,7 +150,7 @@ class ADPChild:
         chromosome_ids = task_params['chromosome_ids']
         env_ids = task_params['env_ids']
         kwargs = task_params['kwargs']
-        task_ids = task_params['task_ids']
+        task_id = task_params['task_id']
         poet_loop_counter = task_params['poet'] # int
         
         answers = {}
@@ -158,7 +158,6 @@ class ADPChild:
             for i in range(len(nns)):
                 nn = nns[i]
                 lvl = lvls[i]
-                task_id = task_ids[i]
                 chromosome_id = chromosome_ids[i]
                 env_id = env_ids[i]
 

@@ -110,8 +110,8 @@ class ADPParent:
 
         work = {
             'nns': [nn.state_dict() for nn in work_dict['nn']],
-            'lvls': [str(env.generator) for env in work_dict['env']],
-            'task_ids': [task_id for _ in range(len(work_dict['nn']))],
+            'lvls': work_dict['env'],
+            'task_id': task_id,
             'chromosome_ids': work_dict['nn_id'],
             'env_ids': work_dict['env_id'],
             'poet': poet_loop_counter,
