@@ -200,6 +200,6 @@ class GridGame(gym.Wrapper):
         return _make
     
     def close(self):
-        del self.env
+        self.env.stop()
                 
     
