@@ -109,7 +109,7 @@ class ADPParent:
         """
 
         work = {
-            'nns': [nn.state_dict() for nn in work_dict['nn']],
+            'nns': work_dict['nn'],
             'lvls': work_dict['env'],
             'task_id': task_id,
             'chromosome_ids': work_dict['nn_id'],

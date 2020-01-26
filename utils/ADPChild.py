@@ -77,6 +77,7 @@ class ADPChild:
             pass
 
     def doTask(self, nn, lvl, task_id, chromosome_id, env_id, rl, poet_loop_counter,
+               noisy=False,
                algo='jDE',
                ngames=1000,
                popsize=100):
@@ -96,6 +97,7 @@ class ADPChild:
         self.pair.nn.load_state_dict(nn)
 
         if task_id == ADPTASK.EVALUATE:
+            self.pair.noisy = noisy
             score = self.pair.evaluate(rl=rl)
             return {
                 'chromosome_id': chromosome_id,
@@ -165,10 +167,14 @@ class ADPChild:
                 rl = False
                 ngames = 1000
                 popsize = 100
-                algo=None
+                algo = 'jDE'
+                noisy = False
 
                 if 'rl' in kwargs:
-                    rl = kwargs['rl'][i]
+                    rl = kwargs['rl']
+
+                if 'noisy' in kwargs:
+                    noisy = kwargs['noisy']
 
                 if 'ngames' in kwargs:
                     ngames = kwargs['ngames']
@@ -179,12 +185,16 @@ class ADPChild:
                     if 'popsize' in kwargs:
                         popsize = kwargs['popsize']
 
+                answer = self.doTask(nn, lvl, task_id, chromosome_id, env_id, rl, poet_loop_counter,
+                                     noisy=noisy,
+                                     algo=algo,
+                                     ngames=ngames,
+                                     popsize=popsize)
 
-                answers[chromosome_id] = self.doTask(nn, lvl, task_id, chromosome_id, env_id, rl, poet_loop_counter,
-                                                     algo=algo,
-                                                     ngames=ngames,
-                                                     popsize=popsize)
-        
+                if chromosome_id not in answers:
+                    answers[chromosome_id] = []
+
+                answers[chromosome_id].append(answer)
 
         # execute the asked for task
         # import pdb

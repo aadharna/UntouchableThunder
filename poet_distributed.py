@@ -151,9 +151,9 @@ if __name__ == "__main__":
                 availableChildren = parent.isChildAvailable(children)
 
             distributed_work = divideWorkBetweenChildren(pairs,  #  agents. We're not going to use the paired envs
-                                                         [pairs[i].GG for i in range(len(pairs))],
+                                                         [pairs[i].env for i in range(len(pairs))],
                                                          availableChildren)
-            
+
             print("evaluating")
             for worker_id in distributed_work:
 
@@ -172,29 +172,50 @@ if __name__ == "__main__":
             updatePairs(pairs, eval_answers, ADPTASK.EVALUATE)
 
             # mutate environment
+            # POET VERSION
+            # def get_child_list(self, parent_list, max_children):
+            #     child_list = []
+            #
+            #     mutation_trial = 0
+            #     while mutation_trial < max_children:
+            #         new_env_config, seed, parent_optim_id = self.get_new_env(parent_list)
+            #         mutation_trial += 1
+            #         if self.pass_dedup(new_env_config):
+            #             o = self.create_optimizer(new_env_config, seed, is_candidate=True)
+            #             score = o.evaluate_theta(self.optimizers[parent_optim_id].theta)
+            #             del o
+            #             if self.pass_mc(score):
+            #                 novelty_score = compute_novelty_vs_archive(self.env_archive, new_env_config, k=5)
+            #                 logger.debug("{} passed mc, novelty score {}".format(score, novelty_score))
+            #                 child_list.append((new_env_config, seed, parent_optim_id, novelty_score))
+            #
+            #     #sort child list according to novelty for high to low
+            #     child_list = sorted(child_list,key=lambda x: x[3], reverse=True)
+            #     return child_list
+
             new_envs = []
             if (i+1) % args.mutation_timer == 0:
                 for pair in pairs:
                     print(f"mutating {pair.id}")
                     new_envs.append(pair.mutate(args.mutation_rate))
-                    
+
                     # CODE TO TEST NEW ENV GOES HERE.
-                    
+
                     with open(f'./results/{new_envs[-1].id}/parent_is_{pair.id}.txt', 'w+') as fname:
                         pass
-            
+
             pairs.extend(new_envs)
             del new_envs # this does not delete the pairs that have now been placed in pairs.
             print(len(pairs))
-            
+
             # kill extra population.
             #
             # CODE GOES HERE ?
             #
-            
+
             print("optimizing")
             distributed_work = divideWorkBetweenChildren(pairs,
-                                                         [pairs[i].GG for i in range(len(pairs))],
+                                                         [pairs[i].env for i in range(len(pairs))],
                                                          availableChildren)
 
             for worker_id in distributed_work:
@@ -216,27 +237,28 @@ if __name__ == "__main__":
             # TRANSFER NNs between ENVS,
             # EVALUATE each NN with each ENV.
             #
-            print("transferring?")
-            distributed_work = divideWorkBetweenChildren(pairs,
-                                                         [pairs[i].GG for i in range(len(pairs))],
-                                                         availableChildren,
-                                                         transfer_eval=True)
+            if (i + 1) % args.transfer_timer == 0:
+                print("transferring")
+                distributed_work = divideWorkBetweenChildren(pairs,
+                                                             [pairs[i].env for i in range(len(pairs))],
+                                                             availableChildren,
+                                                             transfer_eval=True)
 
-            for worker_id in distributed_work:
+                for worker_id in distributed_work:
 
-                parent.createChildTask(work_dict=distributed_work[worker_id],
-                                       worker_id=worker_id,
-                                       task_id=ADPTASK.EVALUATE,
-                                       poet_loop_counter=i,
-                                       rl=args.rl,
-                                       algo=args.DE_algo,
-                                       ngames=args.n_games)
+                    parent.createChildTask(work_dict=distributed_work[worker_id],
+                                           worker_id=worker_id,
+                                           task_id=ADPTASK.EVALUATE,
+                                           poet_loop_counter=i,
+                                           rl=args.rl,
+                                           algo=args.DE_algo,
+                                           ngames=args.n_games)
 
 
-            # get answers from children
-            transfer_eval_answers = waitForAndCollectAnswers(parent, availableChildren)
+                # get answers from children
+                transfer_eval_answers = waitForAndCollectAnswers(parent, availableChildren)
 
-            # use information to determine if NN i should migrate to env j.
+                # use information to determine if NN i should migrate to env j.
 
 
 
