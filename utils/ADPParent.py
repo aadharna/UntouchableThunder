@@ -94,7 +94,7 @@ class ADPParent:
         children = []
         for child in alive_signals:
             id = child.split('.')[0] #child names are 1.txt, etc
-            children.append(id)
+            children.append(int(id))
 
         return sorted(children)
 
