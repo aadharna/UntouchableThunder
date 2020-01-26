@@ -21,6 +21,16 @@ def callOut(parent):
         children = parent.pickupChildren()
     return children
 
+def flatten(answer_list, children):
+    f_dict = {}
+    for c in children:
+        f_dict[int(c)] = []
+        for dicts in answer_list:
+            for k, v in dicts.items():
+                if int(c) == int(k):
+                    f_dict[int(c)].extend(v)
+    return f_dict
+
 
 def waitForAndCollectAnswers(parent, children):
     print('waiting for answers')
@@ -34,9 +44,11 @@ def waitForAndCollectAnswers(parent, children):
     ))
 
     answers = [parent.readChildAnswer(answer) for answer in answer_pointers]
-    
+
+    flat_answers = flatten(answers, children)
+
     print('collected answers')
-    return answers
+    return flat_answers
 
 
 def divideWorkBetweenChildren(agents, envs, children, transfer_eval=False):
@@ -70,22 +82,33 @@ def divideWorkBetweenChildren(agents, envs, children, transfer_eval=False):
 
 
 def updatePairs(pairs, answers, task_type):
+    """
+
+    :param pairs: list of active NN-Env pairs
+    :param answers: flattened by chromosome_id children_response dicts
+    :param task_type: ADPTASK ID
+    :return:
+    """
     print("updating")
     # do something with the answers.
     # for each dict from the children
-    for each_answer in answers:
-        # for each answer in the top dict from each child
-        if bool(each_answer):
-            for chromosome_ids in each_answer:
-                score = each_answer[chromosome_ids]['score']
-                _id = each_answer[chromosome_ids]['chromosome_id']
 
-                for each_pair in pairs:
-                    if _id == each_pair.id:
-                        each_pair.score = score
-                        if task_type == ADPTASK.OPTIMIZE:
-                            nn = each_answer[_id]['nn'] # this is a state_dict
-                            each_pair.nn.load_state_dict(nn)
+    for xsome_id in answers:
+        # print(xsome_id)
+        for j in answers[xsome_id]:
+            _id = j['chromosome_id']
+            score = j['score']
+            env_id = j['env_id']
+            # print(_id, score, env_id)
+
+            for each_pair in pairs:
+                if _id == each_pair.id:
+                    # print("found matching nn")
+                    each_pair.score = score
+                    if task_type == ADPTASK.OPTIMIZE:
+                        nn = j['nn'] # this is a state_dict
+                        each_pair.nn.load_state_dict(nn)
+
 
 def dieAndKillChildren(parent, pairs):
 
@@ -108,26 +131,30 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--game", type=str, default='dzelda', help='set gvgai game')
 parser.add_argument("--init_lvl", type=str, default='start.txt', help='level from ./levels folder')
 parser.add_argument("--game_len", type=int, default=250, help='game length')
-parser.add_argument("--n_games", type=int, default=1000, help='num games')
+parser.add_argument("--n_games", type=int, default=1000, help='opt length in num games')
 parser.add_argument("--rl", type=bool, default=False, help='use RL?')
-parser.add_argument("--DE_algo", type=str, default='jDE', help='which DE algo to use?')
+parser.add_argument("--DE_algo", type=str, default='jDE', help='which DE algo to use if rl is False?')
 parser.add_argument("--mutation_timer", type=int, default=5, help='steps until mutation')
 parser.add_argument("--mutation_rate", type=float, default=0.5, help='change of mutation')
 parser.add_argument("--transfer_timer", type=int, default=15, help='steps until transfer')
+parser.add_argument("--max_children", type=int, default=8, help='number of children to add each transfer step')
+parser.add_argument("--max_envs", type=int, default=50, help='max number of GVGAI-gym envs allowed at any one time')
 
 
 args = parser.parse_args()
 
 print(args)
 
+############### POET ###############
+
 if __name__ == "__main__":
 
     parent = ADPParent()
 
-    pairs = [NNagent(GridGame(game='dzelda',
-                            play_length=250,
+    pairs = [NNagent(GridGame(game=args.game,
+                            play_length=args.game_len,
                             path='./levels',
-                            lvl_name='start.txt',
+                            lvl_name=args.init_lvl,
                             mechanics=['+', 'g'],
                             # monsters, key, door, wall
                             )
@@ -164,7 +191,6 @@ if __name__ == "__main__":
                                        rl=args.rl,
                                        algo=args.DE_algo,
                                        ngames=args.n_games)
-
 
             # get answers from children
             eval_answers = waitForAndCollectAnswers(parent, availableChildren)
@@ -210,9 +236,16 @@ if __name__ == "__main__":
 
             # kill extra population.
             #
-            # CODE GOES HERE ?
+            if len(pairs) > args.max_envs:
+                aged_pairs = sorted(pairs, key=lambda x: x.id, reverse=True)
+                for extra_env_ids in range(args.max_envs, len(aged_pairs)):
+                    aged_pairs[extra_env_ids].env.close()  # close the java envs. delete them from memory.
+                                                           # zombie processes will be cleaned up upon exit of main.
+                pairs = aged_pairs[:args.max_envs]
+                del aged_pairs
+            
+            # Optimizations step
             #
-
             print("optimizing")
             distributed_work = divideWorkBetweenChildren(pairs,
                                                          [pairs[i].env for i in range(len(pairs))],
@@ -262,6 +295,9 @@ if __name__ == "__main__":
 
 
 
+            # save checkpoints of networks into POET folder
+            #
+            # CODE GOES HERE.
 
             i += 1
             if i >= 4:
