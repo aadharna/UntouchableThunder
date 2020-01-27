@@ -21,14 +21,12 @@ def callOut(parent):
         children = parent.pickupChildren()
     return children
 
-def flatten(answer_list, children):
+def flatten(answer_list):
     f_dict = {}
-    for c in children:
-        f_dict[int(c)] = []
-        for dicts in answer_list:
-            for k, v in dicts.items():
-                if int(c) == int(k):
-                    f_dict[int(c)].extend(v)
+    for dicts in answer_list:
+        for k, v in dicts.items():
+            for experiment in v:
+                f_dict[(experiment['chromosome_id'], experiment['env_id'])] = experiment
     return f_dict
 
 
@@ -85,7 +83,7 @@ def updatePairs(pairs, answers, task_type):
     """
 
     :param pairs: list of active NN-Env pairs
-    :param answers: flattened by chromosome_id children_response dicts
+    :param answers: flattened by chromosome_id and env_id children_response dicts
     :param task_type: ADPTASK ID
     :return:
     """
@@ -93,21 +91,15 @@ def updatePairs(pairs, answers, task_type):
     # do something with the answers.
     # for each dict from the children
 
-    for xsome_id in answers:
+    for (xsome_id, env_id) in answers:
         # print(xsome_id)
-        for j in answers[xsome_id]:
-            _id = j['chromosome_id']
-            score = j['score']
-            env_id = j['env_id']
-            # print(_id, score, env_id)
-
-            for each_pair in pairs:
-                if _id == each_pair.id:
-                    # print("found matching nn")
-                    each_pair.score = score
-                    if task_type == ADPTASK.OPTIMIZE:
-                        nn = j['nn'] # this is a state_dict
-                        each_pair.nn.load_state_dict(nn)
+        for each_pair in pairs:
+            if xsome_id == each_pair.id:
+                # print("found matching nn")
+                each_pair.score = answers[(xsome_id, env_id)]['score']
+                if task_type == ADPTASK.OPTIMIZE:
+                    nn = answers[(xsome_id, env_id)]['nn']  # this is a state_dict
+                    each_pair.nn.load_state_dict(nn)
 
 
 def dieAndKillChildren(parent, pairs):
@@ -292,6 +284,7 @@ if __name__ == "__main__":
                 transfer_eval_answers = waitForAndCollectAnswers(parent, availableChildren)
 
                 # use information to determine if NN i should migrate to env j.
+
 
 
 
