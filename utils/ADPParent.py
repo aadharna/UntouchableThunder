@@ -60,11 +60,11 @@ class ADPParent:
 
     def isChildAvailable(self, children):
         availableChildren = []
-        alive_signals = [c.split('.')[0] for c in os.listdir(
+        alive_signals = [int(c.split('.')[0]) for c in os.listdir(
             os.path.join(self.root, self.subfolders['alive_signals'])
         )]
 
-        available_signals = [c.split('.')[0] for c in os.listdir(
+        available_signals = [int(c.split('.')[0]) for c in os.listdir(
             os.path.join(self.root, self.subfolders['available_signals'])
         )]
 
