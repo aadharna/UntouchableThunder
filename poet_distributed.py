@@ -133,7 +133,7 @@ def perform_transfer(pairs, answers, poet_loop_counter):
     """
 
     for k, fixed_env_pair in enumerate(pairs):
-        current_score = answers[(fixed_env_pair.id, fixed_env_pair.env.id)]
+        current_score = answers[(fixed_env_pair.id, fixed_env_pair.env.id)]['score']
         current_net = fixed_env_pair.nn.state_dict()
         transferred_id = fixed_env_pair.id
         # for every other network, evaluate environment k in agent j
@@ -141,7 +141,7 @@ def perform_transfer(pairs, answers, poet_loop_counter):
             if k == j:
                 continue
             else:
-                j_score = answers[(changing_agent_pair.id, fixed_env_pair.env.id)]
+                j_score = answers[(changing_agent_pair.id, fixed_env_pair.env.id)]['score']
 
                 if current_score < j_score: # todo talk about <=?
                     # updated network
@@ -153,6 +153,10 @@ def perform_transfer(pairs, answers, poet_loop_counter):
         #transfer into environment, k, the agent, j, who performed the best.
         if not fixed_env_pair.id == transferred_id:
             fixed_env_pair.nn.load_state_dict(current_net)
+
+            # todo talk with lisa about if
+            # fixed_env_pair.id = transferred_id ? It's not clear to me. 
+
             with open(os.path.join(f'./results/{fixed_env_pair.id}',
                                    f'poet{poet_loop_counter}_network_\
                                     {transferred_id}_transferred_here.txt'),
