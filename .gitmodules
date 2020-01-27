@@ -15,6 +15,3 @@
 	path = ext/GVGAI
 	url  = git@github.com:Bam4d/GVGAI_GYM.git
 
-[submodule "ext/GVGAI_GYM"]
-	path = ext/GVGAI_GYM
-	url = git@github.com:Bam4d/GVGAI_GYM.git
