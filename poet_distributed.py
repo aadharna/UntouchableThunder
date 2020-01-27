@@ -8,6 +8,8 @@ from utils.ADPTASK_ENUM import ADPTASK
 from agent.NNagent import NNagent
 from generator.env_gen_wrapper import GridGame
 
+from torch import save as torch_save
+
 def callOut(parent):
     print("calling out")
     children = []
@@ -43,7 +45,7 @@ def waitForAndCollectAnswers(parent, children):
 
     answers = [parent.readChildAnswer(answer) for answer in answer_pointers]
 
-    flat_answers = flatten(answers, children)
+    flat_answers = flatten(answers)
 
     print('collected answers')
     return flat_answers
@@ -114,6 +116,50 @@ def dieAndKillChildren(parent, pairs):
     for a in alive:
         os.remove(os.path.join(path, a))
 
+
+def perform_transfer(pairs, answers, poet_loop_counter):
+    """
+    find the network which performed best in each env.
+    Move that best-network into that env.
+
+    Eval agent j in env k.
+    Find best agent, a for each env
+    Move agent a into env k
+
+    :param pairs: agent-env pairs
+    :param answers: flattened answers index by (agent.id, env.id)
+    :param poet_loop_counter: int counter
+    :return:
+    """
+
+    for k, fixed_env_pair in enumerate(pairs):
+        current_score = answers[(fixed_env_pair.id, fixed_env_pair.env.id)]
+        current_net = fixed_env_pair.nn.state_dict()
+        transferred_id = fixed_env_pair.id
+        # for every other network, evaluate environment k in agent j
+        for j, changing_agent_pair in enumerate(pairs):
+            if k == j:
+                continue
+            else:
+                j_score = answers[(changing_agent_pair.id, fixed_env_pair.env.id)]
+
+                if current_score < j_score: # todo talk about <=?
+                    # updated network
+                    print(f"update network {fixed_env_pair.id} to {changing_agent_pair.id}")
+                    current_score = j_score
+                    current_net   = changing_agent_pair.nn.state_dict()
+                    transferred_id = changing_agent_pair.id
+
+        #transfer into environment, k, the agent, j, who performed the best.
+        if not fixed_env_pair.id == transferred_id:
+            fixed_env_pair.nn.load_state_dict(current_net)
+            with open(os.path.join(f'./results/{fixed_env_pair.id}',
+                                   f'poet{poet_loop_counter}_network_\
+                                    {transferred_id}_transferred_here.txt'),
+                      'w+') as fname:
+                pass
+
+
 ####################### HELPER FUNCTIONS ##########################
 
 # ARGUMENTS TO THE SCRIPT
@@ -155,8 +201,11 @@ if __name__ == "__main__":
 
     done = False
     i = 0
+    chkpt = "./results/POET_CHKPT"
+    os.mkdir(chkpt)
     while not done:
         try:
+            os.mkdir(os.path.join(chkpt, str(i)))
             # check if children are alive
             children = callOut(parent)
             print(children)
@@ -284,13 +333,16 @@ if __name__ == "__main__":
                 transfer_eval_answers = waitForAndCollectAnswers(parent, availableChildren)
 
                 # use information to determine if NN i should migrate to env j.
-
+                perform_transfer(pairs, transfer_eval_answers, i)
 
 
 
             # save checkpoints of networks into POET folder
             #
-            # CODE GOES HERE.
+            for pair in pairs:
+                torch_save(pair.nn.state_dict(), os.path.join(chkpt,
+                                                              str(i),
+                                                              f'network{pair.id}'))
 
             i += 1
             if i >= 4:
