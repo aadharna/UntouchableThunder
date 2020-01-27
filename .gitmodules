@@ -11,7 +11,4 @@
 	path = ext/baselines
 	url = git@github.com:openai/baselines.git
 
-[submodule "ext/GVGAI"]
-	path = ext/GVGAI
-	url  = git@github.com:Bam4d/GVGAI_GYM.git
 
