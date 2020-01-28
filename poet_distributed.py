@@ -155,7 +155,7 @@ def perform_transfer(pairs, answers, poet_loop_counter):
             fixed_env_pair.nn.load_state_dict(current_net)
 
             # todo talk with lisa about if
-            # fixed_env_pair.id = transferred_id ? It's not clear to me. 
+            # fixed_env_pair.id = transferred_id ? It's not clear to me.
 
             with open(os.path.join(f'./results/{fixed_env_pair.id}',
                                    f'poet{poet_loop_counter}_network_\
@@ -197,7 +197,7 @@ if __name__ == "__main__":
                             play_length=args.game_len,
                             path='./levels',
                             lvl_name=args.init_lvl,
-                            mechanics=['+', 'g'],
+                            mechanics=['+', 'g', '1', '2', '3', 'w'],
                             # monsters, key, door, wall
                             )
                    )
@@ -339,17 +339,15 @@ if __name__ == "__main__":
                 # use information to determine if NN i should migrate to env j.
                 perform_transfer(pairs, transfer_eval_answers, i)
 
-
-
             # save checkpoints of networks into POET folder
             #
             for pair in pairs:
                 torch_save(pair.nn.state_dict(), os.path.join(chkpt,
                                                               str(i),
-                                                              f'network{pair.id}'))
+                                                              f'network{pair.id}.pt'))
 
             i += 1
-            if i >= 4:
+            if i >= 6:
                 done = True
 
         except KeyboardInterrupt as e:
