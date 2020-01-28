@@ -30,14 +30,14 @@ class Agent:
         self.vis = None
         self.images = []        
         self.id = Agent.agent_count
-        Agent.agent_count += 1
         
         if master:
+            Agent.agent_count += 1
             if not os.path.exists('./results/'):
                 os.mkdir('./results/')
             if not os.path.exists(f'./results/{self.id}'):
                 os.mkdir(f'./results/{self.id}')
-            with open(f'./results/{self.id}/lvl.txt', 'w+') as fname:
+            with open(f'./results/{self.id}/lvl{self._env.id}.txt', 'w+') as fname:
                 fname.write(str(self._env.generator))
         
 
@@ -94,7 +94,9 @@ class Agent:
 
     def get_action(self, state, c):
         # randomly for now
-        return np.random.choice(self.action_space), None, None
+        probs = Categorical(probs=torch.Tensor([1/self.action_space for _ in range(self.action_space)]))
+        action = probs.sample()
+        return action, -probs.log_prob(action), probs.entropy()
 
     def rl_get_action(self, state, c):
         return self.get_action(state, c)
