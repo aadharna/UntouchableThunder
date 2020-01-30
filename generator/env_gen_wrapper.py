@@ -76,6 +76,7 @@ class GridGame(gym.Wrapper):
 
         self.depth = None # gets set in self.reset()
         # env must exist to reset
+        self.done = False
         self.steps = 0
         self.score = 0
         self.play_length = play_length
@@ -124,12 +125,13 @@ class GridGame(gym.Wrapper):
         reward -= 1e-5       # punish just randomly moving around
                              # This should add some gradient signal.
         self.score += reward
-        
+        self.done = info['winner']
+
         # update orientation
         if action != self.prev_move and action in self.rotating_actions:
             self.prev_move = action
         
-        return state, reward, done, {'pic': im}
+        return state, reward, done, {'pic': im, 'won': info['winner']}
 
     def mutate(self, mutationRate):
         new_map, shape = self.generator.mutate(mutationRate)
