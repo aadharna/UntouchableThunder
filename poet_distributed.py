@@ -1,10 +1,12 @@
 import os
 import time
+import numpy as np
 from itertools import product
 
 from utils.ADPParent import ADPParent
 from utils.ADPTASK_ENUM import ADPTASK
 
+from agent.base import Agent
 from agent.NNagent import NNagent
 from generator.env_gen_wrapper import GridGame
 
@@ -163,6 +165,52 @@ def perform_transfer(pairs, answers, poet_loop_counter):
                       'w+') as fname:
                 pass
 
+def pass_mc(gridGame):
+    wonGameRandomly = False
+
+    random_agent = Agent(gridGame, master=False)
+    _ = random_agent.evaluate(env=gridGame, rl=args.rl)
+
+    # agent WON the game
+    if gridGame.done == 3:
+        wonGameRandomly = True
+
+    wonGameMCTS = False
+    # wonGameMCTS = launch_java_GVGAI_lvl_eval(gridGame.game,
+    #                                          gridGame.generator.path_to_file,
+    #                                          args.comp_agent,
+    #                                          args.game_len,
+    #                                         )
+
+    # if not too easy and not too hard:
+    if not wonGameRandomly and not wonGameMCTS:
+        return True
+
+    return True
+
+def get_child_list(parent_list, max_children):
+    child_list = []
+
+    mutation_trial = 0
+    while mutation_trial < max_children:
+        parent = np.random.choice(parent_list)
+        new_gg = parent.env.mutate(args.mutation_rate)
+        mutation_trial += 1
+
+        if pass_mc(new_gg):
+            child_list.append(NNagent(new_gg, parent=parent.nn))
+            with open(f'./results/{child_list[-1].id}/parent_is_{parent.id}.txt', 'w+') as fname:
+                pass
+
+            # speciation or novelty goes here
+            #
+
+        else:
+            # kill newly spawned java processes
+            new_gg.close()
+
+    return child_list
+
 
 ####################### HELPER FUNCTIONS ##########################
 
@@ -181,6 +229,7 @@ parser.add_argument("--mutation_rate", type=float, default=0.5, help='change of 
 parser.add_argument("--transfer_timer", type=int, default=15, help='steps until transfer')
 parser.add_argument("--max_children", type=int, default=8, help='number of children to add each transfer step')
 parser.add_argument("--max_envs", type=int, default=50, help='max number of GVGAI-gym envs allowed at any one time')
+parser.add_argument("--comp_agent", type=str, default="mcts", help="what gvgai comp should be used for MC?")
 
 
 args = parser.parse_args()
@@ -206,11 +255,15 @@ if __name__ == "__main__":
     done = False
     i = 0
     chkpt = "./results/POET_CHKPT"
-    os.mkdir(chkpt)
+    if not os.path.exists(chkpt):
+        os.mkdir(chkpt)
+
     while not done:
         try:
-            os.mkdir(os.path.join(chkpt, str(i)))
-            # check if children are alive
+            tdir = os.path.join(chkpt, str(i))
+            if not os.path.exists(tdir):
+                os.mkdir(tdir)
+                # check if children are alive
             children = callOut(parent)
             print(children)
 
@@ -242,42 +295,15 @@ if __name__ == "__main__":
 
             updatePairs(pairs, eval_answers, ADPTASK.EVALUATE)
 
-            # mutate environment
-            # POET VERSION
-            # def get_child_list(self, parent_list, max_children):
-            #     child_list = []
+            # Add in new children
             #
-            #     mutation_trial = 0
-            #     while mutation_trial < max_children:
-            #         new_env_config, seed, parent_optim_id = self.get_new_env(parent_list)
-            #         mutation_trial += 1
-            #         if self.pass_dedup(new_env_config):
-            #             o = self.create_optimizer(new_env_config, seed, is_candidate=True)
-            #             score = o.evaluate_theta(self.optimizers[parent_optim_id].theta)
-            #             del o
-            #             if self.pass_mc(score):
-            #                 novelty_score = compute_novelty_vs_archive(self.env_archive, new_env_config, k=5)
-            #                 logger.debug("{} passed mc, novelty score {}".format(score, novelty_score))
-            #                 child_list.append((new_env_config, seed, parent_optim_id, novelty_score))
-            #
-            #     #sort child list according to novelty for high to low
-            #     child_list = sorted(child_list,key=lambda x: x[3], reverse=True)
-            #     return child_list
-
             new_envs = []
             if (i+1) % args.mutation_timer == 0:
-                for pair in pairs:
-                    print(f"mutating {pair.id}")
-                    new_envs.append(pair.mutate(args.mutation_rate))
-
-                    # CODE TO TEST NEW ENV GOES HERE.
-
-                    with open(f'./results/{new_envs[-1].id}/parent_is_{pair.id}.txt', 'w+') as fname:
-                        pass
+                new_envs = get_child_list(pairs, args.max_children)
 
             pairs.extend(new_envs)
-            del new_envs # this does not delete the pairs that have now been placed in pairs.
-            print(len(pairs))
+            del new_envs # this does not delete the children that have now been placed in pairs.
+            # print(len(pairs))
 
             # kill extra population.
             #
