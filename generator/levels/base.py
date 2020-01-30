@@ -39,6 +39,19 @@ class Generator:
         # self.chars = np.unique(np.unique(self.tile_world).tolist() + self.mechanics)
         # self.chars = list(set(self.chars) - {'A'}) # do not place more agents
 
+    def update_from_lvl_string(self, new_lvl):
+        """
+        Update Generator from flat lvl string
+        :param new_lvl: flat lvl string with \n chars
+        :return:
+        """
+        split_lvl = new_lvl.split('\n')[:-1] #remove empty '' at the end
+
+        o = np.array([['0'] * self._height] * self._length, dtype=str)
+        for i in range(self._length):
+            for j in range(self._height):
+                o[i][j] = split_lvl[i][j]
+        self.locations = self._parse_tile_world(o)
 
     def _parse_tile_world(self, tile_world):
         locations = {}
@@ -129,102 +142,106 @@ class Generator:
             choices = np.arange(1, 4)
             
             ###
-            choices = [3, 3, 3] # TEMPORARY FOR THE EXPERIMENT OF CONSISTANT SHIFTING OF KEY AND DOORS.
+            # choices = [3, 3, 3] # TEMPORARY FOR THE EXPERIMENT OF CONSISTANT SHIFTING OF KEY AND DOORS.
             ###
             
             mutationType = np.random.choice(choices, p=[0.2, 0.4, 0.4])  # [, )  in, ex
-            # print(mutationType)
-            # 1 -- remove sprite from scene               .... 20% chance
-            # 2 -- spawn new sprite into the scene        .... 40% chance
-            # 3 -- change location of sprite in the scene .... 40% chance
-            if mutationType == 1:
-                skip = False
-                somethingToRemove = False
-                # choose a random sprite that has multiple instances of itself to remove
-                while not somethingToRemove:
-                    sprite = np.random.choice(list(locations))
-                    # print(f"removing {sprite}?")
-                    # do not remove agent, cannot remove floor
-                    if sprite in ['A', '.']:
-                        # pick a new mutation
-                        mutationType = np.random.choice(choices, p=[0, 0.5, 0.5])
-                        # print(f"new mutation {mutationType}")
-                        skip = True
-                        break
+            go_again = 0
+            while go_again < 0.5:
+                go_again = np.random.rand()
 
-                    # do not remove goal or key if there are only one of them
-                    #  do not attempt to remove sprite when there are none of that type
-                    elif len(locations[sprite]) <= 1:
-                        if sprite in ['g', '+'] or len(locations[sprite]) == 0:
+                # print(mutationType)
+                # 1 -- remove sprite from scene               .... 20% chance
+                # 2 -- spawn new sprite into the scene        .... 40% chance
+                # 3 -- change location of sprite in the scene .... 40% chance
+                if mutationType == 1:
+                    skip = False
+                    somethingToRemove = False
+                    # choose a random sprite that has multiple instances of itself to remove
+                    while not somethingToRemove:
+                        sprite = np.random.choice(list(locations))
+                        # print(f"removing {sprite}?")
+                        # do not remove agent, cannot remove floor
+                        if sprite in ['A', '.']:
+                            # pick a new mutation
                             mutationType = np.random.choice(choices, p=[0, 0.5, 0.5])
                             # print(f"new mutation {mutationType}")
                             skip = True
                             break
-                    # else we have found something meaningful we can remove
-                    else:
-                        somethingToRemove = True
-                # choose location index in list of chosen sprite
-                if not skip:
+
+                        # do not remove goal or key if there are only one of them
+                        #  do not attempt to remove sprite when there are none of that type
+                        elif len(locations[sprite]) <= 1:
+                            if sprite in ['g', '+'] or len(locations[sprite]) == 0:
+                                mutationType = np.random.choice(choices, p=[0, 0.5, 0.5])
+                                # print(f"new mutation {mutationType}")
+                                skip = True
+                                break
+                        # else we have found something meaningful we can remove
+                        else:
+                            somethingToRemove = True
+                    # choose location index in list of chosen sprite
+                    if not skip:
+                        ind = np.random.choice(len(locations[sprite]))
+                        v = deepcopy(locations[sprite][ind])
+                        # print(f"removed {v}")
+                        self.locations['.'].append(v)
+                        self.locations[sprite].pop(ind)
+
+                # spawn a new sprite into the scene
+                if mutationType == 2:
+                    # choose a random sprite
+                    spawned = False
+                    while not spawned:
+                        sprite = np.random.choice(list(locations))
+                        if sprite == 'A':
+                            continue
+                        spawned = True
+                    # print(f"spawning {sprite}?")
+                    new_location = find_place_for_sprite()
+
+                    # remove from whoever already has that new_location
+                    for k in locations.keys():
+                        if new_location in locations[k]:
+                            rm_ind = locations[k].index(new_location)
+                            locations[k].pop(rm_ind)
+                            break
+
+                    # add new sprite to the level
+                    locations[sprite].append(new_location)
+
+                # move an existing sprite in the scene
+                if mutationType == 3:
+                    moved = False
+                    while not moved:
+                        # choose a random viable sprite
+                        sprite = np.random.choice(list(self.locations))
+                        if len(list(locations[sprite])) == 0 or sprite == '.':
+                            continue
+                        moved = True
+
+                    # print(f"moving {sprite}?")
+                    # choose location index in list of chosen sprite
                     ind = np.random.choice(len(locations[sprite]))
-                    v = deepcopy(locations[sprite][ind])
-                    # print(f"removed {v}")
-                    self.locations['.'].append(v)
-                    self.locations[sprite].pop(ind)
+                    # where the sprite was previously
+                    old = locations[sprite][ind]
+                    # print(f'from {old}')
+                    # new location for sprite
+                    new_location = find_place_for_sprite()
 
-            # spawn a new sprite into the scene
-            if mutationType == 2:
-                # choose a random sprite
-                spawned = False
-                while not spawned:
-                    sprite = np.random.choice(list(locations))
-                    if sprite == 'A':
-                        continue
-                    spawned = True
-                # print(f"spawning {sprite}?")
-                new_location = find_place_for_sprite()
+                    # remove whoever already has that new_location
+                    # e.g. wall, floor
+                    for k in locations.keys():
+                        if new_location in locations[k]:
+                            rm_ind = locations[k].index(new_location)
+                            locations[k].pop(rm_ind)
+                            break
 
-                # remove from whoever already has that new_location
-                for k in locations.keys():
-                    if new_location in locations[k]:
-                        rm_ind = locations[k].index(new_location)
-                        locations[k].pop(rm_ind)
-                        break
-
-                # add new sprite to the level
-                locations[sprite].append(new_location)
-
-            # move an existing sprite in the scene
-            if mutationType == 3:
-                moved = False
-                while not moved:
-                    # choose a random viable sprite
-                    sprite = np.random.choice(list(self.locations))
-                    if len(list(locations[sprite])) == 0 or sprite == '.':
-                        continue
-                    moved = True
-
-                # print(f"moving {sprite}?")
-                # choose location index in list of chosen sprite
-                ind = np.random.choice(len(locations[sprite]))
-                # where the sprite was previously
-                old = locations[sprite][ind]
-                # print(f'from {old}')
-                # new location for sprite
-                new_location = find_place_for_sprite()
-
-                # remove whoever already has that new_location
-                # e.g. wall, floor
-                for k in locations.keys():
-                    if new_location in locations[k]:
-                        rm_ind = locations[k].index(new_location)
-                        locations[k].pop(rm_ind)
-                        break
-
-                # move sprite to new location
-                locations[sprite].append(new_location)
-                # fill previous spot with blank floor.
-                locations['.'].append(old)
-                locations[sprite].pop(ind)
+                    # move sprite to new location
+                    locations[sprite].append(new_location)
+                    # fill previous spot with blank floor.
+                    locations['.'].append(old)
+                    locations[sprite].pop(ind)
 
         # remove anything that was in the boundary wall's spot.
         for k in locations.keys():

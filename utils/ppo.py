@@ -70,6 +70,8 @@ def preprocess_ac_space(ac_space: Space):
 def ppo(pg,              # NNagent! This is for the rl_get_action fn.
         env_fn,          # gvgai-gym env fn, specifically a GridGame obj.
         path_to_runs,    # path to store run information
+        pair_id,
+        outer_poet_loop_count,
         num_envs=1,
         cuda=False,
         lr=4e-4, 
@@ -99,7 +101,7 @@ def ppo(pg,              # NNagent! This is for the rl_get_action fn.
         env = env_fn() #This calls the inner function that actually makes the env!
     
     # set up 
-    experiment_name = f"{env.game}__{env.lvl_name}__{int(time.time())}"
+    experiment_name = f"{env.game}__pair{pair_id}__loop{outer_poet_loop_count}__{int(time.time())}"
     writer = SummaryWriter(os.path.join(path_to_runs, experiment_name))
 
     if torch.cuda.is_available():

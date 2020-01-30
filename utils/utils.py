@@ -1,5 +1,17 @@
+import os
+import pickle
 import numpy as np
 from gym.spaces import Box, Discrete
+
+def save_obj(obj, folder, name):
+    path = os.path.join(folder, name) + '.pkl'
+    with open(path, 'wb+') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+def load_obj(folder, name):
+    path = os.path.join(folder, name)
+    with open(path, 'rb') as f:
+        return pickle.load(f)
 
 zelda_spaces = (Box(low=0, high=1, shape=(13, 9, 13), dtype=np.float32), Discrete(6))
 
