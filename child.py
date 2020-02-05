@@ -32,7 +32,7 @@ if __name__ == "__main__":
 
         except KeyboardInterrupt as e:
             print(e)
-            # happens in del child: child.pair.env.close()
+            child.pair.env.close()
             import sys
             sys.exit(0)
 
