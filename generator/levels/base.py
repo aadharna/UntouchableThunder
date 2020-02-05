@@ -147,7 +147,11 @@ class Generator:
             
             mutationType = np.random.choice(choices, p=[0.2, 0.4, 0.4])  # [, )  in, ex
             go_again = 0
+            loops = 1
             while go_again < 0.5:
+                if loops > 10:
+                    break
+                loops += 1
                 go_again = np.random.rand()
 
                 # print(mutationType)
