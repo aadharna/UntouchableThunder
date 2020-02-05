@@ -1,10 +1,5 @@
 import os
-from copy import deepcopy
-from pprint import pprint
-
 import gym
-import gvgai
-
 import numpy as np
 
 from generator.levels.base import Generator
@@ -14,11 +9,12 @@ class GridGame(gym.Wrapper):
     # static variable. Increment when new GG objs are created
     # and use value as part of unique id.
     env_count = 0
+
     def __init__(self,
                  game,
                  play_length,
-                 path='/home/aadharna/miniconda3/envs/thesis/lib/python3.7/site-packages/GVGAI_GYM/gym_gvgai' + '/envs/games/zelda_v0/',
-                 lvl_name='zelda_lvl0.txt',
+                 path='./levels',
+                 lvl_name='start.txt',
                  mechanics=[],
                  locations={},
                  gen_id=0,
@@ -39,7 +35,7 @@ class GridGame(gym.Wrapper):
         # if we do not have parsed location data on the sprites, read in a level and use that
         if not bool(locations):
             #set up first level, read it in from disk.
-            lvl = _initialize(self.lvl_path)
+            lvl = _initialize(self.lvl_path, d=shape[0])
             self.lvl_shape = lvl.shape
             self.generator = Generator(tile_world=lvl,
                                        shape=lvl.shape,
@@ -98,16 +94,16 @@ class GridGame(gym.Wrapper):
 
         # save file currently in generator to disk
         s = str(self.generator)
-        self.env.reset(environment_id=f'{self.game}-custom', level_data=s)
+
         if self.pics:
-            (pix, state), _, _, _ = self.env.step(0)
+            (pix, state) = self.env.reset(environment_id=f'{self.game}-custom', level_data=s)
         else:
-            state, _, _, _ = self.env.step(0)
-        state = np.transpose(state, (2, 0, 1))
+            state = self.env.reset(environment_id=f'{self.game}-custom', level_data=s)
+
         if self.depth is None:
             self.depth = state.shape[0]
         # print(state)
-        return state
+        return np.transpose(state, (2, 0, 1))
 
     def step(self, action):
         im = None
@@ -122,7 +118,7 @@ class GridGame(gym.Wrapper):
         state = np.transpose(tile, (2, 0, 1))
         
         self.steps += 1
-        reward -= 1e-5       # punish just randomly moving around
+        reward -= 1e-4       # punish just randomly moving around
                              # This should add some gradient signal.
         self.score += reward
         self.done = info['winner']
