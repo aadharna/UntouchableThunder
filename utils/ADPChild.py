@@ -12,7 +12,7 @@ from optimization.runners import run_TJ_DE, run_ppo
 from utils.utils import save_obj, load_obj
 
 class ADPChild:
-    def __init__(self, child_id):
+    def __init__(self, child_id, game='dzelda', length=250, lvl_dir='./levels', init_lvl='start.txt'):
         self.root = os.path.join('.', 'communication')
         self.subfolders = {
             'sent_by_parent': 'outgoing',
@@ -35,10 +35,10 @@ class ADPChild:
         # this pair is for useage by children. It does not count as a POET pair.
         self.pair = \
             NNagent(
-                GridGame(game='zelda',
-                        play_length=250,
-                        path='./levels',
-                        lvl_name='start.txt',
+                GridGame(game=game,
+                        play_length=length,
+                        path=lvl_dir,
+                        lvl_name=init_lvl,
                         mechanics=['+', 'g'],
                         # monsters, key, door, wall
                         ),
