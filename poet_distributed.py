@@ -167,6 +167,7 @@ def perform_transfer(pairs, answers, poet_loop_counter):
                 pass
 
 def pass_mc(gridGame):
+    print("testing MC")
     wonGameRandomly = False
 
     random_agent = Agent(gridGame, master=False)
@@ -192,7 +193,7 @@ def pass_mc(gridGame):
     if not wonGameRandomly and not wonGameMCTS:
         return True
 
-    return True
+    return False
 
 def get_child_list(parent_list, max_children):
     child_list = []
@@ -210,6 +211,7 @@ def get_child_list(parent_list, max_children):
                 pass
 
         else:
+            print("denied child")
             # kill newly spawned java processes
             new_gg.close()
 
