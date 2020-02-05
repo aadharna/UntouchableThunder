@@ -29,7 +29,7 @@ class Generator:
         self.mechanics = mechanics
         #make folder in levels folder
         self.base_path = path
-        self._path = os.path.join(self.base_path, 'levels')
+        self._path = os.path.join(self.base_path, 'poet_levels')
         if not os.path.exists(self._path):
             os.mkdir(self._path)
 
