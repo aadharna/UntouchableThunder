@@ -3,6 +3,7 @@ import time
 import numpy as np
 from itertools import product
 
+from utils.call_java_competition_agent import runJavaAgent
 from utils.ADPParent import ADPParent
 from utils.ADPTASK_ENUM import ADPTASK
 
@@ -170,17 +171,22 @@ def pass_mc(gridGame):
 
     random_agent = Agent(gridGame, master=False)
     _ = random_agent.evaluate(env=gridGame, rl=args.rl)
-
+    
+    print("ran random agent")
     # agent WON the game
     if gridGame.done == 3:
         wonGameRandomly = True
 
     wonGameMCTS = False
-    # wonGameMCTS = launch_java_GVGAI_lvl_eval(gridGame.game,
-    #                                          gridGame.generator.path_to_file,
-    #                                          args.comp_agent,
-    #                                          args.game_len,
-    #                                         )
+    
+    path_to_game = f'./ext/GVGAI_GYM/games/{gridGame.game}_v0/{gridGame.game}.txt'
+    print("running mcts agent")
+    wonGameMCTS = runJavaAgent('runGVGAI.jar', 
+                               path_to_game,
+                               gridGame.generator.path_to_file,
+                               args.comp_agent,
+                               str(args.game_len),
+                               )
 
     # if not too easy and not too hard:
     if not wonGameRandomly and not wonGameMCTS:
@@ -193,6 +199,7 @@ def get_child_list(parent_list, max_children):
 
     mutation_trial = 0
     while mutation_trial < max_children:
+        print(f"mutation_trail {mutation_trial}/{max_children}")
         parent = np.random.choice(parent_list)
         new_gg = parent.env.mutate(args.mutation_rate)
         mutation_trial += 1
@@ -202,13 +209,12 @@ def get_child_list(parent_list, max_children):
             with open(f'./results/{child_list[-1].id}/parent_is_{parent.id}.txt', 'w+') as fname:
                 pass
 
-            # speciation or novelty goes here
-            #
-
         else:
             # kill newly spawned java processes
             new_gg.close()
 
+    # speciation or novelty goes here
+    #
     return child_list
 
 
@@ -223,14 +229,14 @@ parser.add_argument("--init_lvl", type=str, default='start.txt', help='level fro
 parser.add_argument("--game_len", type=int, default=250, help='game length')
 parser.add_argument("--n_games", type=int, default=1000, help='opt length in num games')
 parser.add_argument("--rl", type=bool, default=False, help='use RL?')
-parser.add_argument("--DE_algo", type=str, default='jDE', help='which DE algo to use if rl is False?')
+parser.add_argument("--DE_algo", type=str, default='CoDE', help='which DE algo to use if rl is False?')
 parser.add_argument("--mutation_timer", type=int, default=5, help='steps until mutation')
-parser.add_argument("--mutation_rate", type=float, default=0.5, help='change of mutation')
+parser.add_argument("--mutation_rate", type=float, default=0.75, help='change of mutation')
 parser.add_argument("--transfer_timer", type=int, default=15, help='steps until transfer')
 parser.add_argument("--max_children", type=int, default=8, help='number of children to add each transfer step')
 parser.add_argument("--max_envs", type=int, default=50, help='max number of GVGAI-gym envs allowed at any one time')
 parser.add_argument("--comp_agent", type=str, default="mcts", help="what gvgai comp should be used for MC?")
-
+parser.add_argument("--num_poet_loops", type=int, default=10, help="How many POET loops to run")
 
 args = parser.parse_args()
 
@@ -298,7 +304,9 @@ if __name__ == "__main__":
             # Add in new children
             #
             new_envs = []
+            print("mutation?")
             if (i+1) % args.mutation_timer == 0:
+                print("yes")
                 new_envs = get_child_list(pairs, args.max_children)
 
             pairs.extend(new_envs)
@@ -373,7 +381,7 @@ if __name__ == "__main__":
                                                               f'network{pair.id}.pt'))
 
             i += 1
-            if i >= 6:
+            if i >= args.num_poet_loops:
                 done = True
 
         except KeyboardInterrupt as e:
