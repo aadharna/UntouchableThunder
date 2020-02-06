@@ -101,7 +101,7 @@ class GridGame(gym.Wrapper):
             state = self.env.reset(environment_id=f'{self.game}-custom', level_data=s)
 
         if self.depth is None:
-            self.depth = state.shape[0]
+            self.depth = state.shape[1] #shape is (9, 13, 13) Going to be reshaped to (13, 9, 13). 
         # print(state)
         return np.transpose(state, (2, 0, 1))
 
@@ -188,7 +188,7 @@ class GridGame(gym.Wrapper):
         def _make():
             return GridGame(game=self.game,
                              play_length=self.play_length,
-                             path=os.path.join(self.dir_path, 'levels'),
+                             path=os.path.join(self.dir_path),
                              lvl_name=f"{self.game}_id:{self.id}_g:{self.generator.generation+1}.txt",
                              gen_id=self.generator.generation + 1,
                              mechanics=self.mechanics,
