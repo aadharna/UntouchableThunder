@@ -9,13 +9,19 @@ parser.add_argument("--id", type=int, help='set child id')
 parser.add_argument("--game", type=str, default='dzelda', help='what game will POET use?')
 parser.add_argument("--game_len", type=int, default=250, help='how many actions can the agent take?')
 parser.add_argument("--lvl_dir", type=str, default='./levels', help='path to lvl dir')
+parser.add_argument("--result_prefix", type=str, default='.', help="prefix of where to place results folder")
+
 args = parser.parse_args()
 
 print(args)
 
 if __name__ == "__main__":
 
-    child = ADPChild(args.id, game=args.game, length=args.game_len, lvl_dir=args.lvl_dir)
+    child = ADPChild(args.id,
+                     game=args.game,
+                     length=args.game_len,
+                     lvl_dir=args.lvl_dir,
+                     prefix=args.result_prefix)
     done = False
     while not done:
         try:
