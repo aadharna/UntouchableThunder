@@ -1,3 +1,4 @@
+import os
 import ctypes as c
 from utils.ppo import ppo
 import devo.DE
@@ -84,7 +85,12 @@ def run_TJ_DE(opt_name, pair, n, pair_id, poet_loop_counter,
     # save scores
     import pandas
     df = pandas.DataFrame.from_dict(scores)
-    df.to_csv(f'{results_prefix}/results_{unique_run_id}/\
-                {pair_id}/{opt_name}_poet{poet_loop_counter}_{generations}gens_{pair.popsize}pop_scores.csv')
+    
+    destination = os.path.join(f'{results_prefix}',
+                               f'results_{unique_run_id}',
+                               f'{pair_id}',
+                               f'{opt_name}_poet{poet_loop_counter}_{generations}gens_{pair.popsize}pop_scores.csv')
+    
+    df.to_csv(destination)
 
     return

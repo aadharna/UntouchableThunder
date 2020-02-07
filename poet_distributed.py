@@ -162,8 +162,7 @@ def perform_transfer(pairs, answers, poet_loop_counter, unique_run_id):
             # fixed_env_pair.id = transferred_id ? It's not clear to me.
 
             with open(os.path.join(f'{args.result_prefix}/results_{unique_run_id}/{fixed_env_pair.id}',
-                                   f'poet{poet_loop_counter}_network_\
-                                    {transferred_id}_transferred_here.txt'),
+                                   f'poet{poet_loop_counter}_network_{transferred_id}_transferred_here.txt'),
                       'w+') as fname:
                 pass
 
@@ -203,7 +202,7 @@ def get_child_list(parent_list, max_children, unique_run_id):
 
     mutation_trial = 0
     while mutation_trial < max_children:
-        print(f"mutation_trail {mutation_trial}/{max_children}")
+        print(f"mutation_trial {mutation_trial}/{max_children}")
         parent = np.random.choice(parent_list)
         new_gg = parent.env.mutate(args.mutation_rate)
         mutation_trial += 1
