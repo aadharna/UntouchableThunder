@@ -11,12 +11,15 @@ class Agent:
     Wrap each env with a game-playing agent
     """
     agent_count = 0
-    def __init__(self, GG, master=True):
+    def __init__(self, GG, time_stamp, prefix='.', master=True):
         """Wrap environment with a game-playing agent
         
         :param GG: GridGame Class (contains gym_gvgai env and a level generator)
         
         """
+        
+        self.unique_run_id = time_stamp
+        self.prefix = prefix
 
         self._env = GG
         self.depth = GG.depth
@@ -31,13 +34,19 @@ class Agent:
         self.images = []        
         self.id = Agent.agent_count
         
+        
         if master:
             Agent.agent_count += 1
-            if not os.path.exists('./results/'):
-                os.mkdir('./results/')
-            if not os.path.exists(f'./results/{self.id}'):
-                os.mkdir(f'./results/{self.id}')
-            with open(f'./results/{self.id}/lvl{self._env.id}.txt', 'w+') as fname:
+            
+            run_folder = f'{prefix}/results_{self.unique_run_id}/'
+            
+            if not os.path.exists(run_folder):
+                os.mkdir(run_folder)
+                
+            agent_folder = os.path.join(run_folder, str(self.id))
+            if not os.path.exists(agent_folder):
+                os.mkdir(agent_folder)
+            with open(f'{agent_folder}/lvl{self._env.id}.txt', 'w+') as fname:
                 fname.write(str(self._env.generator))
         
 

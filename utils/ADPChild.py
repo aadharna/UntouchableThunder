@@ -12,7 +12,13 @@ from optimization.runners import run_TJ_DE, run_ppo
 from utils.utils import save_obj, load_obj
 
 class ADPChild:
-    def __init__(self, child_id, game='dzelda', length=250, lvl_dir='./levels', init_lvl='start.txt'):
+    def __init__(self, child_id,
+                 game='dzelda',
+                 length=250,
+                 lvl_dir='./levels',
+                 init_lvl='start.txt',
+                 prefix='.'):
+
         self.root = os.path.join('.', 'communication')
         self.subfolders = {
             'sent_by_parent': 'outgoing',
@@ -34,16 +40,17 @@ class ADPChild:
 
         # this pair is for useage by children. It does not count as a POET pair.
         self.pair = \
-            NNagent(
-                GridGame(game=game,
-                        play_length=length,
-                        path=lvl_dir,
-                        lvl_name=init_lvl,
-                        mechanics=['+', 'g'],
-                        # monsters, key, door, wall
-                        ),
-                master=False,
-               )
+            NNagent(time_stamp=None,
+                    prefix=prefix,
+                    GG=GridGame(game=game,
+                                play_length=length,
+                                path=lvl_dir,
+                                lvl_name=init_lvl,
+                                mechanics=['+', 'g'],  # doesn't matter.
+                                # monsters, key, door, wall
+                                ),
+                    master=False,  # won't use time_stamp or prefix
+                    )
 
         self.game_length = self.pair.env.play_length
 
@@ -76,7 +83,7 @@ class ADPChild:
         with open(path, 'w+') as f:
             pass
 
-    def doTask(self, nn, lvl, task_id, chromosome_id, env_id, rl, poet_loop_counter,
+    def doTask(self, run_id, nn, lvl, task_id, chromosome_id, env_id, rl, poet_loop_counter,
                noisy=False,
                algo='jDE',
                ngames=1000,
@@ -111,7 +118,7 @@ class ADPChild:
                 # optimizes in place
                 run_ppo(policy_agent       = self.pair,
                         env_fn             = self.pair.env.make,
-                        path               = './runs',
+                        path               = f'{self.pair.prefix}/runs',
                         pair_id            = chromosome_id,
                         outer_poet_loop_count= poet_loop_counter,
                         n_concurrent_games = 1,
@@ -122,7 +129,10 @@ class ADPChild:
                           pair              = objective,
                           n                 = ngames,
                           pair_id           = chromosome_id,
-                          poet_loop_counter = poet_loop_counter)
+                          poet_loop_counter = poet_loop_counter,
+                          results_prefix    = self.pair.prefix,
+                          unique_run_id     = run_id
+                          )
                 objective.update_nn(objective.best_individual)
             
             # get score of optimized weights
@@ -130,7 +140,8 @@ class ADPChild:
             state_dict = self.pair.nn.state_dict()
             
             # save best weights
-            torch_save(state_dict, f"./results/{chromosome_id}/final_weights_poet{poet_loop_counter}.pt")
+            destination = f"{self.pair.prefix}/results_{run_id}/{chromosome_id}/final_weights_poet{poet_loop_counter}.pt"
+            torch_save(state_dict, destination)
             return {
                 'score': score,
                 'chromosome_id': chromosome_id,
@@ -141,6 +152,10 @@ class ADPChild:
             raise ValueError('unspecified task requested')
 
     def parseRecievedTask(self):
+        """
+        THIS is MAIN. When the child recieves a task, it enters here!
+        :return:
+        """
         path = os.path.join(self.root,
                             self.subfolders['sent_by_parent'])
 
@@ -154,6 +169,7 @@ class ADPChild:
         kwargs = task_params['kwargs']
         task_id = task_params['task_id']
         poet_loop_counter = task_params['poet'] # int
+        run_id = task_params['run_id']
         
         answers = {}
         if bool(nns):
@@ -167,7 +183,7 @@ class ADPChild:
                 rl = False
                 ngames = 1000
                 popsize = 100
-                algo = 'jDE'
+                algo = 'CoDE'
                 noisy = False
 
                 if 'rl' in kwargs:
@@ -185,7 +201,7 @@ class ADPChild:
                     if 'popsize' in kwargs:
                         popsize = kwargs['popsize']
 
-                answer = self.doTask(nn, lvl, task_id, chromosome_id, env_id, rl, poet_loop_counter,
+                answer = self.doTask(run_id, nn, lvl, task_id, chromosome_id, env_id, rl, poet_loop_counter,
                                      noisy=noisy,
                                      algo=algo,
                                      ngames=ngames,

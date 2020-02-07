@@ -98,7 +98,7 @@ class ADPParent:
 
         return sorted(children)
 
-    def createChildTask(self, work_dict, worker_id, task_id, poet_loop_counter, **kwargs):
+    def createChildTask(self, run_id, work_dict, worker_id, task_id, poet_loop_counter, **kwargs):
         """
 
         :param work_dict: dict of nns, envs, nn_ids, env_ids
@@ -109,6 +109,7 @@ class ADPParent:
         """
 
         work = {
+            'run_id': run_id,
             'nns': work_dict['nn'],
             'lvls': work_dict['env'],
             'task_id': task_id,

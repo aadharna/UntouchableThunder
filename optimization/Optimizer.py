@@ -53,15 +53,15 @@ class PyTorchObjective():
             i += param_len
         return named_parameters
 
-#     def is_new(self, x):
-#         # if this is the first thing we've seen
-#         if not hasattr(self, 'cached_x'):
-#             return True
-#         else:
-#             # compare x to cached_x to determine if we've been given a new input
-#             x, self.cached_x = np.array(x), np.array(self.cached_x)
-#             error = np.abs(x - self.cached_x)
-#             return error.max() > 1e-8
+    # def is_new(self, x):
+    #     # if this is the first thing we've seen
+    #     if not hasattr(self, 'cached_x'):
+    #         return True
+    #     else:
+    #         # compare x to cached_x to determine if we've been given a new input
+    #         x, self.cached_x = np.array(x), np.array(self.cached_x)
+    #         error = np.abs(x - self.cached_x)
+    #         return error.max() > 1e-8
 
     def cache(self, x):
         # unpack x and load into module

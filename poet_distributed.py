@@ -121,7 +121,7 @@ def dieAndKillChildren(parent, pairs):
         os.remove(os.path.join(path, a))
 
 
-def perform_transfer(pairs, answers, poet_loop_counter):
+def perform_transfer(pairs, answers, poet_loop_counter, unique_run_id):
     """
     find the network which performed best in each env.
     Move that best-network into that env.
@@ -161,7 +161,7 @@ def perform_transfer(pairs, answers, poet_loop_counter):
             # todo talk with lisa about if
             # fixed_env_pair.id = transferred_id ? It's not clear to me.
 
-            with open(os.path.join(f'./results/{fixed_env_pair.id}',
+            with open(os.path.join(f'{args.result_prefix}/results_{unique_run_id}/{fixed_env_pair.id}',
                                    f'poet{poet_loop_counter}_network_\
                                     {transferred_id}_transferred_here.txt'),
                       'w+') as fname:
@@ -171,12 +171,14 @@ def pass_mc(gridGame):
     print("testing MC")
     wonGameRandomly = False
 
-    random_agent = Agent(gridGame, master=False)
+    random_agent = Agent(GG=gridGame,
+                         time_stamp=None,
+                         master=False)
     _ = random_agent.evaluate(env=gridGame, rl=args.rl)
     
     print("ran random agent")
     # agent WON the game
-    if gridGame.done == 3:
+    if gridGame.done == 3: #this is NOT score.
         wonGameRandomly = True
 
     wonGameMCTS = False
@@ -196,7 +198,7 @@ def pass_mc(gridGame):
 
     return False
 
-def get_child_list(parent_list, max_children):
+def get_child_list(parent_list, max_children, unique_run_id):
     child_list = []
 
     mutation_trial = 0
@@ -207,8 +209,14 @@ def get_child_list(parent_list, max_children):
         mutation_trial += 1
 
         if pass_mc(new_gg):
-            child_list.append(NNagent(new_gg, parent=parent.nn))
-            with open(f'./results/{child_list[-1].id}/parent_is_{parent.id}.txt', 'w+') as fname:
+            child_list.append(NNagent(time_stamp=unique_run_id,
+                                      GG=new_gg,
+                                      prefix=args.result_prefix,
+                                      parent=parent.nn))
+            tag = os.path.join(f'{args.result_prefix}',
+                               f'results_{unique_run_id}',
+                               f'{child_list[-1].id}/parent_is_{parent.id}.txt')
+            with open(tag, 'w+') as fname:
                 pass
 
         else:
@@ -240,6 +248,8 @@ parser.add_argument("--max_children", type=int, default=8, help='number of child
 parser.add_argument("--max_envs", type=int, default=50, help='max number of GVGAI-gym envs allowed at any one time')
 parser.add_argument("--comp_agent", type=str, default="mcts", help="what gvgai comp should be used for MC?")
 parser.add_argument("--num_poet_loops", type=int, default=10, help="How many POET loops to run")
+parser.add_argument("--result_prefix", type=str, default='.', help="prefix of where to place results folder")
+parser.add_argument("--start_fresh", type=bool, default=True, help="start from scratch or pick up from previous session")
 
 args = parser.parse_args()
 
@@ -250,20 +260,22 @@ print(args)
 if __name__ == "__main__":
 
     parent = ADPParent()
-
-    pairs = [NNagent(GridGame(game=args.game,
-                            play_length=args.game_len,
-                            path='./levels',
-                            lvl_name=args.init_lvl,
-                            mechanics=['+', 'g', '1', '2', '3', 'w'],
-                            # monsters, key, door, wall
-                            )
+    unique_run_id = int(time.time())
+    pairs = [NNagent(time_stamp=unique_run_id,
+                     prefix=args.result_prefix,
+                     GG=GridGame(game=args.game,
+                                play_length=args.game_len,
+                                path='./levels',
+                                lvl_name=args.init_lvl,
+                                mechanics=['+', 'g', '1', '2', '3', 'w'],
+                                # monsters, key, door, wall
+                                )
                    )
              ]
 
     done = False
     i = 0
-    chkpt = "./results/POET_CHKPT"
+    chkpt = f"{args.result_prefix}/results_{unique_run_id}/POET_CHKPT"
     if not os.path.exists(chkpt):
         os.mkdir(chkpt)
 
@@ -291,7 +303,8 @@ if __name__ == "__main__":
             print("evaluating")
             for worker_id in distributed_work:
 
-                parent.createChildTask(work_dict=distributed_work[worker_id],
+                parent.createChildTask(run_id=unique_run_id,
+                                       work_dict=distributed_work[worker_id],
                                        worker_id=worker_id,
                                        task_id=ADPTASK.EVALUATE,
                                        poet_loop_counter=i,
@@ -310,7 +323,7 @@ if __name__ == "__main__":
             print("mutation?")
             if (i+1) % args.mutation_timer == 0:
                 print("yes")
-                new_envs = get_child_list(pairs, args.max_children)
+                new_envs = get_child_list(pairs, args.max_children, unique_run_id)
 
             pairs.extend(new_envs)
             del new_envs # this does not delete the children that have now been placed in pairs.
@@ -335,7 +348,8 @@ if __name__ == "__main__":
 
             for worker_id in distributed_work:
 
-                parent.createChildTask(work_dict=distributed_work[worker_id],
+                parent.createChildTask(run_id=unique_run_id,
+                                       work_dict=distributed_work[worker_id],
                                        worker_id=worker_id,
                                        task_id=ADPTASK.OPTIMIZE,
                                        poet_loop_counter=i,
@@ -361,7 +375,8 @@ if __name__ == "__main__":
 
                 for worker_id in distributed_work:
 
-                    parent.createChildTask(work_dict=distributed_work[worker_id],
+                    parent.createChildTask(run_id=unique_run_id,
+                                           work_dict=distributed_work[worker_id],
                                            worker_id=worker_id,
                                            task_id=ADPTASK.EVALUATE,
                                            poet_loop_counter=i,
@@ -374,7 +389,7 @@ if __name__ == "__main__":
                 transfer_eval_answers = waitForAndCollectAnswers(parent, availableChildren)
 
                 # use information to determine if NN i should migrate to env j.
-                perform_transfer(pairs, transfer_eval_answers, i)
+                perform_transfer(pairs, transfer_eval_answers, i, unique_run_id)
 
             # save checkpoints of networks into POET folder
             #
