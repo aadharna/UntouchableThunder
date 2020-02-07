@@ -240,6 +240,7 @@ parser.add_argument("--max_children", type=int, default=8, help='number of child
 parser.add_argument("--max_envs", type=int, default=50, help='max number of GVGAI-gym envs allowed at any one time')
 parser.add_argument("--comp_agent", type=str, default="mcts", help="what gvgai comp should be used for MC?")
 parser.add_argument("--num_poet_loops", type=int, default=10, help="How many POET loops to run")
+parser.add_argument("--result_prefix", type=str, default='.', help="prefix of where to place results folder")
 
 args = parser.parse_args()
 
@@ -250,8 +251,9 @@ print(args)
 if __name__ == "__main__":
 
     parent = ADPParent()
-
-    pairs = [NNagent(GridGame(game=args.game,
+    unique_run_id = int(time.time())
+    pairs = [NNagent(time_stamp=unique_run_id, 
+                     GG=GridGame(game=args.game,
                             play_length=args.game_len,
                             path='./levels',
                             lvl_name=args.init_lvl,
