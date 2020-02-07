@@ -131,7 +131,6 @@ class GridGame(gym.Wrapper):
 
     def mutate(self, mutationRate):
         new_map, shape = self.generator.mutate(mutationRate)
-
         childGG = GridGame(game=self.game,
                              play_length=self.play_length,
                              path=self.dir_path,
@@ -141,7 +140,6 @@ class GridGame(gym.Wrapper):
                              images=self.pics,
                              locations=new_map,
                              shape=shape)
-
         return childGG
 
 
