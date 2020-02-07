@@ -58,7 +58,10 @@ class NNagent(Agent):
 
     def mutate(self, mutationRate):
         childGG = self.env.mutate(mutationRate)
-        return NNagent(childGG, parent=self.nn)
+        return NNagent(time_stamp=self.unique_run_id,
+                       prefix=self.prefix,
+                       GG=childGG,
+                       parent=self.nn)
     
     def __getstate__(self):
         base = super().__dict__

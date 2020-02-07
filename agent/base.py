@@ -38,12 +38,12 @@ class Agent:
         if master:
             Agent.agent_count += 1
             
-            run_folder = f'{prefix}/results_{self.unique_run_id}/
+            run_folder = f'{prefix}/results_{self.unique_run_id}/'
             
             if not os.path.exists(run_folder):
                 os.mkdir(run_folder)
                 
-            agent_folder = os.path.join(run_folder, self.id)
+            agent_folder = os.path.join(run_folder, str(self.id))
             if not os.path.exists(agent_folder):
                 os.mkdir(agent_folder)
             with open(f'{agent_folder}/lvl{self._env.id}.txt', 'w+') as fname:
