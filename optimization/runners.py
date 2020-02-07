@@ -38,6 +38,8 @@ def run_ppo(policy_agent, env_fn, path,
     
     
 def run_TJ_DE(opt_name, pair, n, pair_id, poet_loop_counter,
+              results_prefix,
+              unique_run_id,
               scaling_factor=0.5,
               crossover_rate=0.1,
               min_weight=-5,
@@ -82,6 +84,7 @@ def run_TJ_DE(opt_name, pair, n, pair_id, poet_loop_counter,
     # save scores
     import pandas
     df = pandas.DataFrame.from_dict(scores)
-    df.to_csv(f'./results/{pair_id}/{opt_name}_poet{poet_loop_counter}_{generations}gens_{pair.popsize}pop_scores.csv')
+    df.to_csv(f'{results_prefix}/results_{unique_run_id}/\
+                {pair_id}/{opt_name}_poet{poet_loop_counter}_{generations}gens_{pair.popsize}pop_scores.csv')
 
     return
