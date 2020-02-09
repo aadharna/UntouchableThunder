@@ -1,0 +1,19 @@
+# args for POET
+
+
+game: dzelda
+init_lvl: start.txt
+game_len: 250
+n_games: 5000
+DE_algo: CoDE
+mutation_timer: 10
+mutation_rate: 0.75
+transfer_timer: 10
+rl: False
+max_children: 5
+max_envs: 50
+comp_agent: mcts
+num_poet_loops: 1000
+result_prefix: .
+start_fresh: True
+lvl_dir: ./levels
