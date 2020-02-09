@@ -236,6 +236,7 @@ import argparse
 from utils.loader import load_from_yaml
 parser = argparse.ArgumentParser()
 parser.add_argument("--args_file", type=str, default='./args.yml', help='path to args file')
+parser.add_argument("--exp_name", type=str, default='exp1_', help='exp name')
 # parser.add_argument("--game", type=str, default='dzelda', help='set gvgai game')
 # parser.add_argument("--lvl_dir", type=str, default='./levels', help='path to lvl dir')
 # parser.add_argument("--init_lvl", type=str, default='start.txt', help='level from ./levels folder')
@@ -263,7 +264,7 @@ print(__name__)
 if __name__ == "__main__":
 
     parent = ADPParent()
-    unique_run_id = int(time.time())
+    unique_run_id = _args.exp_name + str(int(time.time()))
     pairs = [NNagent(time_stamp=unique_run_id,
                      prefix=args.result_prefix,
                      GG=GridGame(game=args.game,
