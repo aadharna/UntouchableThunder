@@ -1,27 +1,26 @@
 import os
 import time
 from utils.ADPChild import ADPChild
-
+from utils.loader import load_from_yaml
 
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--id", type=int, help='set child id')
-parser.add_argument("--game", type=str, default='dzelda', help='what game will POET use?')
-parser.add_argument("--game_len", type=int, default=250, help='how many actions can the agent take?')
-parser.add_argument("--lvl_dir", type=str, default='./levels', help='path to lvl dir')
-parser.add_argument("--result_prefix", type=str, default='.', help="prefix of where to place results folder")
+parser.add_argument("--args_file", type=str, default='./args.yml', help='path to args file')
 
-args = parser.parse_args()
+line_args = parser.parse_args()
+file_args = load_from_yaml(line_args.args_file)
 
-print(args)
+print(line_args)
+print(file_args)
 
 if __name__ == "__main__":
 
-    child = ADPChild(args.id,
-                     game=args.game,
-                     length=args.game_len,
-                     lvl_dir=args.lvl_dir,
-                     prefix=args.result_prefix)
+    child = ADPChild(line_args.id,
+                     game=file_args.game,
+                     length=file_args.game_len,
+                     lvl_dir=file_args.lvl_dir,
+                     prefix=file_args.result_prefix)
     done = False
     while not done:
         try:

@@ -233,26 +233,30 @@ def get_child_list(parent_list, max_children, unique_run_id):
 # ARGUMENTS TO THE SCRIPT
 
 import argparse
+from utils.loader import load_from_yaml
 parser = argparse.ArgumentParser()
-parser.add_argument("--game", type=str, default='dzelda', help='set gvgai game')
-parser.add_argument("--init_lvl", type=str, default='start.txt', help='level from ./levels folder')
-parser.add_argument("--game_len", type=int, default=250, help='game length')
-parser.add_argument("--n_games", type=int, default=1000, help='opt length in num games')
-parser.add_argument("--rl", type=bool, default=False, help='use RL?')
-parser.add_argument("--DE_algo", type=str, default='CoDE', help='which DE algo to use if rl is False?')
-parser.add_argument("--mutation_timer", type=int, default=5, help='steps until mutation')
-parser.add_argument("--mutation_rate", type=float, default=0.75, help='change of mutation')
-parser.add_argument("--transfer_timer", type=int, default=15, help='steps until transfer')
-parser.add_argument("--max_children", type=int, default=8, help='number of children to add each transfer step')
-parser.add_argument("--max_envs", type=int, default=50, help='max number of GVGAI-gym envs allowed at any one time')
-parser.add_argument("--comp_agent", type=str, default="mcts", help="what gvgai comp should be used for MC?")
-parser.add_argument("--num_poet_loops", type=int, default=10, help="How many POET loops to run")
-parser.add_argument("--result_prefix", type=str, default='.', help="prefix of where to place results folder")
-parser.add_argument("--start_fresh", type=bool, default=True, help="start from scratch or pick up from previous session")
-
-args = parser.parse_args()
-
+parser.add_argument("--args_file", type=str, default='./args.yml', help='path to args file')
+# parser.add_argument("--game", type=str, default='dzelda', help='set gvgai game')
+# parser.add_argument("--lvl_dir", type=str, default='./levels', help='path to lvl dir')
+# parser.add_argument("--init_lvl", type=str, default='start.txt', help='level from ./levels folder')
+# parser.add_argument("--game_len", type=int, default=250, help='game length')
+# parser.add_argument("--n_games", type=int, default=1000, help='opt length in num games')
+# parser.add_argument("--rl", type=bool, default=False, help='use RL?')
+# parser.add_argument("--DE_algo", type=str, default='CoDE', help='which DE algo to use if rl is False?')
+# parser.add_argument("--mutation_timer", type=int, default=5, help='steps until mutation')
+# parser.add_argument("--mutation_rate", type=float, default=0.75, help='change of mutation')
+# parser.add_argument("--transfer_timer", type=int, default=15, help='steps until transfer')
+# parser.add_argument("--max_children", type=int, default=8, help='number of children to add each transfer step')
+# parser.add_argument("--max_envs", type=int, default=50, help='max number of GVGAI-gym envs allowed at any one time')
+# parser.add_argument("--comp_agent", type=str, default="mcts", help="what gvgai comp should be used for MC?")
+# parser.add_argument("--num_poet_loops", type=int, default=10, help="How many POET loops to run")
+# parser.add_argument("--result_prefix", type=str, default='.', help="prefix of where to place results folder")
+# parser.add_argument("--start_fresh", type=bool, default=True, help="start from scratch or pick up from previous session")
+#
+_args = parser.parse_args()
+args = load_from_yaml(_args.args_file)
 print(args)
+print(__name__)
 
 ############### POET ###############
 
