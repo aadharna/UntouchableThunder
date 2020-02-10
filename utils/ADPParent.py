@@ -12,7 +12,7 @@ class ADPParent:
     for APDChild processes to pick up and execute.
     """
     def __init__(self):
-        self.root = os.path.join('.', 'communication')
+        self.root = os.path.join('/scratch/ad5238/POET/UntouchableThunder', 'communication')
         if not os.path.exists(self.root):
             os.mkdir(self.root)
         

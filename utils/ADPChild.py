@@ -10,6 +10,8 @@ from optimization.runners import run_TJ_DE, run_ppo
 # from devo import jDE, DE, CoDE
 
 from utils.utils import save_obj, load_obj
+import logging
+logging.basicConfig(filename='example.log',level=logging.DEBUG)
 
 class ADPChild:
     def __init__(self, child_id,
@@ -18,8 +20,8 @@ class ADPChild:
                  lvl_dir='./levels',
                  init_lvl='start.txt',
                  prefix='.'):
-
-        self.root = os.path.join('.', 'communication')
+        path = '/scratch/ad5238/POET/UntouchableThunder'
+        self.root = os.path.join(path, 'communication')
         self.subfolders = {
             'sent_by_parent': 'outgoing',
             'send_to_parent': 'incoming',
@@ -29,7 +31,6 @@ class ADPChild:
         self.createFolders()
 
         self.id = child_id
-
         self.alive = os.path.join(self.root,
                                   self.subfolders['alive_signals'],
                                   f'{self.id}.txt')
@@ -56,7 +57,7 @@ class ADPChild:
 
         self.placeChildFlag(self.available)
         self.placeChildFlag(self.alive)
-        print(f"child {self.id} alive signal sent")
+        logging.debug(f"child {self.id} alive signal sent")
         
     ########### END CONSTRUCTOR #############
 
