@@ -182,8 +182,8 @@ class ADPChild:
 
                 # key word args
                 rl = False
-                ngames = 1000
-                popsize = 100
+                ngames = 100000
+                popsize = 1000
                 algo = 'CoDE'
                 noisy = False
 

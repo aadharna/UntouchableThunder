@@ -359,7 +359,8 @@ if __name__ == "__main__":
                                        poet_loop_counter=i,
                                        rl=args.rl,
                                        algo=args.DE_algo,
-                                       ngames=args.n_games)
+                                       ngames=args.n_games,
+                                       popsize=args.popsize)
 
 
             # get answers from children
