@@ -10,6 +10,7 @@ from utils.ADPTASK_ENUM import ADPTASK
 
 from agent.base import Agent
 from agent.NNagent import NNagent
+from agent.models import Net
 from generator.env_gen_wrapper import GridGame
 
 from torch import save as torch_save
