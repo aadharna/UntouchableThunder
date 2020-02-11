@@ -264,7 +264,9 @@ print(__name__)
 if __name__ == "__main__":
 
     parent = ADPParent()
-    unique_run_id = _args.exp_name + '_' + str(int(time.time()))
+    unique_run_id = _args.exp_name
+    net = Net(6, 13)
+    net.load_state_dict(torch.load('./start.pt'))
     pairs = [NNagent(time_stamp=unique_run_id,
                      prefix=args.result_prefix,
                      GG=GridGame(game=args.game,
@@ -273,9 +275,10 @@ if __name__ == "__main__":
                                 lvl_name=args.init_lvl,
                                 mechanics=['+', 'g', '1', '2', '3', 'w'],
                                 # monsters, key, door, wall
-                                )
+                                ),
+                     parent=net
                    )
-             ]
+            ]
 
     done = False
     i = 0
