@@ -20,7 +20,7 @@ class ADPChild:
                  lvl_dir='./levels',
                  init_lvl='start.txt',
                  prefix='.'):
-        path = '/scratch/ad5238/POET/UntouchableThunder'
+        path = '.'#'/scratch/ad5238/POET/UntouchableThunder'
         self.root = os.path.join(path, 'communication')
         self.subfolders = {
             'sent_by_parent': 'outgoing',
