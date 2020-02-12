@@ -14,6 +14,7 @@ from agent.models import Net
 from generator.env_gen_wrapper import GridGame
 
 from torch import save as torch_save
+from torch import load as torch_load
 
 def callOut(parent):
     print("calling out")
@@ -267,7 +268,7 @@ if __name__ == "__main__":
     parent = ADPParent()
     unique_run_id = _args.exp_name
     net = Net(6, 13)
-    net.load_state_dict(torch.load('./start.pt'))
+    net.load_state_dict(torch_load('./start.pt'))
     pairs = [NNagent(time_stamp=unique_run_id,
                      prefix=args.result_prefix,
                      GG=GridGame(game=args.game,

@@ -143,6 +143,10 @@ class ADPChild:
             # save best weights
             destination = f"{self.pair.prefix}/results_{run_id}/{chromosome_id}/final_weights_poet{poet_loop_counter}.pt"
             torch_save(state_dict, destination)
+            # did the agent WIN the game?
+            if self.pair.env.done == 3:
+                path = f"{self.pair.prefix}/results_{run_id}/{chromosome_id}/winning_weights_poet{poet_loop_counter}.pt"
+                torch_save(state_dict, path)
             return {
                 'score': score,
                 'chromosome_id': chromosome_id,
