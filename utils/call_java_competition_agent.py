@@ -28,4 +28,4 @@ def runJavaAgent(jar, vgdl, lvl, agent, length):
     result = _jarWrapper(*args)
     
     # boolean. Did the agent win the level
-    return result['win'] == 1
+    return float(result['win']) == 1
