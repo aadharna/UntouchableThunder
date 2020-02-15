@@ -108,7 +108,27 @@ def dieAndKillChildren(parent, pairs):
         os.remove(os.path.join(path, a))
 
 
-        
+
+def updatePairs(pairs, answers, task_type):
+    """
+    :param pairs: list of active NN-Env pairs
+    :param answers: flattened by chromosome_id and env_id children_response dicts
+    :param task_type: ADPTASK ID
+    :return:
+    """
+    print("updating")
+    # do something with the answers.
+    # for each dict from the children
+
+    for (xsome_id, env_id) in answers:
+        # print(xsome_id)
+        for each_pair in pairs:
+            if xsome_id == each_pair.id:
+                # print("found matching nn")
+                each_pair.score = answers[(xsome_id, env_id)]['score']
+                if task_type == ADPTASK.OPTIMIZE:
+                    nn = answers[(xsome_id, env_id)]['nn']  # this is a state_dict
+                    each_pair.nn.load_state_dict(nn)        
         
 ############# ARGUMENTS ###############
 
@@ -148,19 +168,20 @@ if __name__ == "__main__":
                                 ),
                      parent=net
                    ), 
-             
-             NNagent(time_stamp=unique_run_id,
-                     prefix=args.result_prefix,
-                     GG=GridGame(game=args.game,
-                                play_length=args.game_len,
-                                path='./levels',
-                                lvl_name=args.init_lvl,
-                                mechanics=['+', 'g', '1', '2', '3', 'w'],
-                                # monsters, key, door, wall
-                                ),
-                     parent=net
-                   )
-            ]
+             ]
+    time.sleep(2)
+    #pairs.append(NNagent(time_stamp=unique_run_id,
+    #                 prefix=args.result_prefix,
+    #                 GG=GridGame(game=args.game,
+    #                            play_length=args.game_len,
+    #                            path='./levels',
+    #                            lvl_name=args.init_lvl,
+    #                            mechanics=['+', 'g', '1', '2', '3', 'w'],
+    #                            # monsters, key, door, wall
+    #                            ),
+    #                 parent=net
+    #               )
+    #        )
 
     done = False
     i = 0

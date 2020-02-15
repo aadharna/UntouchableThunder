@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --job-name=test1_p
+#SBATCH --job-name=de_p
 #SBATCH --nodes=1 --ntasks-per-node=1
 #SBATCH --time=48:00:00
 #SBATCH --mem=20GB

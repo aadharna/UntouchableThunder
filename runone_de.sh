@@ -1,4 +1,4 @@
-sh nameone.sh "$1"
+sh nameone_de.sh "$1"
 
 mkdir ./../results_$1
 cp ./args.yml ./../results_$1/
