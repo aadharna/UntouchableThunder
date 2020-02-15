@@ -4,7 +4,13 @@ import os
 # from gym_gvgai import dir
 
 class Generator:
-    def __init__(self, tile_world, shape, path='/envs/games/zelda_v0/', mechanics=[], generation=0, locations={}):
+    id = 0
+    def __init__(self, tile_world,
+                 shape,
+                 path='/envs/games/zelda_v0/',
+                 mechanics=[],
+                 generation=0,
+                 locations={}):
         """
 
         :param tile_world: 2d numpy array of map
@@ -35,6 +41,9 @@ class Generator:
 
         self.generation = generation
         self.locations = locations if bool(locations) else self._parse_tile_world(tile_world)
+
+        self.id = Generator.id
+        Generator.id += 1
 
         # self.chars = np.unique(np.unique(self.tile_world).tolist() + self.mechanics)
         # self.chars = list(set(self.chars) - {'A'}) # do not place more agents
@@ -142,10 +151,8 @@ class Generator:
             choices = np.arange(1, 4)
             
             ###
-            # choices = [3, 3, 3] # TEMPORARY FOR THE EXPERIMENT OF CONSISTANT SHIFTING OF KEY AND DOORS.
+            # choices = [3, 3, 3] # TEMPORARY FOR THE EXPERIMENT OF CONSISTENT SHIFTING OF KEY AND DOORS.
             ###
-            
-            mutationType = np.random.choice(choices, p=[0.2, 0.4, 0.4])  # [, )  in, ex
             go_again = 0
             loops = 1
             while go_again < 0.5:
@@ -153,6 +160,9 @@ class Generator:
                     break
                 loops += 1
                 go_again = np.random.rand()
+
+                mutationType = np.random.choice(choices, p=[0.2, 0.4, 0.4])  # [, )  in, ex
+
 
                 # print(mutationType)
                 # 1 -- remove sprite from scene               .... 20% chance
