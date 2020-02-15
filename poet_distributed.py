@@ -8,10 +8,10 @@ from utils.call_java_competition_agent import runJavaAgent
 from utils.ADPParent import ADPParent
 from utils.ADPTASK_ENUM import ADPTASK
 
-from agent.base import Agent
-from agent.NNagent import NNagent
 from agent.models import Net
-from generator.env_gen_wrapper import GridGame
+# from generator.env_gen_wrapper import GridGame
+from generator.levels.base import Generator, _initialize
+from agent.minimalPair import MinimalPair
 
 from torch import save as torch_save
 from torch import load as torch_load
@@ -77,12 +77,12 @@ def divideWorkBetweenChildren(agents, envs, children, transfer_eval=False):
                                                                     # itertools product
     agent_env_work_pair = zip(agents, envs) if not transfer_eval else product(agents, envs)
 
-    for agent, env in agent_env_work_pair:
+    for agent, generator in agent_env_work_pair:
         id = next(dispenser)
-        tasks[id]['env'].append(str(env.generator))
+        tasks[id]['env'].append(str(generator))
         tasks[id]['nn'].append(agent.nn.state_dict())
         tasks[id]['nn_id'].append(agent.id)
-        tasks[id]['env_id'].append(env.id)
+        tasks[id]['env_id'].append(generator.id)
 
     return tasks
 
@@ -112,7 +112,7 @@ def updatePairs(pairs, answers, task_type):
 
 def dieAndKillChildren(parent, pairs):
 
-    [pair.env.close() for pair in pairs]
+    # [pair.env.close() for pair in pairs]
 
     path = os.path.join(parent.root,
                         parent.subfolders['alive_signals'])
@@ -139,7 +139,7 @@ def perform_transfer(pairs, answers, poet_loop_counter, unique_run_id):
     """
 
     for k, fixed_env_pair in enumerate(pairs):
-        current_score = answers[(fixed_env_pair.id, fixed_env_pair.env.id)]['score']
+        current_score = answers[(fixed_env_pair.id, fixed_env_pair.generator.id)]['score']
         current_net = fixed_env_pair.nn.state_dict()
         transferred_id = fixed_env_pair.id
         # for every other network, evaluate environment k in agent j
@@ -147,7 +147,7 @@ def perform_transfer(pairs, answers, poet_loop_counter, unique_run_id):
             if k == j:
                 continue
             else:
-                j_score = answers[(changing_agent_pair.id, fixed_env_pair.env.id)]['score']
+                j_score = answers[(changing_agent_pair.id, fixed_env_pair.generator.id)]['score']
 
                 if current_score < j_score: # todo talk about <=?
                     # updated network
@@ -170,31 +170,27 @@ def perform_transfer(pairs, answers, poet_loop_counter, unique_run_id):
 
 def pass_mc(gridGame):
     print("testing MC")
-    wonGameRandomly = False
-
-    random_agent = Agent(GG=gridGame,
-                         time_stamp=None,
-                         master=False)
-    _ = random_agent.evaluate(env=gridGame, rl=args.rl)
     
-    print("ran random agent")
-    # agent WON the game
-    if gridGame.done == 3: #this is NOT score.
-        wonGameRandomly = True
-
-    wonGameMCTS = False
-    
-    path_to_game = f'./ext/GVGAI_GYM/games/{gridGame.game}_v0/{gridGame.game}.txt'
+    path_to_game = f'./ext/GVGAI_GYM/games/{args.game}_v0/{args.game}.txt'
     print("running mcts agent")
+    # if you LOSE with a tree-serach agent, it's too hard.
     wonGameMCTS = runJavaAgent('runGVGAI.jar', 
                                path_to_game,
-                               gridGame.generator.path_to_file,
+                               gridGame.path_to_file,
                                args.comp_agent,
                                str(args.game_len),
                                )
 
+    print("running random agent")
+    # if you WIN playing randomly, the level is too easy.
+    wonGameRandomly = runJavaAgent('runGVGAI.jar',
+                                   path_to_game,
+                                   gridGame.path_to_file,
+                                   'random',
+                                   str(args.game_len))
+
     # if not too easy and not too hard:
-    if not wonGameRandomly and not wonGameMCTS:
+    if not wonGameRandomly and wonGameMCTS:
         return True
 
     return False
@@ -206,24 +202,22 @@ def get_child_list(parent_list, max_children, unique_run_id):
     while mutation_trial < max_children:
         print(f"mutation_trial {mutation_trial}/{max_children}")
         parent = np.random.choice(parent_list)
-        new_gg = parent.env.mutate(args.mutation_rate)
+
+        new_gen = parent.mutate(args.mutation_rate)
+
         mutation_trial += 1
 
-        if pass_mc(new_gg):
-            child_list.append(NNagent(time_stamp=unique_run_id,
-                                      GG=new_gg,
-                                      prefix=args.result_prefix,
-                                      parent=parent.nn))
+        if pass_mc(new_gen):
+            child_list.append(MinimalPair(unique_run_id=unique_run_id,
+                                          generator=new_gen,
+                                          prefix=args.result_prefix,
+                                          parent=parent.nn))
+
             tag = os.path.join(f'{args.result_prefix}',
                                f'results_{unique_run_id}',
                                f'{child_list[-1].id}/parent_is_{parent.id}.txt')
             with open(tag, 'w+') as fname:
                 pass
-
-        else:
-            print("denied child")
-            # kill newly spawned java processes
-            new_gg.close()
 
     # speciation or novelty goes here
     #
@@ -269,17 +263,21 @@ if __name__ == "__main__":
     unique_run_id = _args.exp_name
     net = Net(6, 13)
     net.load_state_dict(torch_load('./start.pt'))
-    pairs = [NNagent(time_stamp=unique_run_id,
-                     prefix=args.result_prefix,
-                     GG=GridGame(game=args.game,
-                                play_length=args.game_len,
-                                path='./levels',
-                                lvl_name=args.init_lvl,
-                                mechanics=['+', 'g', '1', '2', '3', 'w'],
-                                # monsters, key, door, wall
-                                ),
-                     parent=net
-                   )
+
+    lvl = _initialize(os.path.join(args.lvl_dir, args.init_lvl), d=args.shape0)
+    lvl_shape = lvl.shape
+    generator = Generator(tile_world=lvl,
+                          shape=lvl.shape,
+                          path=args.lvl_dir,
+                          mechanics=args.mechanics,
+                          generation=0)
+    generator.to_file(0, args.game)
+
+    pairs = [MinimalPair(unique_run_id=unique_run_id,
+                         game=args.game,
+                         generator=generator,
+                         parent=net,
+                         prefix=args.result_prefix)
             ]
 
     done = False
@@ -306,7 +304,7 @@ if __name__ == "__main__":
                 availableChildren = parent.isChildAvailable(children)
 
             distributed_work = divideWorkBetweenChildren(pairs,  #  agents. We're not going to use the paired envs
-                                                         [pairs[i].env for i in range(len(pairs))],
+                                                         [pairs[i].generator for i in range(len(pairs))],
                                                          availableChildren)
 
             print("evaluating")
@@ -342,9 +340,6 @@ if __name__ == "__main__":
             #
             if len(pairs) > args.max_envs:
                 aged_pairs = sorted(pairs, key=lambda x: x.id, reverse=True)
-                for extra_env_ids in range(args.max_envs, len(aged_pairs)):
-                    aged_pairs[extra_env_ids].env.close()  # close the java envs. delete them from memory.
-                                                           # zombie processes will be cleaned up upon exit of main.
                 pairs = aged_pairs[:args.max_envs]
                 del aged_pairs
             
@@ -352,7 +347,7 @@ if __name__ == "__main__":
             #
             print("optimizing")
             distributed_work = divideWorkBetweenChildren(pairs,
-                                                         [pairs[i].env for i in range(len(pairs))],
+                                                         [pairs[i].generator for i in range(len(pairs))],
                                                          availableChildren)
 
             for worker_id in distributed_work:
@@ -379,7 +374,7 @@ if __name__ == "__main__":
             if (i + 1) % args.transfer_timer == 0:
                 print("transferring")
                 distributed_work = divideWorkBetweenChildren(pairs,
-                                                             [pairs[i].env for i in range(len(pairs))],
+                                                             [pairs[i].generator for i in range(len(pairs))],
                                                              availableChildren,
                                                              transfer_eval=True)
 
