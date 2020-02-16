@@ -199,8 +199,8 @@ class Generator:
                         ind = np.random.choice(len(locations[sprite]))
                         v = deepcopy(locations[sprite][ind])
                         # print(f"removed {v}")
-                        self.locations['.'].append(v)
-                        self.locations[sprite].pop(ind)
+                        locations['.'].append(v)
+                        locations[sprite].pop(ind)
 
                 # spawn a new sprite into the scene
                 if mutationType == 2:
