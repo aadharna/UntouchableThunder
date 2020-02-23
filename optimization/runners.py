@@ -40,8 +40,8 @@ def run_ppo(policy_agent, env_fn, path,
                pair_id       = pair_id,
                outer_poet_loop_count = outer_poet_loop_count)
 
-from memory_profiler import profile
-@profile
+#from memory_profiler import profile
+#@profile
 def run_TJ_DE(opt_name, pair, n, pair_id, poet_loop_counter,
               results_prefix,
               unique_run_id,
