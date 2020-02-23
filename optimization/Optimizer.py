@@ -100,7 +100,7 @@ class PyTorchObjective():
         for i in range(dimension):
             z[i] = np.float64(x[i])
             
-        score = self.fun(z, dimension)
+        score = self.obj_fun(z, dimension)
         
         # add global best variables
         if (score < self.best_score and self.minimize) or \
