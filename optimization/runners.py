@@ -40,8 +40,8 @@ def run_ppo(policy_agent, env_fn, path,
                pair_id       = pair_id,
                outer_poet_loop_count = outer_poet_loop_count)
 
-# from memory_profiler import profile
-# @profile
+from memory_profiler import profile
+@profile
 def run_TJ_DE(opt_name, pair, n, pair_id, poet_loop_counter,
               results_prefix,
               unique_run_id,
@@ -69,7 +69,7 @@ def run_TJ_DE(opt_name, pair, n, pair_id, poet_loop_counter,
             pair.popsize,  # population size
             scaling_factor,  # scaling factor
             crossover_rate,  # crossover rate
-            pair.fun_c,     # objective function wrapper; sends back C-intelligible results
+            pair.obj_fun_c,     # objective function wrapper; sends back C-intelligible results
             pair.x0.shape[0],  # problem size
             min_weight,  # unused value
             max_weight,  # unused value
