@@ -92,7 +92,7 @@ class PyTorchObjective():
 
     def obj_fun(self, x, dimension):
         self.c += 1
-        self.cache(z) 
+        self.cache(x) 
         return self.cached_score
     
     def obj_fun_c(self, x, dimension):
