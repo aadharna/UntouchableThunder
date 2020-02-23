@@ -1,6 +1,9 @@
 import os
+import gc
 import ctypes as c
+import pandas
 from utils.ppo import ppo
+import devo
 import devo.DE
 import devo.SHADE
 import devo.JADE
@@ -36,8 +39,9 @@ def run_ppo(policy_agent, env_fn, path,
                total_frames  = frames,
                pair_id       = pair_id,
                outer_poet_loop_count = outer_poet_loop_count)
-    
-    
+
+# from memory_profiler import profile
+# @profile
 def run_TJ_DE(opt_name, pair, n, pair_id, poet_loop_counter,
               results_prefix,
               unique_run_id,
@@ -52,11 +56,10 @@ def run_TJ_DE(opt_name, pair, n, pair_id, poet_loop_counter,
     n: number of function evaluations
     """
 
-    import devo
     _de = getattr(devo, opt_name)
 
     generations = n // pair.popsize
-    x_c = pair.create_population().ctypes.data_as(c.POINTER(c.c_double))
+    x_c = pair.init_population.ctypes.data_as(c.POINTER(c.c_double))
     y_c = pair.init_fitnesses.ctypes.data_as(c.POINTER(c.c_double))
     scores = {}
     for g in range(generations):
@@ -83,7 +86,6 @@ def run_TJ_DE(opt_name, pair, n, pair_id, poet_loop_counter,
             c.POINTER(c.c_double))
 
     # save scores
-    import pandas
     df = pandas.DataFrame.from_dict(scores)
     
     destination = os.path.join(f'{results_prefix}',
@@ -92,5 +94,8 @@ def run_TJ_DE(opt_name, pair, n, pair_id, poet_loop_counter,
                                f'{opt_name}_poet{poet_loop_counter}_{generations}gens_{pair.popsize}pop_scores.csv')
     
     df.to_csv(destination)
+    
+    del scores, df, x_c, y_c
+    gc.collect()
 
     return
