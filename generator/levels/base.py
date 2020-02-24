@@ -119,13 +119,15 @@ class Generator:
             # np.save(f"{path.split('.')[0]}.npy", self.tile_world)
         return path
 
-    def mutate(self, mutationRate):
+    def mutate(self, mutationRate, minimal=False, r=1):
         """randomly edit parts of the level!
         :param mutationRate: e.g. 0.2
+        :param minimal: boolean. Should the mutation be within a radius of the original pos
+        :param r: what is the above radius if minimal
         :return: dict of location data for the entire level
         """
         locations = deepcopy(self.locations)
-        def find_place_for_sprite():
+        def find_place_for_sprite(previous=None, minimal=False, r=1):
             """find an empty location in the matrix for the sprite that is empty.
 
             :return: new (x, y) location
@@ -136,6 +138,16 @@ class Generator:
                 new_location = (np.random.randint(0, self._length),   # [, )  in, ex
                                 np.random.randint(0, self._height))
                 # print(f"potential location {new_location}")
+                if minimal:
+                    if previous is None:
+                        previous = new_location
+
+                    _minX = max(0, previous[0] - r)
+                    _maxX = min(previous[0] + r + 1, self._length)
+                    _minY = max(0, previous[1] - r)
+                    _maxY = min(previous[1] + r + 1, self._height)
+                    new_location = (np.random.randint(_minX, _maxX),   # [, )  in, ex
+                                    np.random.randint(_minY, _maxY))
 
                 # don't overwrite Agent, goal, or key
                 if not (new_location in locations['A'] or
@@ -156,7 +168,7 @@ class Generator:
             go_again = 0
             loops = 1
             while go_again < 0.5:
-                if loops > 10:
+                if loops > 5:
                     break
                 loops += 1
                 go_again = np.random.rand()
@@ -212,7 +224,9 @@ class Generator:
                             continue
                         spawned = True
                     # print(f"spawning {sprite}?")
-                    new_location = find_place_for_sprite()
+                    new_location = find_place_for_sprite(previous=None,
+                                                         minimal=minimal,
+                                                         r=r)
 
                     # remove from whoever already has that new_location
                     for k in locations.keys():
@@ -241,7 +255,9 @@ class Generator:
                     old = locations[sprite][ind]
                     # print(f'from {old}')
                     # new location for sprite
-                    new_location = find_place_for_sprite()
+                    new_location = find_place_for_sprite(previous=old,
+                                                         minimal=minimal,
+                                                         r=r)
 
                     # remove whoever already has that new_location
                     # e.g. wall, floor
