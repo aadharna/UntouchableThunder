@@ -16,7 +16,7 @@ file_args = load_from_yaml(line_args.args_file)
 print(line_args)
 print(file_args)
 
-logging.basicConfig(filename=f'example.log',level=logging.DEBUG)
+# logging.basicConfig(filename=f'example.log',level=logging.DEBUG)
 
 
 if __name__ == "__main__":
@@ -27,7 +27,7 @@ if __name__ == "__main__":
                      lvl_dir=file_args.lvl_dir,
                      prefix=file_args.result_prefix)
     
-    logging.debug(f"child {child.id} alive signal sent")
+    #logging.debug(f"child {child.id} alive signal sent")
     
     done = False
     while not done:
