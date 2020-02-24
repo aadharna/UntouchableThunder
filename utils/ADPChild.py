@@ -13,6 +13,8 @@ from utils.utils import save_obj, load_obj
 import logging
 #logging.basicConfig(filename='example.log',level=logging.DEBUG)
 
+#from memory_profiler import profile
+
 class ADPChild:
     def __init__(self, child_id,
                  game='dzelda',
@@ -83,10 +85,11 @@ class ADPChild:
     def placeChildFlag(self, path):
         with open(path, 'w+') as f:
             pass
-
+    
+    #@profile
     def doTask(self, run_id, nn, lvl, task_id, chromosome_id, env_id, rl, poet_loop_counter,
                noisy=False,
-               algo='jDE',
+               algo='CoDE',
                ngames=1000,
                popsize=100):
         """
@@ -136,6 +139,7 @@ class ADPChild:
                           unique_run_id     = run_id
                           )
                 objective.update_nn(objective.best_individual)
+                del objective
             
             # get score of optimized weights
             score = self.pair.evaluate(rl=rl)
@@ -157,7 +161,8 @@ class ADPChild:
             }
         else:
             raise ValueError('unspecified task requested')
-
+    
+    #@profile
     def parseRecievedTask(self):
         """
         THIS is MAIN. When the child recieves a task, it enters here!
@@ -232,6 +237,7 @@ class ADPChild:
     def recieveTaskAndReturnAnswer(self):
         answer = self.parseRecievedTask()
         self.returnAnswer(answer)
+        del answer
         self.placeChildFlag(self.available)
         print('waiting')
 
