@@ -80,6 +80,8 @@ class Agent:
                 self.images.append(info['pic'])
                 self.vis(env.env, action, image=info['pic'])
 
+        self.won = info['won']
+
         # self.update_score(np.sum(rewards))
         # print("evaluated")
         # print(len(rewards))

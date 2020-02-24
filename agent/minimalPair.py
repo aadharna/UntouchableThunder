@@ -37,8 +37,10 @@ class MinimalPair():
         with open(f'{agent_folder}/lvl{self.generator.id}.txt', 'w+') as fname:
             fname.write(str(self.generator))
 
-    def mutate(self, mutationRate):
-        new_map, shp = self.generator.mutate(mutationRate)
+    def mutate(self, mutationRate, minimal, r):
+        new_map, shp = self.generator.mutate(mutationRate=mutationRate,
+                                             minimal=minimal,
+                                             r=r)
         gen = Generator(tile_world=None,
                             shape=shp,
                             path=self.generator.base_path,
