@@ -11,7 +11,7 @@ from optimization.runners import run_TJ_DE, run_ppo
 
 from utils.utils import save_obj, load_obj
 import logging
-logging.basicConfig(filename='example.log',level=logging.DEBUG)
+#logging.basicConfig(filename='example.log',level=logging.DEBUG)
 
 class ADPChild:
     def __init__(self, child_id,
@@ -57,7 +57,7 @@ class ADPChild:
 
         self.placeChildFlag(self.available)
         self.placeChildFlag(self.alive)
-        logging.debug(f"child {self.id} alive signal sent")
+        #logging.debug(f"child {self.id} alive signal sent")
         
     ########### END CONSTRUCTOR #############
 
@@ -108,6 +108,7 @@ class ADPChild:
             self.pair.noisy = noisy
             score = self.pair.evaluate(rl=rl)
             return {
+                'won': self.pair.env.done == 3,
                 'chromosome_id': chromosome_id,
                 'env_id': env_id,
                 'score': score,
@@ -148,6 +149,7 @@ class ADPChild:
                 path = f"{self.pair.prefix}/results_{run_id}/{chromosome_id}/winning_weights_poet{poet_loop_counter}.pt"
                 torch_save(state_dict, path)
             return {
+                'won': self.pair.env.done == 3,
                 'score': score,
                 'chromosome_id': chromosome_id,
                 'env_id': env_id,
