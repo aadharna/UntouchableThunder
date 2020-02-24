@@ -149,7 +149,13 @@ def perform_transfer(pairs, answers, poet_loop_counter, unique_run_id):
             else:
                 j_score = answers[(changing_agent_pair.id, fixed_env_pair.generator.id)]['score']
 
-                if current_score < j_score: # todo talk about <=?
+                if args.transfer_mc:
+                    if not answers[(changing_agent_pair.id,
+                                    changing_agent_pair.generator.id)]['won']:
+                        continue
+
+                # todo talk about <=?
+                if current_score < j_score:
                     # updated network
                     print(f"update network {fixed_env_pair.id} to {changing_agent_pair.id}")
                     current_score = j_score
@@ -200,10 +206,12 @@ def get_child_list(parent_list, max_children, unique_run_id):
 
     mutation_trial = 0
     while mutation_trial < max_children:
-        print(f"mutation_trial {mutation_trial}/{max_children}")
+        print(f"mutation_trial {mutation_trial + 1}/{max_children}")
         parent = np.random.choice(parent_list)
 
-        new_gen = parent.mutate(args.mutation_rate)
+        new_gen = parent.mutate(mutationRate=args.mutation_rate,
+                                minimal=args.minimal,
+                                r=args.r)
 
         mutation_trial += 1
 
