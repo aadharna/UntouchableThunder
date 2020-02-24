@@ -166,7 +166,7 @@ class Generator:
             # choices = [3, 3, 3] # TEMPORARY FOR THE EXPERIMENT OF CONSISTENT SHIFTING OF KEY AND DOORS.
             ###
             go_again = 0
-            loops = 1
+            loops = 1 if not minimal else 4
             while go_again < 0.5:
                 if loops > 5:
                     break
@@ -224,7 +224,14 @@ class Generator:
                             continue
                         spawned = True
                     # print(f"spawning {sprite}?")
-                    new_location = find_place_for_sprite(previous=None,
+                    seed = np.random.choice(list(locations))
+                    if len(locations[seed]) == 0:
+                        pos = (1, 1)
+                    else:
+                        ind = np.random.choice(len(locations[seed]))
+                        pos = locations[seed][ind]
+
+                    new_location = find_place_for_sprite(previous=pos,
                                                          minimal=minimal,
                                                          r=r)
 
