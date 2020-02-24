@@ -210,8 +210,8 @@ def get_child_list(parent_list, max_children, unique_run_id):
         parent = np.random.choice(parent_list)
 
         new_gen = parent.mutate(mutationRate=args.mutation_rate,
-                                minimal=args.minimal,
-                                r=args.r)
+                                minimal=args.minimal_mutation,
+                                r=args.mutation_radius)
 
         mutation_trial += 1
 
@@ -280,7 +280,7 @@ if __name__ == "__main__":
                           mechanics=args.mechanics,
                           generation=0)
     generator.to_file(0, args.game)
-
+    
     pairs = [MinimalPair(unique_run_id=unique_run_id,
                          game=args.game,
                          generator=generator,
