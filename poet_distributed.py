@@ -336,7 +336,7 @@ if __name__ == "__main__":
             #
             new_envs = []
             print("mutation?")
-            if (i+1) % args.mutation_timer == 0:
+            if i % args.mutation_timer == 0:
                 print("yes")
                 new_envs = get_child_list(pairs, args.max_children, unique_run_id)
 
