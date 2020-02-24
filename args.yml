@@ -5,7 +5,7 @@
 game: dzelda
 lvl_dir: ./levels
 init_lvl: start.txt
-mechanics: ['+', 'g', '1', '2', 'w']
+mechanics: ['+', 'g', '1', '2', '3', 'w']
 shape0: 9
 
 # algo args
@@ -20,6 +20,9 @@ rl: False
 max_children: 3
 max_envs: 10
 comp_agent: mcts
+transfer_mc: False
+minimal: False
+r: 0
 num_poet_loops: 6
 result_prefix: ..
 start_fresh: True
