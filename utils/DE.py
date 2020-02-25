@@ -13,7 +13,7 @@ def init_pop(population, _min, _max):
         # LOWER_BOUND + (rand() / (double)RAND_MAX) * (UPPER_BOUND - LOWER_BOUND)
     return
 
-def rand_1_bin(pop, cand, iteration, mutationRate, scaling_factor, problem_size, _min, _max):
+def rand_1_bin(pop, iteration, mutationRate, scaling_factor, problem_size, _min, _max):
 
     available_choices = [idx for idx in range(len(pop)) if idx != iteration]
 
@@ -25,7 +25,7 @@ def rand_1_bin(pop, cand, iteration, mutationRate, scaling_factor, problem_size,
 
     recomb =  np.clip(pop[r1].x + scaling_factor * (pop[r2].x - pop[r3].x), _min, _max)
 
-    cand[iteration].x = np.where(mask, recomb, pop[iteration].x)
+    return np.where(mask, recomb, pop[iteration].x)
 
 
 def selection(pop_member, candidate_member):
@@ -58,11 +58,12 @@ def DE(obj_fn,
 
     for generation in range(generation_max):
         for j in range(pop_size):
-            rand_1_bin(population, candidates, j,
-                       crossover_rate,
-                       scaling_factor,
-                       problem_size,
-                       lower_bound, upper_bound)
+            trial = rand_1_bin(population, j,
+                               crossover_rate,
+                               scaling_factor,
+                               problem_size,
+                               lower_bound, upper_bound)
+            candidates[j].x = trial
 
 
         for k, c in enumerate(candidates):
