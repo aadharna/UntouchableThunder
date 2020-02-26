@@ -39,20 +39,26 @@ def best_fitness(population):
     return sorted(population, key=lambda x: x.fitness)[0].fitness
 
 def DE(obj_fn,
-         pop_size,
+         init_population,
          problem_size,
          scaling_factor,
          crossover_rate,
          lower_bound,
          upper_bound,
-         generation_max):
+         generation_max,
+         scores=None):
+    
+    if scores is None:
+        scores = {}
+    pop_size = init_population.shape[0]
+    
+    np.clip(init_population, lower_bound, upper_bound, out=init_population)
 
-    population = [DE_individual(np.zeros(problem_size)) for _ in range(pop_size)]
+    population = [DE_individual(p) for p in init_population]
     candidates = [DE_individual(np.zeros(problem_size)) for _ in range(pop_size)]
 
     solution = 0
 
-    init_pop(population, lower_bound, upper_bound)
     for individual in population:
         individual.fitness = obj_fn(individual.x)
 
