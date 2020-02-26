@@ -28,7 +28,7 @@ class PyTorchObjective():
         
         _min = -1.0  # min
         _max = 1.0  # max
-        dimension = self.x0.shape[0]        
+        dimension = self.x0.shape[0]      
         
         self.init_fitnesses = (_max - _min) * np.random.uniform(size=popsize) + _min
         self.init_population = (
@@ -41,7 +41,7 @@ class PyTorchObjective():
         
           ## NOTE, we might want to change init_pop back, in some manner. 
 #         # get noise
-#         noise = np.random.randn(self.popsize, self.x0.shape[0])
+#         noise = np.random.randn(self.popsize, dimension)
 #         # add noise to theta for each member of the population
 #         pop = self.x0 + noise
 
@@ -91,8 +91,7 @@ class PyTorchObjective():
         
 
     def obj_fun(self, x, dimension):
-        self.c += 1
-        self.cache(x) 
+        self.cache(x)
         return self.cached_score
     
     def obj_fun_c(self, x, dimension):
