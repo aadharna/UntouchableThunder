@@ -6,7 +6,7 @@ from generator.env_gen_wrapper import GridGame
 from optimization.Optimizer import PyTorchObjective
 from utils.ADPTASK_ENUM import ADPTASK
 
-from optimization.runners import run_TJ_DE, run_ppo
+from optimization.runners import run_TJ_DE, run_ppo, run_CoDE
 # from devo import jDE, DE, CoDE
 
 from utils.utils import save_obj, load_obj
@@ -130,15 +130,17 @@ class ADPChild:
                         frames             = ngames * self.game_length)
             else:
                 objective = PyTorchObjective(agent=self.pair, popsize=popsize)
-                run_TJ_DE(opt_name          = algo,
-                          pair              = objective,
-                          n                 = ngames,
-                          pair_id           = chromosome_id,
-                          poet_loop_counter = poet_loop_counter,
-                          results_prefix    = self.pair.prefix,
-                          unique_run_id     = run_id
-                          )
-                objective.update_nn(objective.best_individual)
+                ans = run_CoDE(AE_pair=objective,
+                                results_prefix=self.pair.prefix, 
+                                unique_run_id=run_id, 
+                                pair_id=chromosome_id, 
+                                poet_loop_counter=poet_loop_counter,
+                                generation_max=ngames // popsize,
+                                scaling_factor=0.5, #list of three numbers
+                                crossover_rate=0.5, #list of three numbers
+                                lower_bound=-5,
+                                upper_bound=5)
+                objective.update_nn(ans)
                 del objective
             
             # get score of optimized weights
@@ -162,7 +164,7 @@ class ADPChild:
         else:
             raise ValueError('unspecified task requested')
     
-    #@profile
+    #s@profile
     def parseRecievedTask(self):
         """
         THIS is MAIN. When the child recieves a task, it enters here!
