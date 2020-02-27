@@ -90,7 +90,7 @@ class Generator:
                 npa[pos[0]][pos[1]] = k
         for k in self.BOUNDARY.keys():
             for pos in self.BOUNDARY[k]:
-                npa[pos[0]][pos[1]] = 'w'
+                npa[pos[0]][pos[1]] = k
         return npa
 
     def cleanup(self):
