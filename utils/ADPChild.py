@@ -240,8 +240,9 @@ class ADPChild:
         os.remove(os.path.join(path, f'child{self.id}') + '.pkl')
         
         if "resend" in task_params:
-            self.placeChildFlag(os.path.join(self.root, self.subfolders['send_to_parent'], f'resend{self.id}.txt'))
+            print("asking for work to be resent")
             self.placeChildFlag(self.available)
+            self.placeChildFlag(os.path.join(self.root, self.subfolders['send_to_parent'], f'resend{self.id}.txt'))
             return
         
         answer = self.parseRecievedTask(task_params)

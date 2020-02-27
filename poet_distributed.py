@@ -43,6 +43,7 @@ def waitForAndCollectAnswers(parent, children, distributed_work, unique_run_id, 
     resend = []
     while not parent.checkChildResponseStatus(children, resend):
         if resend:
+            time.sleep(5)
             print(f"resending work to {resend}")
             send_work({k:distributed_work[k] for k in resend}, task, parent, unique_run_id, poet_loop_counter)
             resend = []

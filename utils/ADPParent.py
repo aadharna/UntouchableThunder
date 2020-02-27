@@ -50,7 +50,8 @@ class ADPParent:
         dones = [False]*len(allChildren)
 
         for i, c in enumerate(allChildren):
-            if os.path.exists(os.path.join(response_folder, f'resend{c}') + '.txt'):
+            if os.path.exists(os.path.join(response_folder, f'resend{c}') + '.txt') and \
+                f'{c}.txt' in available_signals:
                 send_again.append(c)
                 os.remove(os.path.join(response_folder, f'resend{c}') + '.txt')
         
@@ -58,7 +59,6 @@ class ADPParent:
             if os.path.exists(os.path.join(response_folder, f'answer{c}') + '.pkl') and \
                f'{c}.txt' in available_signals:
                 dones[i] = True
-        
         
         return np.all(dones)
 
@@ -133,6 +133,11 @@ class ADPParent:
         available = os.path.join(self.root,
                                  self.subfolders['available_signals'],
                                  f'{worker_id}.txt')
-        os.remove(available)
+        
+        if not os.path.exists(available):
+            time.sleep(10)
+        
+        if os.path.exists(available):
+            os.remove(available)
         
         time.sleep(3)
