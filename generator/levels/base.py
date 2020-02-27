@@ -323,14 +323,13 @@ def _initialize(path, d=9):
     :param path: path to txt file representation of level
     :return:
     """
-    f = open(path, 'r')
-    f = f.readlines()
-    rep = []
-    for l in f:
-        rep.append(l[:-1])  # cut off '\n'
-    mat = []
-    for r in rep:
-        for s in r:
-            mat.append(s)
-    npa = np.array(mat).reshape((d, -1))  # make into numpy array 9x13
+    with open(path, 'r') as file:
+        f = file.read()
+        if f[-1] != "\n":
+            f += "\n"
+        f = f.split('\n')[:-1] #remove blank line.
+        d = len(f)
+        tile = [list(row) for row in mat]
+    
+    npa = np.array(tile).reshape((d, -1))  # make into numpy array 9x13
     return npa
