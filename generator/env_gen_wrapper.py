@@ -37,7 +37,8 @@ class GridGame(gym.Wrapper):
             #set up first level, read it in from disk.
             lvl = _initialize(self.lvl_path, d=shape[0])
             self.lvl_shape = lvl.shape
-            self.generator = Generator(tile_world=lvl,
+            self.generator = Generator(game=self.game,
+                                       tile_world=lvl,
                                        shape=lvl.shape,
                                        path=path,
                                        mechanics=self.mechanics,
@@ -48,7 +49,8 @@ class GridGame(gym.Wrapper):
         else:
             # use generated lvl contained within locations dict.
             self.lvl_shape = shape
-            self.generator = Generator(tile_world=None,
+            self.generator = Generator(game=self.game,
+                                       tile_world=None,
                                        shape=shape,
                                        path=path,
                                        mechanics=self.mechanics,

@@ -1,6 +1,7 @@
+import os
 import numpy as np
 from copy import deepcopy
-import os
+from utils.utils import load_obj
 # from gym_gvgai import dir
 
 class Generator:
@@ -10,7 +11,8 @@ class Generator:
                  path='/envs/games/zelda_v0/',
                  mechanics=[],
                  generation=0,
-                 locations={}):
+                 locations={},
+                 game='dzelda'):
         """
 
         :param tile_world: 2d numpy array of map
@@ -19,16 +21,11 @@ class Generator:
         :param generation: int 
         """
         
+        self.game = game
         self._length = shape[0]
         self._height = shape[1]
-        self.BOUNDARY = {'w': [(x, y)
-                               for x in range(self._length)
-                               for y in range(self._height)
-                               if (x == 0 or
-                                   y == 0 or
-                                   x == (self._length - 1) or
-                                   y == (self._height - 1))]
-                         }
+        
+        self.BOUNDARY = load_obj(path, f'{game}_boundary.pkl')
 
         self._tile_world = tile_world
 
@@ -91,8 +88,9 @@ class Generator:
         for k in self.locations.keys():
             for pos in self.locations[k]:
                 npa[pos[0]][pos[1]] = k
-        for pos in self.BOUNDARY['w']:
-            npa[pos[0]][pos[1]] = 'w'
+        for k in self.BOUNDARY.keys():
+            for pos in self.BOUNDARY[k]:
+                npa[pos[0]][pos[1]] = 'w'
         return npa
 
     def cleanup(self):
@@ -153,7 +151,7 @@ class Generator:
                 if not (new_location in locations['A'] or
                         (new_location in locations['g'] and len(locations['g']) == 1) or
                         (new_location in locations['+'] and len(locations['+']) == 1) or
-                         new_location in self.BOUNDARY['w']):
+                         new_location in [pos for k in self.BOUNDARY.keys() for pos in self.BOUNDARY[k]]):
                     conflicting = False
 
             return new_location
@@ -220,7 +218,7 @@ class Generator:
                     spawned = False
                     while not spawned:
                         sprite = np.random.choice(list(locations))
-                        if sprite == 'A':
+                        if sprite == 'A' or sprite == 'g':
                             continue
                         spawned = True
                     # print(f"spawning {sprite}?")
@@ -283,7 +281,7 @@ class Generator:
         # remove anything that was in the boundary wall's spot.
         for k in locations.keys():
             for i, p in enumerate(locations[k]):
-                if p in self.BOUNDARY['w']:
+                if p in [pos for k in self.BOUNDARY.keys() for pos in self.BOUNDARY[k]]:
                     locations[k].pop(i)
 
         return locations, self.tile_world.shape

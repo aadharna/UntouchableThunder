@@ -274,7 +274,8 @@ if __name__ == "__main__":
 
     lvl = _initialize(os.path.join(args.lvl_dir, args.init_lvl), d=args.shape0)
     lvl_shape = lvl.shape
-    generator = Generator(tile_world=lvl,
+    generator = Generator(game=args.game, 
+                          tile_world=lvl,
                           shape=lvl.shape,
                           path=args.lvl_dir,
                           mechanics=args.mechanics,

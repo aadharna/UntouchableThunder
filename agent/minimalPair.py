@@ -41,12 +41,13 @@ class MinimalPair():
         new_map, shp = self.generator.mutate(mutationRate=mutationRate,
                                              minimal=minimal,
                                              r=r)
-        gen = Generator(tile_world=None,
-                            shape=shp,
-                            path=self.generator.base_path,
-                            mechanics=self.generator.mechanics,
-                            generation=self.generator.generation + 1,
-                            locations=new_map)
+        gen = Generator(game=self.game, 
+                        tile_world=None,
+                        shape=shp,
+                        path=self.generator.base_path,
+                        mechanics=self.generator.mechanics,
+                        generation=self.generator.generation + 1,
+                        locations=new_map)
 
         gen.to_file(gen.id, self.game)
         return gen
