@@ -13,7 +13,7 @@ from utils.utils import save_obj, load_obj
 import logging
 #logging.basicConfig(filename='example.log',level=logging.DEBUG)
 
-from memory_profiler import profile
+#from memory_profiler import profile
 
 class ADPChild:
     def __init__(self, child_id,
