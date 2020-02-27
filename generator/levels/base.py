@@ -329,7 +329,7 @@ def _initialize(path, d=9):
             f += "\n"
         f = f.split('\n')[:-1] #remove blank line.
         d = len(f)
-        tile = [list(row) for row in mat]
+        tile = [list(row) for row in f]
     
     npa = np.array(tile).reshape((d, -1))  # make into numpy array 9x13
     return npa
