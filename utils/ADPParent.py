@@ -40,7 +40,7 @@ class ADPParent:
                 for f in files:
                     os.remove(os.path.join(path, f))
 
-    def checkChildResponseStatus(self, allChildren):        
+    def checkChildResponseStatus(self, allChildren, send_again=[]):        
         response_folder = os.path.join(self.root,
                                        self.subfolders['sent_by_child'])
         
@@ -50,9 +50,15 @@ class ADPParent:
         dones = [False]*len(allChildren)
 
         for i, c in enumerate(allChildren):
+            if os.path.exists(os.path.join(response_folder, f'resend{c}') + '.txt'):
+                send_again.append(c)
+                os.remove(os.path.join(response_folder, f'resend{c}') + '.txt')
+        
+        for i, c in enumerate(allChildren):
             if os.path.exists(os.path.join(response_folder, f'answer{c}') + '.pkl') and \
                f'{c}.txt' in available_signals:
                 dones[i] = True
+        
         
         return np.all(dones)
 

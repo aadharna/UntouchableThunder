@@ -165,16 +165,11 @@ class ADPChild:
             raise ValueError('unspecified task requested')
     
     #@profile
-    def parseRecievedTask(self):
+    def parseRecievedTask(self, task_params):
         """
         THIS is MAIN. When the child recieves a task, it enters here!
         :return:
         """
-        path = os.path.join(self.root,
-                            self.subfolders['sent_by_parent'])
-
-        task_params = load_obj(path, f'child{self.id}.pkl')
-        os.remove(os.path.join(path, f'child{self.id}') + '.pkl')
 
         lvls = task_params['lvls']
         nns = task_params['nns']
@@ -237,7 +232,19 @@ class ADPChild:
         save_obj(answer, path, f'answer{self.id}')
 
     def recieveTaskAndReturnAnswer(self):
-        answer = self.parseRecievedTask()
+        
+        path = os.path.join(self.root,
+                            self.subfolders['sent_by_parent'])
+
+        task_params = load_obj(path, f'child{self.id}.pkl')
+        os.remove(os.path.join(path, f'child{self.id}') + '.pkl')
+        
+        if "resend" in task_params:
+            self.placeChildFlag(os.path.join(self.root, self.subfolders['send_to_parent'], f'resend{self.id}.txt'))
+            self.placeChildFlag(self.available)
+            return
+        
+        answer = self.parseRecievedTask(task_params)
         self.returnAnswer(answer)
         del answer
         self.placeChildFlag(self.available)

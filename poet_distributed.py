@@ -38,10 +38,14 @@ def flatten(answer_list):
     return f_dict
 
 
-def waitForAndCollectAnswers(parent, children):
+def waitForAndCollectAnswers(parent, children, distributed_work, unique_run_id, poet_loop_counter, task):
     print('waiting for answers')
-
-    while not parent.checkChildResponseStatus(children):
+    resend = []
+    while not parent.checkChildResponseStatus(children, resend):
+        if resend:
+            print(f"resending work to {resend}")
+            send_work({k:distributed_work[k] for k in resend}, task, parent, unique_run_id, poet_loop_counter)
+            resend = []
         time.sleep(5)
 
     answer_pointers = os.listdir(os.path.join(
@@ -50,7 +54,6 @@ def waitForAndCollectAnswers(parent, children):
     ))
 
     answers = [parent.readChildAnswer(answer) for answer in answer_pointers]
-
     flat_answers = flatten(answers)
 
     print('collected answers')
@@ -231,6 +234,21 @@ def get_child_list(parent_list, max_children, unique_run_id):
     #
     return child_list
 
+def send_work(distributed_work, task, parent, unique_run_id, poet_loop_counter):
+    
+    for worker_id in distributed_work:
+
+        parent.createChildTask(run_id=unique_run_id,
+                               work_dict=distributed_work[worker_id],
+                               worker_id=worker_id,
+                               task_id=task,
+                               poet_loop_counter=i,
+                               rl=args.rl,
+                               algo=args.DE_algo,
+                               ngames=args.n_games,
+                               popsize=args.popsize)
+
+
 
 ####################### HELPER FUNCTIONS ##########################
 
@@ -318,19 +336,10 @@ if __name__ == "__main__":
                                                          availableChildren)
 
             print("evaluating")
-            for worker_id in distributed_work:
-
-                parent.createChildTask(run_id=unique_run_id,
-                                       work_dict=distributed_work[worker_id],
-                                       worker_id=worker_id,
-                                       task_id=ADPTASK.EVALUATE,
-                                       poet_loop_counter=i,
-                                       rl=args.rl,
-                                       algo=args.DE_algo,
-                                       ngames=args.n_games)
-
+            send_work(distributed_work, ADPTASK.EVALUATE, parent, unique_run_id, i)
+            
             # get answers from children
-            eval_answers = waitForAndCollectAnswers(parent, availableChildren)
+            eval_answers = waitForAndCollectAnswers(parent, availableChildren, distributed_work, unique_run_id, i,  ADPTASK.EVALUATE)
 
             updatePairs(pairs, eval_answers, ADPTASK.EVALUATE)
 
@@ -360,21 +369,10 @@ if __name__ == "__main__":
                                                          [pairs[i].generator for i in range(len(pairs))],
                                                          availableChildren)
 
-            for worker_id in distributed_work:
-
-                parent.createChildTask(run_id=unique_run_id,
-                                       work_dict=distributed_work[worker_id],
-                                       worker_id=worker_id,
-                                       task_id=ADPTASK.OPTIMIZE,
-                                       poet_loop_counter=i,
-                                       rl=args.rl,
-                                       algo=args.DE_algo,
-                                       ngames=args.n_games,
-                                       popsize=args.popsize)
-
+            send_work(distributed_work, ADPTASK.OPTIMIZE, parent, unique_run_id, i)
 
             # get answers from children
-            opt_answers = waitForAndCollectAnswers(parent, availableChildren)
+            opt_answers = waitForAndCollectAnswers(parent, availableChildren, distributed_work, unique_run_id, i, ADPTASK.OPTIMIZE)
 
             updatePairs(pairs, opt_answers, ADPTASK.OPTIMIZE)
 
@@ -388,20 +386,10 @@ if __name__ == "__main__":
                                                              availableChildren,
                                                              transfer_eval=True)
 
-                for worker_id in distributed_work:
-
-                    parent.createChildTask(run_id=unique_run_id,
-                                           work_dict=distributed_work[worker_id],
-                                           worker_id=worker_id,
-                                           task_id=ADPTASK.EVALUATE,
-                                           poet_loop_counter=i,
-                                           rl=args.rl,
-                                           algo=args.DE_algo,
-                                           ngames=args.n_games)
-
+                send_work(distributed_work, ADPTASK.EVALUATE, parent, unique_run_id, i)
 
                 # get answers from children
-                transfer_eval_answers = waitForAndCollectAnswers(parent, availableChildren)
+                transfer_eval_answers = waitForAndCollectAnswers(parent, availableChildren, distributed_work, unique_run_id, i, ADPTASK.EVALUATE)
 
                 # use information to determine if NN i should migrate to env j.
                 perform_transfer(pairs, transfer_eval_answers, i, unique_run_id)
