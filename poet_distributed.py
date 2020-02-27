@@ -294,7 +294,8 @@ if __name__ == "__main__":
     chkpt = f"{args.result_prefix}/results_{unique_run_id}/POET_CHKPT"
     if not os.path.exists(chkpt):
         os.mkdir(chkpt)
-
+    
+    time.sleep(20)
     while not done:
         try:
             tdir = os.path.join(chkpt, str(i))
