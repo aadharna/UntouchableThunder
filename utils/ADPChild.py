@@ -170,7 +170,10 @@ class ADPChild:
         THIS is MAIN. When the child recieves a task, it enters here!
         :return:
         """
-
+        
+        # have some communcation go to java each time so that the server does more than just sleep
+        self.pair.env.reset() 
+        
         lvls = task_params['lvls']
         nns = task_params['nns']
         chromosome_ids = task_params['chromosome_ids']
