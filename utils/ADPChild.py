@@ -245,7 +245,15 @@ class ADPChild:
             self.placeChildFlag(os.path.join(self.root, self.subfolders['send_to_parent'], f'resend{self.id}.txt'))
             return
         
-        answer = self.parseRecievedTask(task_params)
+        try:
+            answer = self.parseRecievedTask(task_params)
+        except ConnectionResetError as e:
+            # die gracefully here.
+            print(f"{self.id} died")
+            self.placeChildFlag(os.path.join(self.root, self.subfolders['send_to_parent'], f'dead{self.id}.txt'))
+            os.remove(self.alive)
+            return
+
         self.returnAnswer(answer)
         del answer
         self.placeChildFlag(self.available)
@@ -256,3 +264,5 @@ class ADPChild:
 #             os.remove(self.available)
 #         self.pair.env.close()
 
+
+        

@@ -41,11 +41,12 @@ def flatten(answer_list):
 def waitForAndCollectAnswers(parent, children, distributed_work, unique_run_id, poet_loop_counter, task):
     print('waiting for answers')
     resend = []
+    time.sleep(10)
     while not parent.checkChildResponseStatus(children, resend):
         if resend:
             time.sleep(5)
             print(f"resending work to {resend}")
-            send_work({k:distributed_work[k] for k in resend}, task, parent, unique_run_id, poet_loop_counter)
+            send_work({k[1]:distributed_work[k[0]] for k in resend}, task, parent, unique_run_id, poet_loop_counter)
             resend = []
         time.sleep(5)
 

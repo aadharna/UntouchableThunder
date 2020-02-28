@@ -48,17 +48,29 @@ class ADPParent:
                                    self.subfolders['available_signals']))
         
         dones = [False]*len(allChildren)
-
-        for i, c in enumerate(allChildren):
-            if os.path.exists(os.path.join(response_folder, f'resend{c}') + '.txt') and \
-                f'{c}.txt' in available_signals:
-                send_again.append(c)
-                os.remove(os.path.join(response_folder, f'resend{c}') + '.txt')
+        remove = []
         
         for i, c in enumerate(allChildren):
             if os.path.exists(os.path.join(response_folder, f'answer{c}') + '.pkl') and \
                f'{c}.txt' in available_signals:
                 dones[i] = True
+        
+        finishedChildren = np.array(allChildren)[dones]
+        
+        for i, c in enumerate(allChildren):
+            if os.path.exists(os.path.join(response_folder, f'resend{c}') + '.txt') and \
+                f'{c}.txt' in available_signals:
+                send_again.append((c, c))
+                os.remove(os.path.join(response_folder, f'resend{c}') + '.txt')
+
+            if os.path.exists(os.path.join(response_folder, f'dead{c}') + '.txt'):
+                if finishedChildren.size > 0:
+                    send_again.append((c, self.selectAvailableChild(finishedChildren)))
+                    remove.append(c)
+                    os.remove(os.path.join(response_folder, f'dead{c}') + '.txt')
+
+        for r in remove:
+            allChildren.remove(r)
         
         return np.all(dones)
 
