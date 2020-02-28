@@ -76,7 +76,7 @@ class ADPParent:
         for c in deadChildren:
             allChildren.remove(c)
         
-        return np.all(dones)
+        return np.all(childTaskComplete)
 
     def selectAvailableChild(self, availableChildren):
         return np.random.choice(availableChildren)
