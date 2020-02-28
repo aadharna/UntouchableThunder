@@ -170,7 +170,10 @@ class ADPChild:
         THIS is MAIN. When the child recieves a task, it enters here!
         :return:
         """
-
+        
+        # have some communcation go to java each time so that the server does more than just sleep
+        self.pair.env.reset() 
+        
         lvls = task_params['lvls']
         nns = task_params['nns']
         chromosome_ids = task_params['chromosome_ids']
@@ -245,7 +248,15 @@ class ADPChild:
             self.placeChildFlag(os.path.join(self.root, self.subfolders['send_to_parent'], f'resend{self.id}.txt'))
             return
         
-        answer = self.parseRecievedTask(task_params)
+        try:
+            answer = self.parseRecievedTask(task_params)
+        except ConnectionResetError as e:
+            # die gracefully here.
+            print(f"{self.id} died")
+            os.remove(self.alive)
+            self.placeChildFlag(os.path.join(self.root, self.subfolders['send_to_parent'], f'dead{self.id}.txt'))
+            return
+
         self.returnAnswer(answer)
         del answer
         self.placeChildFlag(self.available)
@@ -255,4 +266,3 @@ class ADPChild:
 #         if os.path.exists(self.available):
 #             os.remove(self.available)
 #         self.pair.env.close()
-

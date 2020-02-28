@@ -47,20 +47,36 @@ class ADPParent:
         available_signals = os.listdir(os.path.join(self.root,
                                    self.subfolders['available_signals']))
         
-        dones = [False]*len(allChildren)
-
-        for i, c in enumerate(allChildren):
-            if os.path.exists(os.path.join(response_folder, f'resend{c}') + '.txt') and \
-                f'{c}.txt' in available_signals:
-                send_again.append(c)
-                os.remove(os.path.join(response_folder, f'resend{c}') + '.txt')
+        childTaskComplete = [False]*len(allChildren)
+        deadChildren = []
         
+        
+        # In order to assign work from child i to child j AFTER the initial distribution of work,
+        #  we need to know which children have finished their current work. Therefore, this check
+        #  needs to happen first as will potentially be used in the later check.
         for i, c in enumerate(allChildren):
             if os.path.exists(os.path.join(response_folder, f'answer{c}') + '.pkl') and \
                f'{c}.txt' in available_signals:
-                dones[i] = True
+                childTaskComplete[i] = True
         
-        return np.all(dones)
+        finishedChildren = np.array(allChildren)[childTaskComplete]
+        
+        for i, c in enumerate(allChildren):
+            if os.path.exists(os.path.join(response_folder, f'resend{c}') + '.txt') and \
+                f'{c}.txt' in available_signals:
+                send_again.append((c, c))
+                os.remove(os.path.join(response_folder, f'resend{c}') + '.txt')
+
+            if os.path.exists(os.path.join(response_folder, f'dead{c}') + '.txt') and finishedChildren.size > 0:
+                send_again.append((c, self.selectAvailableChild(finishedChildren)))
+                deadChildren.append(c)
+                os.remove(os.path.join(response_folder, f'dead{c}') + '.txt')
+                
+        # python passes by reference. Therefore this is editing POET's "which children are alive" list.
+        for c in deadChildren:
+            allChildren.remove(c)
+        
+        return np.all(childTaskComplete)
 
     def selectAvailableChild(self, availableChildren):
         return np.random.choice(availableChildren)
