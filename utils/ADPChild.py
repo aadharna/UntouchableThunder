@@ -250,8 +250,8 @@ class ADPChild:
         except ConnectionResetError as e:
             # die gracefully here.
             print(f"{self.id} died")
-            self.placeChildFlag(os.path.join(self.root, self.subfolders['send_to_parent'], f'dead{self.id}.txt'))
             os.remove(self.alive)
+            self.placeChildFlag(os.path.join(self.root, self.subfolders['send_to_parent'], f'dead{self.id}.txt'))
             return
 
         self.returnAnswer(answer)
@@ -263,6 +263,3 @@ class ADPChild:
 #         if os.path.exists(self.available):
 #             os.remove(self.available)
 #         self.pair.env.close()
-
-
-        
