@@ -51,7 +51,7 @@ def waitForAndCollectAnswers(parent, children, distributed_work, unique_run_id, 
             # does not overwrite the first task.
             for (reassigned_from, reassigned_to) in resend:
                 if not reassigned_from == reassigned_to:
-                    answer.append(parent.readChildAnswer(f'answer{reassigned_to}.pkl'))
+                    answers.append(parent.readChildAnswer(f'answer{reassigned_to}.pkl'))
                     
             send_work({k[1]:distributed_work[k[0]] for k in resend}, task, parent, unique_run_id, poet_loop_counter)
             resend = []
