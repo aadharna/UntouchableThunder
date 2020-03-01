@@ -25,6 +25,7 @@ if __name__ == "__main__":
                      game=file_args.game,
                      length=file_args.game_len,
                      lvl_dir=file_args.lvl_dir,
+                     init_lvl=f"{file_args.game}_{file_args.init_lvl}",
                      prefix=file_args.result_prefix)
     
     #logging.debug(f"child {child.id} alive signal sent")
