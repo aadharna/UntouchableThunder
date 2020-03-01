@@ -1,10 +1,9 @@
 # args for POET
 
-
 # game args
 game: dzelda
-lvl_dir: ./levels
-init_lvl: start.txt
+lvl_dir: ./levels   # DO NOT CHANGE
+init_lvl: start.txt # DO NOT CHANGE
 
 # generator args, will change for each game
 mechanics: ['+', 'g', '1', '2', '3', 'w']
