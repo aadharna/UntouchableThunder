@@ -2,6 +2,7 @@ import os
 import numpy as np
 from copy import deepcopy
 from utils.utils import load_obj
+from utils.loader import load_from_yaml
 # from gym_gvgai import dir
 
 class Generator:
@@ -20,19 +21,21 @@ class Generator:
         :param mechanics: list of sprites you would like to be able to mutate into
         :param generation: int 
         """
+
+        self.args = load_from_yaml('./args.yml')
         
-        self.game = game
+        self.game = self.args.game
         self._length = shape[0]
         self._height = shape[1]
         
-        self.BOUNDARY = load_obj(path, f'{game}_boundary.pkl')
+        self.BOUNDARY = load_obj(path, f'{self.game}_boundary.pkl')
 
         self._tile_world = tile_world
 
         self.mechanics = mechanics
         #make folder in levels folder
         self.base_path = path
-        self._path = os.path.join(self.base_path, 'poet_levels')
+        self._path = os.path.join(self.base_path, f'{self.game}_poet_levels')
         if not os.path.exists(self._path):
             os.mkdir(self._path)
 
@@ -148,9 +151,9 @@ class Generator:
                                     np.random.randint(_minY, _maxY))
 
                 # don't overwrite Agent, goal, or key
-                if not (new_location in locations['A'] or
-                        (new_location in locations['g'] and len(locations['g']) == 1) or
-                        (new_location in locations['+'] and len(locations['+']) == 1) or
+                if not (new_location in [pos for k in self.args.singletons for pos in locations[k]] or
+                        new_location in [pos for k in self.args.at_least_one for pos in locations[k] if
+                                         len(locations[k]) == 1] or
                          new_location in [pos for k in self.BOUNDARY.keys() for pos in self.BOUNDARY[k]]):
                     conflicting = False
 
@@ -164,9 +167,9 @@ class Generator:
             # choices = [3, 3, 3] # TEMPORARY FOR THE EXPERIMENT OF CONSISTENT SHIFTING OF KEY AND DOORS.
             ###
             go_again = 0
-            loops = 1 if not minimal else 4
+            loops = 1 if not minimal else 8
             while go_again < 0.5:
-                if loops > 5:
+                if loops > 9:
                     break
                 loops += 1
                 go_again = np.random.rand()
@@ -186,7 +189,7 @@ class Generator:
                         sprite = np.random.choice(list(locations))
                         # print(f"removing {sprite}?")
                         # do not remove agent, cannot remove floor
-                        if sprite in ['A', '.']:
+                        if sprite in self.args.immortal:
                             # pick a new mutation
                             mutationType = np.random.choice(choices, p=[0, 0.5, 0.5])
                             # print(f"new mutation {mutationType}")
@@ -196,7 +199,7 @@ class Generator:
                         # do not remove goal or key if there are only one of them
                         #  do not attempt to remove sprite when there are none of that type
                         elif len(locations[sprite]) <= 1:
-                            if sprite in ['g', '+'] or len(locations[sprite]) == 0:
+                            if sprite in self.args.at_least_one or len(locations[sprite]) == 0:
                                 mutationType = np.random.choice(choices, p=[0, 0.5, 0.5])
                                 # print(f"new mutation {mutationType}")
                                 skip = True
@@ -218,7 +221,7 @@ class Generator:
                     spawned = False
                     while not spawned:
                         sprite = np.random.choice(list(locations))
-                        if sprite == 'A' or sprite == 'g':
+                        if sprite in self.args.singletons:
                             continue
                         spawned = True
                     # print(f"spawning {sprite}?")
@@ -249,7 +252,7 @@ class Generator:
                     while not moved:
                         # choose a random viable sprite
                         sprite = np.random.choice(list(self.locations))
-                        if len(list(locations[sprite])) == 0 or sprite == '.':
+                        if len(list(locations[sprite])) == 0 or sprite in self.args.floor:
                             continue
                         moved = True
 
