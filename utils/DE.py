@@ -1,5 +1,6 @@
 import sys
 import numpy as np
+from tqdm import tqdm
 
 class DE_individual:
     def __init__(self, x):
@@ -36,21 +37,23 @@ def selection(pop_member, candidate_member):
     return
 
 def best_fitness(population):
-    return sorted(population, key=lambda x: x.fitness)[0].fitness
+    return sorted(population, key=lambda x: x.fitness)[0]
 
-def DE(obj_fn,
+def DE(pair,
          init_population,
          problem_size,
-         scaling_factor,
-         crossover_rate,
+         scaling_factor, #list of three numbers
+         crossover_rate, #list of three numbers
          lower_bound,
          upper_bound,
          generation_max,
          scores=None):
     
+    obj_fn = pair.obj_fun
+    
     if scores is None:
         scores = {}
-    pop_size = init_population.shape[0]
+    pop_size = pair.popsize
     
     np.clip(init_population, lower_bound, upper_bound, out=init_population)
 
@@ -60,9 +63,9 @@ def DE(obj_fn,
     solution = 0
 
     for individual in population:
-        individual.fitness = obj_fn(individual.x)
+        individual.fitness = obj_fn(individual.x, problem_size)
 
-    for generation in range(generation_max):
+    for generation in tqdm(range(generation_max)):
         for j in range(pop_size):
             trial = rand_1_bin(population, j,
                                crossover_rate,
@@ -70,17 +73,20 @@ def DE(obj_fn,
                                problem_size,
                                lower_bound, upper_bound)
             candidates[j].x = trial
+            candidates[j].fitness = obj_fn(candidates[j].x, problem_size)
 
 
         for k, c in enumerate(candidates):
-            c.fitness = obj_fn(c.x)
             selection(population[k], c)
+            
+        scores[generation] = [p.fitness for p in population]
 
-    solution += best_fitness(population)
-    print(solution)
-    return sorted(population, key=lambda x: x.fitness)[0].x
+    best = best_fitness(population)
+    solution += best.fitness
+    # print(solution)
+    return best.x
 
-def sphere(x):
+def sphere(x, z):
     return np.dot(x, x)
 
 if __name__ == "__main__":

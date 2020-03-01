@@ -4,6 +4,7 @@ import ctypes as c
 import pandas
 from utils.ppo import ppo
 from utils.CoDE import CoDE
+from utils.DE import DE
 import devo
 import devo.DE
 import devo.SHADE
@@ -53,6 +54,34 @@ def run_CoDE(AE_pair,
     
     scores = {}
     ans =  CoDE(pair=AE_pair,
+                init_population=AE_pair.init_population,
+                problem_size=AE_pair.x0.shape[0],
+                scaling_factor=scaling_factor,
+                crossover_rate=crossover_rate,
+                lower_bound=lower_bound,
+                upper_bound=upper_bound,
+                generation_max=generation_max,
+                scores=scores)
+
+    destination = os.path.join(f'{results_prefix}',
+                               f'results_{unique_run_id}',
+                               f'{pair_id}',
+                               f'CoDE_poet{poet_loop_counter}_{generation_max}gens_{AE_pair.popsize}pop_scores.csv')
+    
+    df = pandas.DataFrame.from_dict(scores)    
+    df.to_csv(destination)
+    return ans
+
+def run_DE(AE_pair,
+             results_prefix, unique_run_id, pair_id, poet_loop_counter,
+             generation_max=5,
+             scaling_factor=0.5, #list of three numbers
+             crossover_rate=0.5, #list of three numbers
+             lower_bound=-5,
+             upper_bound=5):
+    
+    scores = {}
+    ans =  DE(pair=AE_pair,
                 init_population=AE_pair.init_population,
                 problem_size=AE_pair.x0.shape[0],
                 scaling_factor=scaling_factor,

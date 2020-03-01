@@ -6,7 +6,7 @@ from generator.env_gen_wrapper import GridGame
 from optimization.Optimizer import PyTorchObjective
 from utils.ADPTASK_ENUM import ADPTASK
 
-from optimization.runners import run_TJ_DE, run_ppo, run_CoDE
+from optimization.runners import run_TJ_DE, run_ppo, run_CoDE, run_DE
 # from devo import jDE, DE, CoDE
 
 from utils.utils import save_obj, load_obj
@@ -130,14 +130,14 @@ class ADPChild:
                         frames             = ngames * self.game_length)
             else:
                 objective = PyTorchObjective(agent=self.pair, popsize=popsize)
-                ans = run_CoDE(AE_pair=objective,
+                ans = run_DE(AE_pair=objective,
                                 results_prefix=self.pair.prefix, 
                                 unique_run_id=run_id, 
                                 pair_id=chromosome_id, 
                                 poet_loop_counter=poet_loop_counter,
                                 generation_max=ngames // popsize,
-                                scaling_factor=0.5, #list of three numbers
-                                crossover_rate=0.5, #list of three numbers
+                                scaling_factor=0.9, 
+                                crossover_rate=0.2, 
                                 lower_bound=-5,
                                 upper_bound=5)
                 objective.update_nn(ans)
@@ -244,8 +244,9 @@ class ADPChild:
         
         if "resend" in task_params:
             print("asking for work to be resent")
-            self.placeChildFlag(self.available)
             self.placeChildFlag(os.path.join(self.root, self.subfolders['send_to_parent'], f'resend{self.id}.txt'))
+            time.sleep(10)
+            self.placeChildFlag(self.available)
             return
         
         try:
