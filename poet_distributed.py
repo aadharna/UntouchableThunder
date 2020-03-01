@@ -73,7 +73,7 @@ def divideWorkBetweenChildren(agents, envs, children, transfer_eval=False):
     # private function to implement circular queue for assigning tasks
     def dispenseChild(children):
         num_children = len(children)
-        for i in range(1000000):
+        for i in range(np.random.randint(0, num_children), 1000000):
             yield children[i % num_children]
 
     dispenser = dispenseChild(children)
