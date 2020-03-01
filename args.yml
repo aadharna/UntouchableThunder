@@ -5,7 +5,13 @@
 game: dzelda
 lvl_dir: ./levels
 init_lvl: start.txt
+
+# generator args, will change for each game
 mechanics: ['+', 'g', '1', '2', '3', 'w']
+singletons: ['A', 'g'] # must be only one
+at_least_one: ['+']    # must have at least one
+immortal: ['A', '.']   # cannot be removed
+floor: ['.']           # base tile. cannot be moved
 shape0: 9
 
 # algo args
@@ -13,17 +19,17 @@ game_len: 250
 n_games: 2000
 DE_algo: CoDE
 popsize: 500
-mutation_timer: 2
+mutation_timer: 5
 mutation_rate: 0.8
-transfer_timer: 2
+transfer_timer: 5
 rl: False
-max_children: 0
+max_children: 5
 max_envs: 25
 comp_agent: mcts
 transfer_mc: False
 minimal_mutation: False
 mutation_radius: 0
-num_poet_loops: 6
+num_poet_loops: 300
 result_prefix: ..
 start_fresh: True
 
