@@ -41,7 +41,7 @@ def flatten(answer_list):
 def waitForAndCollectAnswers(parent, children, distributed_work, unique_run_id, poet_loop_counter, task):
     print('waiting for answers')
     resend = []
-    answers = []
+    answers_list = []
     time.sleep(10)
     while not parent.checkChildResponseStatus(children, resend):
         if resend:
@@ -51,7 +51,7 @@ def waitForAndCollectAnswers(parent, children, distributed_work, unique_run_id, 
             # does not overwrite the first task.
             for (reassigned_from, reassigned_to) in resend:
                 if not reassigned_from == reassigned_to:
-                    answers.append(parent.readChildAnswer(f'answer{reassigned_to}.pkl'))
+                    answers_list.append(parent.readChildAnswer(f'answer{reassigned_to}.pkl'))
                     
             send_work({k[1]:distributed_work[k[0]] for k in resend}, task, parent, unique_run_id, poet_loop_counter)
             resend = []
@@ -62,8 +62,8 @@ def waitForAndCollectAnswers(parent, children, distributed_work, unique_run_id, 
         parent.subfolders['sent_by_child']
     ))
 
-    answers.extend([parent.readChildAnswer(answer) for answer in answer_pointers])
-    flat_answers = flatten(answers)
+    answers_list.extend([parent.readChildAnswer(answer) for answer in answer_pointers])
+    flat_answers = flatten(answers_list)
 
     print('collected answers')
     return flat_answers
