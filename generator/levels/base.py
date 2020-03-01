@@ -23,6 +23,7 @@ class Generator:
         """
 
         self.args = load_from_yaml('./args.yml')
+        self.floor = self.args.floor[0]
         
         self.game = self.args.game
         self._length = shape[0]
@@ -186,7 +187,7 @@ class Generator:
                     somethingToRemove = False
                     # choose a random sprite that has multiple instances of itself to remove
                     while not somethingToRemove:
-                        sprite = np.random.choice(list(locations))
+                        sprite = np.random.choice(self.mechanics)
                         # print(f"removing {sprite}?")
                         # do not remove agent, cannot remove floor
                         if sprite in self.args.immortal:
@@ -212,7 +213,7 @@ class Generator:
                         ind = np.random.choice(len(locations[sprite]))
                         v = deepcopy(locations[sprite][ind])
                         # print(f"removed {v}")
-                        locations['.'].append(v)
+                        locations[self.floor].append(v)
                         locations[sprite].pop(ind)
 
                 # spawn a new sprite into the scene
@@ -220,7 +221,7 @@ class Generator:
                     # choose a random sprite
                     spawned = False
                     while not spawned:
-                        sprite = np.random.choice(list(locations))
+                        sprite = np.random.choice(self.mechanics)
                         if sprite in self.args.singletons:
                             continue
                         spawned = True
@@ -251,7 +252,7 @@ class Generator:
                     moved = False
                     while not moved:
                         # choose a random viable sprite
-                        sprite = np.random.choice(list(self.locations))
+                        sprite = np.random.choice(self.mechanics)
                         if len(list(locations[sprite])) == 0 or sprite in self.args.floor:
                             continue
                         moved = True
@@ -278,7 +279,7 @@ class Generator:
                     # move sprite to new location
                     locations[sprite].append(new_location)
                     # fill previous spot with blank floor.
-                    locations['.'].append(old)
+                    locations[self.floor].append(old)
                     locations[sprite].pop(ind)
 
         # remove anything that was in the boundary wall's spot.
