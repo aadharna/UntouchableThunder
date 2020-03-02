@@ -33,7 +33,7 @@ class Generator:
 
         self._tile_world = tile_world
 
-        self.mechanics = mechanics
+        self.mechanics = self.args.mechanics
         #make folder in levels folder
         self.base_path = path
         self._path = os.path.join(self.base_path, f'{self.game}_poet_levels')
