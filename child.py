@@ -8,6 +8,7 @@ import logging
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--id", type=int, help='set child id')
+parser.add_argument("--exp_name", type=str, help='exp name')
 parser.add_argument("--args_file", type=str, default='./args.yml', help='path to args file')
 
 line_args = parser.parse_args()
@@ -26,8 +27,8 @@ if __name__ == "__main__":
                      length=file_args.game_len,
                      lvl_dir=file_args.lvl_dir,
                      init_lvl=f"{file_args.game}_{file_args.init_lvl}",
-                     prefix=file_args.result_prefix)
-    
+                     prefix=f"{file_args.result_prefix}/results_{line_args.exp_name}")
+
     #logging.debug(f"child {child.id} alive signal sent")
     
     done = False
@@ -46,8 +47,6 @@ if __name__ == "__main__":
             if not done:
                 print("found task")
                 child.recieveTaskAndReturnAnswer()
-            
-            
 
         except KeyboardInterrupt as e:
             print(e)
@@ -56,5 +55,5 @@ if __name__ == "__main__":
             sys.exit(0)
 
         # done = True
-
+    print("dying")
     child.pair.env.close()
