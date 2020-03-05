@@ -266,8 +266,8 @@ def send_work(distributed_work, task, parent, unique_run_id, poet_loop_counter):
 import argparse
 from utils.loader import load_from_yaml
 parser = argparse.ArgumentParser()
+parser.add_argument("--exp_name", type=str, help='exp name')
 parser.add_argument("--args_file", type=str, default='./args.yml', help='path to args file')
-parser.add_argument("--exp_name", type=str, default='exp1', help='exp name')
 # parser.add_argument("--game", type=str, default='dzelda', help='set gvgai game')
 # parser.add_argument("--lvl_dir", type=str, default='./levels', help='path to lvl dir')
 # parser.add_argument("--init_lvl", type=str, default='start.txt', help='level from ./levels folder')
@@ -294,7 +294,7 @@ print(__name__)
 
 if __name__ == "__main__":
 
-    parent = ADPParent()
+    parent = ADPParent(prefix=f"{args.result_prefix}/results_{_args.exp_name}")
     unique_run_id = _args.exp_name
     net = Net(6, 13)
     net.load_state_dict(torch_load('./start.pt'))
@@ -406,9 +406,11 @@ if __name__ == "__main__":
             # save checkpoints of networks into POET folder
             #
             for pair in pairs:
-                torch_save(pair.nn.state_dict(), os.path.join(chkpt,
-                                                              str(i),
+                torch_save(pair.nn.state_dict(), os.path.join(tdir,
                                                               f'network{pair.id}.pt'))
+                with open(os.path.join(tdir,
+                                       f'lvl{pair.id}.txt'), 'w+') as fname:
+                    fname.write(str(pair.generator))
 
             i += 1
             if i >= args.num_poet_loops:
@@ -420,4 +422,5 @@ if __name__ == "__main__":
             import sys
             sys.exit(0)
 
+    print("dying")
     dieAndKillChildren(parent, pairs)
