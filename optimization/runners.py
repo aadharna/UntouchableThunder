@@ -101,14 +101,14 @@ def run_DE(AE_pair,
 
 # #from memory_profiler import profile
 # #@profile
-# def run_TJ_DE(opt_name, pair, n, pair_id, poet_loop_counter,
-#               results_prefix,
-#               unique_run_id,
-#               scaling_factor=0.5,
-#               crossover_rate=0.1,
-#               min_weight=-5,
-#               max_weight=5,
-#               ):
+def run_TJ_DE(opt_name, pair, n, pair_id, poet_loop_counter,
+              results_prefix,
+              unique_run_id,
+              scaling_factor=0.5,
+              crossover_rate=0.1,
+              min_weight=-5,
+              max_weight=5,
+              ):
 #     """run Tae Jong's DE
 #     opt_name:  which DE algorithm do we want to use?. string. e.g. 'jDE'
 #     pair: PyTorchObjective wrapper of paired NNAgent_Environment object
@@ -156,4 +156,4 @@ def run_DE(AE_pair,
 #     del scores, df, x_c, y_c
 #     gc.collect()
 #
-#     return
+    return
