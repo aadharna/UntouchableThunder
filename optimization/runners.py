@@ -5,12 +5,12 @@ import pandas
 from utils.ppo import ppo
 from utils.CoDE import CoDE
 from utils.DE import DE
-import devo
-import devo.DE
-import devo.SHADE
-import devo.JADE
-import devo.jDE
-import devo.CoDE
+#import devo
+#import devo.DE
+#import devo.SHADE
+#import devo.JADE
+#import devo.jDE
+#import devo.CoDE
 
 #-------------------------OPTIMIZATION RUNNER FUNCTIONS---------------------------------#
 
@@ -64,9 +64,8 @@ def run_CoDE(AE_pair,
                 scores=scores)
 
     destination = os.path.join(f'{results_prefix}',
-                               f'results_{unique_run_id}',
                                f'{pair_id}',
-                               f'CoDE_poet{poet_loop_counter}_{generation_max}gens_{AE_pair.popsize}pop_scores.csv')
+                               f'poet{poet_loop_counter}_{generation_max}gens_{AE_pair.popsize}pop_scores.csv')
     
     df = pandas.DataFrame.from_dict(scores)    
     df.to_csv(destination)
@@ -92,71 +91,69 @@ def run_DE(AE_pair,
                 scores=scores)
 
     destination = os.path.join(f'{results_prefix}',
-                               f'results_{unique_run_id}',
                                f'{pair_id}',
-                               f'CoDE_poet{poet_loop_counter}_{generation_max}gens_{AE_pair.popsize}pop_scores.csv')
+                               f'poet{poet_loop_counter}_{generation_max}gens_{AE_pair.popsize}pop_scores.csv')
     
     df = pandas.DataFrame.from_dict(scores)    
     df.to_csv(destination)
     return ans
 
 
-#from memory_profiler import profile
-#@profile
-def run_TJ_DE(opt_name, pair, n, pair_id, poet_loop_counter,
-              results_prefix,
-              unique_run_id,
-              scaling_factor=0.5,
-              crossover_rate=0.1,
-              min_weight=-5,
-              max_weight=5,
-              ):
-    """run Tae Jong's DE
-    opt_name:  which DE algorithm do we want to use?. string. e.g. 'jDE'
-    pair: PyTorchObjective wrapper of paired NNAgent_Environment object
-    n: number of function evaluations
-    """
-
-    _de = getattr(devo, opt_name)
-
-    generations = n // pair.popsize
-    x_c = pair.init_population.ctypes.data_as(c.POINTER(c.c_double))
-    y_c = pair.init_fitnesses.ctypes.data_as(c.POINTER(c.c_double))
-    scores = {}
-    for g in range(generations):
-        # # Using Adaptive-DEs
-        _de.run(
-            pair.popsize,
-            pair.popsize,  # population size
-            scaling_factor,  # scaling factor
-            crossover_rate,  # crossover rate
-            pair.obj_fun_c,     # objective function wrapper; sends back C-intelligible results
-            pair.x0.shape[0],  # problem size
-            min_weight,  # unused value
-            max_weight,  # unused value
-            x_c,
-            y_c,
-            pair.results_callback  # no results callback needed
-        )
-
-        scores[g] = -pair.out_fitnesses.squeeze() if pair.minimize else pair.out_fitnesses.squeeze()
-
-        x_c = pair.out_population.ctypes.data_as(
-            c.POINTER(c.c_double))
-        y_c = pair.out_fitnesses.ctypes.data_as(
-            c.POINTER(c.c_double))
-
-    # save scores
-    df = pandas.DataFrame.from_dict(scores)
-    
-    destination = os.path.join(f'{results_prefix}',
-                               f'results_{unique_run_id}',
-                               f'{pair_id}',
-                               f'{opt_name}_poet{poet_loop_counter}_{generations}gens_{pair.popsize}pop_scores.csv')
-    
-    df.to_csv(destination)
-    
-    del scores, df, x_c, y_c
-    gc.collect()
-
-    return
+# #from memory_profiler import profile
+# #@profile
+# def run_TJ_DE(opt_name, pair, n, pair_id, poet_loop_counter,
+#               results_prefix,
+#               unique_run_id,
+#               scaling_factor=0.5,
+#               crossover_rate=0.1,
+#               min_weight=-5,
+#               max_weight=5,
+#               ):
+#     """run Tae Jong's DE
+#     opt_name:  which DE algorithm do we want to use?. string. e.g. 'jDE'
+#     pair: PyTorchObjective wrapper of paired NNAgent_Environment object
+#     n: number of function evaluations
+#     """
+#
+#     _de = getattr(devo, opt_name)
+#
+#     generations = n // pair.popsize
+#     x_c = pair.init_population.ctypes.data_as(c.POINTER(c.c_double))
+#     y_c = pair.init_fitnesses.ctypes.data_as(c.POINTER(c.c_double))
+#     scores = {}
+#     for g in range(generations):
+#         # # Using Adaptive-DEs
+#         _de.run(
+#             pair.popsize,
+#             pair.popsize,  # population size
+#             scaling_factor,  # scaling factor
+#             crossover_rate,  # crossover rate
+#             pair.obj_fun_c,     # objective function wrapper; sends back C-intelligible results
+#             pair.x0.shape[0],  # problem size
+#             min_weight,  # unused value
+#             max_weight,  # unused value
+#             x_c,
+#             y_c,
+#             pair.results_callback  # no results callback needed
+#         )
+#
+#         scores[g] = -pair.out_fitnesses.squeeze() if pair.minimize else pair.out_fitnesses.squeeze()
+#
+#         x_c = pair.out_population.ctypes.data_as(
+#             c.POINTER(c.c_double))
+#         y_c = pair.out_fitnesses.ctypes.data_as(
+#             c.POINTER(c.c_double))
+#
+#     # save scores
+#     df = pandas.DataFrame.from_dict(scores)
+#
+#     destination = os.path.join(f'{results_prefix}',
+#                                f'{pair_id}',
+#                                f'poet{poet_loop_counter}_{generations}gens_{pair.popsize}pop_scores.csv')
+#
+#     df.to_csv(destination)
+#
+#     del scores, df, x_c, y_c
+#     gc.collect()
+#
+#     return
