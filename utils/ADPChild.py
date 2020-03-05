@@ -23,8 +23,9 @@ class ADPChild:
                  lvl_dir='./levels',
                  init_lvl='start.txt',
                  prefix='.'):
-        path = '.'#'/scratch/ad5238/POET/UntouchableThunder'
-        self.root = os.path.join(path, 'communication')
+
+        self.prefix = prefix
+        self.root = os.path.join(prefix, 'communication')
         self.subfolders = {
             'sent_by_parent': 'outgoing',
             'send_to_parent': 'incoming',
@@ -132,13 +133,13 @@ class ADPChild:
             else:
                 objective = PyTorchObjective(agent=self.pair, popsize=popsize)
                 ans = run_DE(AE_pair=objective,
-                                results_prefix=self.pair.prefix, 
+                                results_prefix=self.prefix,
                                 unique_run_id=run_id, 
                                 pair_id=chromosome_id, 
                                 poet_loop_counter=poet_loop_counter,
                                 generation_max=ngames // popsize,
-                                scaling_factor=0.9, 
-                                crossover_rate=0.2, 
+                                scaling_factor=0.6,
+                                crossover_rate=0.4,
                                 lower_bound=-5,
                                 upper_bound=5)
                 objective.update_nn(ans)
@@ -149,11 +150,11 @@ class ADPChild:
             state_dict = self.pair.nn.state_dict()
             
             # save best weights
-            destination = f"{self.pair.prefix}/results_{run_id}/{chromosome_id}/final_weights_poet{poet_loop_counter}.pt"
-            torch_save(state_dict, destination)
+            #destination = f"{self.pair.prefix}/results_{run_id}/{chromosome_id}/final_weights_poet{poet_loop_counter}.pt"
+            #torch_save(state_dict, destination)
             # did the agent WIN the game?
             if self.pair.env.done == 3:
-                path = f"{self.pair.prefix}/results_{run_id}/{chromosome_id}/winning_weights_poet{poet_loop_counter}.pt"
+                path = f"{self.prefix}/{chromosome_id}/winning_weights_poet{poet_loop_counter}.pt"
                 torch_save(state_dict, path)
             return {
                 'won': self.pair.env.done == 3,

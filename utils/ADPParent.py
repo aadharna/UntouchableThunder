@@ -11,9 +11,9 @@ class ADPParent:
     This will launch out commands into the void
     for APDChild processes to pick up and execute.
     """
-    def __init__(self):
-        path = '.'#'/scratch/ad5238/POET/UntouchableThunder'
-        self.root = os.path.join(path, 'communication')
+    def __init__(self, prefix='.'):
+
+        self.root = os.path.join(prefix, 'communication')
         if not os.path.exists(self.root):
             os.mkdir(self.root)
         
@@ -155,5 +155,3 @@ class ADPParent:
         
         if os.path.exists(available):
             os.remove(available)
-        
-        time.sleep(3)
