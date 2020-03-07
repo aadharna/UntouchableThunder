@@ -42,6 +42,7 @@ class MinimalPair():
                                              minimal=minimal,
                                              r=r)
         gen = Generator(game=self.game, 
+                        args_file=self.generator.args_file,
                         tile_world=None,
                         shape=shp,
                         path=self.generator.base_path,

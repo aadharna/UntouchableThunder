@@ -24,6 +24,7 @@ if __name__ == "__main__":
 
     child = ADPChild(line_args.id,
                      game=file_args.game,
+                     args_file=line_args.args_file,
                      length=file_args.game_len,
                      lvl_dir=file_args.lvl_dir,
                      init_lvl=f"{file_args.game}_{file_args.init_lvl}",

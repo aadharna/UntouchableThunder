@@ -9,6 +9,7 @@ class Generator:
     id = 0
     def __init__(self, tile_world,
                  shape,
+                 args_file='./args.yml',
                  path='/envs/games/zelda_v0/',
                  mechanics=[],
                  generation=0,
@@ -22,7 +23,9 @@ class Generator:
         :param generation: int 
         """
 
-        self.args = load_from_yaml('./args.yml')
+        self.args_file = args_file
+        
+        self.args = load_from_yaml(args_file)
         self.floor = self.args.floor[0]
         
         self.game = self.args.game

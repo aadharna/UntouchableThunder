@@ -13,6 +13,7 @@ class GridGame(gym.Wrapper):
     def __init__(self,
                  game,
                  play_length,
+                 args_file='./args.yml',
                  path='./levels',
                  lvl_name='start.txt',
                  mechanics=[],
@@ -26,6 +27,7 @@ class GridGame(gym.Wrapper):
         Generates new level on reset
         --------
         """
+        self.args_file = args_file
         self.game = game
         self.dir_path = path # gvgai.dir path + envs/games/zelda_v0
         self.lvl_name = lvl_name
@@ -38,6 +40,7 @@ class GridGame(gym.Wrapper):
             lvl = _initialize(self.lvl_path, d=shape[0])
             self.lvl_shape = lvl.shape
             self.generator = Generator(game=self.game,
+                                       args_file=args_file,
                                        tile_world=lvl,
                                        shape=lvl.shape,
                                        path=path,
@@ -50,6 +53,7 @@ class GridGame(gym.Wrapper):
             # use generated lvl contained within locations dict.
             self.lvl_shape = shape
             self.generator = Generator(game=self.game,
+                                       args_file=args_file,
                                        tile_world=None,
                                        shape=shape,
                                        path=path,
@@ -135,6 +139,7 @@ class GridGame(gym.Wrapper):
         new_map, shape = self.generator.mutate(mutationRate)
         childGG = GridGame(game=self.game,
                              play_length=self.play_length,
+                             args_file=self.args_file,
                              path=self.dir_path,
                              lvl_name=f"{self.game}_id:{self.id}_g:{self.generator.generation+1}.txt",
                              gen_id=self.generator.generation + 1,

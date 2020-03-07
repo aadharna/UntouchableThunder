@@ -18,6 +18,7 @@ import logging
 
 class ADPChild:
     def __init__(self, child_id,
+                 args_file='./args.yml',
                  game='dzelda',
                  length=250,
                  lvl_dir='./levels',
@@ -48,6 +49,7 @@ class ADPChild:
             NNagent(time_stamp=None,
                     prefix=prefix,
                     GG=GridGame(game=game,
+                                args_file=args_file,
                                 play_length=length,
                                 path=lvl_dir,
                                 lvl_name=init_lvl,
