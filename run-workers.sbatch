@@ -15,7 +15,7 @@ conda activate thesis
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
-python -u child.py --id $SLURM_ARRAY_TASK_ID --exp_name $1
+python -u child.py --id $SLURM_ARRAY_TASK_ID --exp_name $1 --args_file $2
 
 
 

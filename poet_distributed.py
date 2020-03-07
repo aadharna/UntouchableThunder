@@ -302,6 +302,7 @@ if __name__ == "__main__":
     lvl = _initialize(os.path.join(args.lvl_dir, f"{args.game}_{args.init_lvl}"), d=args.shape0)
     lvl_shape = lvl.shape
     generator = Generator(game=args.game, 
+                          args_file=_args.args_file,
                           tile_world=lvl,
                           shape=lvl.shape,
                           path=args.lvl_dir,

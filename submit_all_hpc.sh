@@ -10,9 +10,11 @@ rm -rf ./../results_$1
 mkdir -p ./../results_$1
 cp ./args.yml ./../results_$1/
 
-jobID=$(sbatch run-master.sbatch $1 | awk '{print $NF}')
+args=./../results_$1/args.yml
 
-sbatch --dependency=after:$jobID --array=1-51 run-workers.sbatch $1
+jobID=$(sbatch run-master.sbatch $1 $args | awk '{print $NF}')
+
+sbatch --dependency=after:$jobID --array=1-51 run-workers.sbatch $1 $args
 
 exit
 
