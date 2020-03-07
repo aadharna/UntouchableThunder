@@ -229,7 +229,6 @@ def get_child_list(parent_list, max_children, unique_run_id):
 
         if pass_mc(new_gen):
             child_list.append(MinimalPair(unique_run_id=unique_run_id,
-                                          args_file=_args.args_file,
                                           generator=new_gen,
                                           prefix=args.result_prefix,
                                           parent=parent.nn))
@@ -312,7 +311,6 @@ if __name__ == "__main__":
     generator.to_file(0, args.game)
     
     pairs = [MinimalPair(unique_run_id=unique_run_id,
-                         args_file=_args.args_file,
                          game=args.game,
                          generator=generator,
                          parent=net,
