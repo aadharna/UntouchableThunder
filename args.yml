@@ -1,34 +1,39 @@
 # args for POET
 
 # game args
-game: dzelda
+game: dzelda        # alternate solarfox. Use commented out params.
 lvl_dir: ./levels   # DO NOT CHANGE
 init_lvl: start.txt # DO NOT CHANGE
 
 # generator args, will change for each game
-mechanics: ['+', 'g', '1', '2', '3', 'w']
-singletons: ['A', 'g'] # must be only one
-at_least_one: ['+']    # must have at least one
-immortal: ['A', '.']   # cannot be removed
-floor: ['.']           # base tile. cannot be moved
+mechanics: ['+', 'g', '3', 'w'] #['b', 'A', 'w'] 
+singletons: ['A', 'g'] # must be only one #['A'] #
+at_least_one: ['+']    # must have at least one # ['b'] #
+immortal: ['A', '.']   # cannot be removed #['A', '+'] #
+floor: ['.']           # base tile. cannot be moved #['+'] #
+probs: [0.2, 0.5, 0.3] # [remove, spawn, move] probabilities
 shape0: 9
+
+#network args
+action: 5
+depth: 14
 
 # algo args
 game_len: 250
 n_games: 2000
-DE_algo: CoDE
+DE_algo: DE
 popsize: 500
-mutation_timer: 5
+mutation_timer: 25
 mutation_rate: 0.8
-transfer_timer: 5
+transfer_timer: 10
 rl: False
-max_children: 5
-max_envs: 25
+max_children: 10
+max_envs: 50
 comp_agent: mcts
 transfer_mc: False
 minimal_mutation: False
 mutation_radius: 0
-num_poet_loops: 300
-result_prefix: ..
+num_poet_loops: 2
+result_prefix: .. # DO NOT CHANGE!!
 start_fresh: True
 

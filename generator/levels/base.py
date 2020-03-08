@@ -178,7 +178,7 @@ class Generator:
                 loops += 1
                 go_again = np.random.rand()
 
-                mutationType = np.random.choice(choices, p=[0.2, 0.4, 0.4])  # [, )  in, ex
+                mutationType = np.random.choice(choices, p=self.args.probs)  # [, )  in, ex
 
 
                 # print(mutationType)
