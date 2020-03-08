@@ -98,6 +98,8 @@ class Generator:
         for k in self.BOUNDARY.keys():
             for pos in self.BOUNDARY[k]:
                 npa[pos[0]][pos[1]] = k
+        
+        # npa[npa == '0'] = '.'
         return npa
 
     def cleanup(self):
@@ -132,7 +134,7 @@ class Generator:
         :return: dict of location data for the entire level
         """
         locations = deepcopy(self.locations)
-        def find_place_for_sprite(previous=None, minimal=False, r=1):
+        def find_place_for_sprite(sprite, previous=None, minimal=False, r=1):
             """find an empty location in the matrix for the sprite that is empty.
 
             :return: new (x, y) location
@@ -158,7 +160,8 @@ class Generator:
                 if not (new_location in [pos for k in self.args.singletons for pos in locations[k]] or
                         new_location in [pos for k in self.args.at_least_one for pos in locations[k] if
                                          len(locations[k]) == 1] or
-                         new_location in [pos for k in self.BOUNDARY.keys() for pos in self.BOUNDARY[k]]):
+                        new_location in [pos for k in self.BOUNDARY.keys() for pos in self.BOUNDARY[k]] or 
+                        new_location in locations[sprite]):
                     conflicting = False
 
             return new_location
@@ -179,7 +182,6 @@ class Generator:
                 go_again = np.random.rand()
 
                 mutationType = np.random.choice(choices, p=self.args.probs)  # [, )  in, ex
-
 
                 # print(mutationType)
                 # 1 -- remove sprite from scene               .... 20% chance
@@ -210,6 +212,7 @@ class Generator:
                                 break
                         # else we have found something meaningful we can remove
                         else:
+                            # print(f"removing {sprite}")
                             somethingToRemove = True
                     # choose location index in list of chosen sprite
                     if not skip:
@@ -229,14 +232,15 @@ class Generator:
                             continue
                         spawned = True
                     # print(f"spawning {sprite}?")
-                    seed = np.random.choice(list(locations))
+                    seed = np.random.choice(list(self.mechanics))
                     if len(locations[seed]) == 0:
-                        pos = (1, 1)
+                        pos = None
                     else:
                         ind = np.random.choice(len(locations[seed]))
                         pos = locations[seed][ind]
 
-                    new_location = find_place_for_sprite(previous=pos,
+                    new_location = find_place_for_sprite(sprite=sprite, 
+                                                         previous=pos,
                                                          minimal=minimal,
                                                          r=r)
 
@@ -260,16 +264,16 @@ class Generator:
                             continue
                         moved = True
 
-                    # print(f"moving {sprite}?")
                     # choose location index in list of chosen sprite
                     ind = np.random.choice(len(locations[sprite]))
                     # where the sprite was previously
                     old = locations[sprite][ind]
-                    # print(f'from {old}')
                     # new location for sprite
-                    new_location = find_place_for_sprite(previous=old,
+                    new_location = find_place_for_sprite(sprite=sprite,
+                                                         previous=old,
                                                          minimal=minimal,
                                                          r=r)
+                    # print(f'moving {sprite} from {old} to {new_location}')
 
                     # remove whoever already has that new_location
                     # e.g. wall, floor
@@ -279,11 +283,12 @@ class Generator:
                             locations[k].pop(rm_ind)
                             break
 
+                    locations[sprite].pop(ind) # remove old position
                     # move sprite to new location
                     locations[sprite].append(new_location)
                     # fill previous spot with blank floor.
                     locations[self.floor].append(old)
-                    locations[sprite].pop(ind)
+                    
 
         # remove anything that was in the boundary wall's spot.
         for k in locations.keys():
