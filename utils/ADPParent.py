@@ -26,6 +26,10 @@ class ADPParent:
         self.createFolders()
         self.resetFolders()
 
+    def placeChildFlag(self, path):
+        with open(path, 'w+') as f:
+            pass
+
     def createFolders(self):
         for f in self.subfolders.keys():
             path = os.path.join(self.root, self.subfolders[f])

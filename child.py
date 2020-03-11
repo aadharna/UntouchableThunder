@@ -32,6 +32,8 @@ if __name__ == "__main__":
 
     #logging.debug(f"child {child.id} alive signal sent")
     
+    start = time.time()
+
     done = False
     while not done:
         try:
@@ -40,6 +42,12 @@ if __name__ == "__main__":
                 # your alive flag is removed by the parent
                 # kill yourself. 
                 if not os.path.exists(child.alive):
+                    done = True
+                    break
+                
+                current_time = time.time()
+                if (current_time - start) // 3600 >= 10:
+                    print("close to dying")
                     done = True
                     break
                     
@@ -56,5 +64,16 @@ if __name__ == "__main__":
             sys.exit(0)
 
         # done = True
-    print("dying")
+    #check for id.txt.done files. If so, do NOT launch sbatch command.
+    # placeChildFlag(os.path.join(self.root, self.subfolders['send_to_parent'], f'dead{self.id}.txt') 
+    if os.path.exists(child.alive):
+        os.remove(child.alive)
+    if os.path.exists(os.path.join(child.root, child.subfolders['alive_signals'], f'{child.id}.txt.done')):
+        print("task completely finished")
+
+    else:
+        print(f"refreshing worker {child.id}")
+        os.system(f'sbatch run-workers.sbatch {line_args.exp_name} {line_args.args_file} {line_args.id}')
+
+
     child.pair.env.close()

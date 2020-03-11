@@ -14,7 +14,7 @@ args=./../results_$1/args.yml
 
 jobID=$(sbatch run-master.sbatch $1 $args | awk '{print $NF}')
 
-sbatch --dependency=after:$jobID --array=1-51 run-workers.sbatch $1 $args
+sbatch --dependency=after:$jobID --array=1-11 run-workers.sbatch $1 $args
 
 exit
 
