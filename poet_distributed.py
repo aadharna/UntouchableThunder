@@ -122,6 +122,15 @@ def updatePairs(pairs, answers, task_type):
                     each_pair.nn.load_state_dict(nn)
 
 
+def cycleWorkers(parent):
+    path = os.path.join(parent.root,
+                        parent.subfolders['alive_signals'])
+
+    alive = os.listdir(path)
+
+    for a in alive:
+        parent.placeChildFlag(os.path.join(path, a) + '.cycle')
+
 def dieAndKillChildren(parent, pairs):
 
     # [pair.env.close() for pair in pairs]
@@ -133,7 +142,7 @@ def dieAndKillChildren(parent, pairs):
     for a in alive:
         os.remove(os.path.join(path, a))
         # create #.txt.done files. 
-        parent.createChildFlag(os.path.join(path, a) + '.done')
+        parent.placeChildFlag(os.path.join(path, a) + '.done')
 
 def perform_transfer(pairs, answers, poet_loop_counter, unique_run_id):
     """
@@ -341,6 +350,11 @@ if __name__ == "__main__":
     time.sleep(20)
     while not done:
         try:
+            if (i + 1) % 10 == 0:
+                print("refreshing workers")
+                cycleWorkers(parent)
+                time.sleep(120)
+
             tdir = os.path.join(chkpt, str(i))
             if not os.path.exists(tdir):
                 os.mkdir(tdir)
