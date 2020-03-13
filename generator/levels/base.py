@@ -176,9 +176,9 @@ class Generator:
             go_again = 0
             loops = 1 if not minimal else 8
             while go_again < 0.5:
-                if loops > 9:
-                    break
-                loops += 1
+                #if loops > 9:
+                #    break
+                #loops += 1
                 go_again = np.random.rand()
 
                 mutationType = np.random.choice(choices, p=self.args.probs)  # [, )  in, ex
