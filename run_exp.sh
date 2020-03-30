@@ -11,7 +11,7 @@ python -u poet_distributed.py --exp_name $arg --args_file $fname > ./../results_
 
 sleep 1
 
-for((i=0; i<10; i++)); do
+for((i=0; i<30; i++)); do
     OMP_NUM_THREADS=1 python -u child.py --id $i --exp_name $arg --args_file $fname > ./../results_$1/logs/w$i.log 2>&1 &
     sleep 1
 done

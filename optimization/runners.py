@@ -94,8 +94,10 @@ def run_DE(AE_pair,
                                f'{pair_id}',
                                f'poet{poet_loop_counter}_{generation_max}gens_{AE_pair.popsize}pop_scores.csv')
     
-    df = pandas.DataFrame.from_dict(scores)    
+    df = pandas.DataFrame.from_dict(scores)
     df.to_csv(destination)
+    del df, scores
+    gc.collect()
     return ans
 
 

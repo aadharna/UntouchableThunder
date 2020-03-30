@@ -20,8 +20,10 @@ print(file_args)
 # logging.basicConfig(filename=f'example.log',level=logging.DEBUG)
 
 
-if __name__ == "__main__":
+time.sleep(10)
 
+if __name__ == "__main__":
+    print("starting up")
     child = ADPChild(line_args.id,
                      game=file_args.game,
                      args_file=line_args.args_file,
@@ -32,6 +34,8 @@ if __name__ == "__main__":
 
     #logging.debug(f"child {child.id} alive signal sent")
     
+    start = time.time()
+    print(start)
     done = False
     while not done:
         try:
@@ -39,10 +43,10 @@ if __name__ == "__main__":
                 # if you're waiting for a task and 
                 # your alive flag is removed by the parent
                 # kill yourself. 
-                if not os.path.exists(child.alive):
+                if not os.path.exists(child.alive) or os.path.exists(child.alive + '.cycle'):
                     done = True
                     break
-                    
+                
                 time.sleep(5)
             
             if not done:
@@ -56,5 +60,19 @@ if __name__ == "__main__":
             sys.exit(0)
 
         # done = True
-    print("dying")
+    #check for id.txt.done files. If so, do NOT launch sbatch command.
+    # placeChildFlag(os.path.join(self.root, self.subfolders['send_to_parent'], f'dead{self.id}.txt') 
+    if os.path.exists(child.alive):
+        os.remove(child.alive)
+    if os.path.exists(child.alive + '.done'):
+        print("task completely finished")
+
+    else:
+        if os.path.exists(child.alive + '.cycle'):
+            os.remove(child.alive + '.cycle')
+        print(f"refreshing worker {child.id}")
+        os.system(f'bash refreshWorker.sh {line_args.exp_name} {line_args.args_file} {line_args.id}')
+        print("stuff")
+
+
     child.pair.env.close()

@@ -122,10 +122,18 @@ def updatePairs(pairs, answers, task_type):
                     each_pair.nn.load_state_dict(nn)
 
 
+def cycleWorkers(parent):
+    path = os.path.join(parent.root,
+                        parent.subfolders['alive_signals'])
+
+    alive = os.listdir(path)
+
+    for a in alive:
+        parent.placeChildFlag(os.path.join(path, a) + '.cycle')
+
 def dieAndKillChildren(parent, pairs):
 
     # [pair.env.close() for pair in pairs]
-
     path = os.path.join(parent.root,
                         parent.subfolders['alive_signals'])
 
@@ -133,7 +141,8 @@ def dieAndKillChildren(parent, pairs):
 
     for a in alive:
         os.remove(os.path.join(path, a))
-
+        # create #.txt.done files. 
+        parent.placeChildFlag(os.path.join(path, a) + '.done')
 
 def perform_transfer(pairs, answers, poet_loop_counter, unique_run_id):
     """
@@ -258,6 +267,21 @@ def send_work(distributed_work, task, parent, unique_run_id, poet_loop_counter):
                                popsize=args.popsize)
 
 
+def getChildren(parent):
+
+    children = callOut(parent)
+    print(children)
+
+    # get available children
+    availableChildren = parent.isChildAvailable(children)
+
+    # if list is empty, wait and check again
+    while not bool(availableChildren):
+        time.sleep(5)
+        availableChildren = parent.isChildAvailable(children)
+
+    return availableChildren
+
 
 ####################### HELPER FUNCTIONS ##########################
 
@@ -326,20 +350,16 @@ if __name__ == "__main__":
     time.sleep(20)
     while not done:
         try:
+            if (i + 1) % 10 == 0:
+                print("refreshing workers")
+                cycleWorkers(parent)
+                time.sleep(120)
+
             tdir = os.path.join(chkpt, str(i))
             if not os.path.exists(tdir):
                 os.mkdir(tdir)
                 # check if children are alive
-            children = callOut(parent)
-            print(children)
-
-            # get available children
-            availableChildren = parent.isChildAvailable(children)
-
-            # if list is empty, wait and check again
-            while not bool(availableChildren):
-                time.sleep(5)
-                availableChildren = parent.isChildAvailable(children)
+            availableChildren = getChildren(parent)
 
             distributed_work = divideWorkBetweenChildren(pairs,  #  agents. We're not going to use the paired envs
                                                          [pairs[i].generator for i in range(len(pairs))],
@@ -374,6 +394,7 @@ if __name__ == "__main__":
             
             # Optimizations step
             #
+            availableChildren = getChildren(parent)
             print("optimizing")
             distributed_work = divideWorkBetweenChildren(pairs,
                                                          [pairs[i].generator for i in range(len(pairs))],
@@ -391,6 +412,7 @@ if __name__ == "__main__":
             #
             if (i + 1) % args.transfer_timer == 0:
                 print("transferring")
+                availableChildren = getChildren(parent)
                 distributed_work = divideWorkBetweenChildren(pairs,
                                                              [pairs[i].generator for i in range(len(pairs))],
                                                              availableChildren,
@@ -425,3 +447,4 @@ if __name__ == "__main__":
 
     print("dying")
     dieAndKillChildren(parent, pairs)
+
