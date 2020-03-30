@@ -10,6 +10,20 @@ Advisers:
 
 See tl;dr at bottom.
 
+----
+Results!!
+
+Level complexification and agent behavior evolution along a single generational branch:  
+
+dZelda (multi-door)
+
+![](842_dzelda_complexify.gif)
+
+Solarfox
+
+![](394_solarfox_complexify.gif)
+
+
 ----  
 Installing:  
 
