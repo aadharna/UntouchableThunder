@@ -23,6 +23,9 @@ Solarfox
 
 ![](394_solarfox_complexify.gif)
 
+dZelda (normalized Score)
+
+![](899_dzelda_noScore_complexify.gif)
 
 ----  
 Installing:  
