@@ -6,34 +6,38 @@ lvl_dir: ./levels   # DO NOT CHANGE
 init_lvl: start.txt # DO NOT CHANGE
 
 # generator args, will change for each game
-mechanics: ['+', 'g', '3', 'w'] #['b', 'A', 'w'] 
+mechanics: ['+', 'A', 'g', '3', 'w'] #['b', 'A', 'w'] 
 singletons: ['A', 'g'] # must be only one #['A'] #
 at_least_one: ['+']    # must have at least one # ['b'] #
 immortal: ['A', '.']   # cannot be removed #['A', '+'] #
 floor: ['.']           # base tile. cannot be moved #['+'] #
-probs: [0.2, 0.5, 0.3] # [remove, spawn, move] probabilities
+minimal: ['w']
+probs: [0.25, 0.5, 0.25] # [remove, spawn, move] probabilities
 shape0: 9
 
 #network args
-action: 5
-depth: 14
+action: 6
+depth: 13
 
 # algo args
 game_len: 250
-n_games: 2000
+n_games: 1500
 DE_algo: DE
-popsize: 500
+popsize: 50
 mutation_timer: 25
 mutation_rate: 0.8
 transfer_timer: 10
 rl: False
-max_children: 10
-max_envs: 50
+max_children: 8
+max_envs: 30
 comp_agent: mcts
 transfer_mc: False
-minimal_mutation: False
-mutation_radius: 0
-num_poet_loops: 2
+minimal_mutation: True
+mutation_radius: 1
+num_poet_loops: 5000
 result_prefix: .. # DO NOT CHANGE!!
 start_fresh: True
+
+# run test without score; only win
+no_score: True
 
