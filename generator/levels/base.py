@@ -142,16 +142,16 @@ class Generator:
             conflicting = True
             new_location = (0, 0)
             while conflicting:
-                new_location = (np.random.randint(0, self._length),   # [, )  in, ex
-                                np.random.randint(0, self._height))
+                new_location = (np.random.randint(1, self._length),   # [, )  in, ex
+                                np.random.randint(1, self._height))
                 # print(f"potential location {new_location}")
-                if minimal:
+                if minimal and sprite in self.args.minimal:
                     if previous is None:
                         previous = new_location
 
-                    _minX = max(0, previous[0] - r)
+                    _minX = max(1, previous[0] - r)
                     _maxX = min(previous[0] + r + 1, self._length)
-                    _minY = max(0, previous[1] - r)
+                    _minY = max(1, previous[1] - r)
                     _maxY = min(previous[1] + r + 1, self._height)
                     new_location = (np.random.randint(_minX, _maxX),   # [, )  in, ex
                                     np.random.randint(_minY, _maxY))

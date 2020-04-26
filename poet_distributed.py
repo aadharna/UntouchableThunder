@@ -195,7 +195,7 @@ def perform_transfer(pairs, answers, poet_loop_counter, unique_run_id):
                       'w+') as fname:
                 pass
 
-def pass_mc(gridGame):
+def pass_mc(gridGame, unique_run_id, poet_loop_counter):
     print("testing MC")
     
     path_to_game = f'./ext/GVGAI_GYM/games/{args.game}_v0/{args.game}.txt'
@@ -220,11 +220,23 @@ def pass_mc(gridGame):
     if not wonGameRandomly and wonGameMCTS:
         return True
 
+    difficulty = ''
+    if wonGameRandomly:
+        difficulty += '.easy'
+    if not wonGameMCTS:
+        difficulty += '.hard'
+
+    level = os.path.join(f'{args.result_prefix}/results_{unique_run_id}/rejected',
+                           f'poet{poet_loop_counter}_lvl{gridGame.id}{difficulty}.txt')
+
+    with open(level, 'w+') as fname:
+        fname.write(str(gridGame))
+
     return False
 
-def get_child_list(parent_list, max_children, unique_run_id):
+def get_child_list(parent_list, max_children, unique_run_id, stats, poet_loop_counter):
     child_list = []
-
+    passed = 0
     mutation_trial = 0
     while mutation_trial < max_children:
         print(f"mutation_trial {mutation_trial + 1}/{max_children}")
@@ -236,20 +248,23 @@ def get_child_list(parent_list, max_children, unique_run_id):
 
         mutation_trial += 1
 
-        if pass_mc(new_gen):
+        if pass_mc(new_gen, unique_run_id, poet_loop_counter):
+            passed += 1
             child_list.append(MinimalPair(unique_run_id=unique_run_id,
                                           generator=new_gen,
                                           prefix=args.result_prefix,
-                                          parent=parent.nn))
+                                          parent=parent.nn,
+                                          game=parent.game))
 
             tag = os.path.join(f'{args.result_prefix}',
                                f'results_{unique_run_id}',
                                f'{child_list[-1].id}/parent_is_{parent.id}.txt')
             with open(tag, 'w+') as fname:
                 pass
-
+    stats[poet_loop_counter]['viable'] = passed / max_children
     # speciation or novelty goes here
     #
+
     return child_list
 
 def send_work(distributed_work, task, parent, unique_run_id, poet_loop_counter):
@@ -260,7 +275,7 @@ def send_work(distributed_work, task, parent, unique_run_id, poet_loop_counter):
                                work_dict=distributed_work[worker_id],
                                worker_id=worker_id,
                                task_id=task,
-                               poet_loop_counter=i,
+                               poet_loop_counter=poet_loop_counter,
                                rl=args.rl,
                                algo=args.DE_algo,
                                ngames=args.n_games,
@@ -320,7 +335,7 @@ if __name__ == "__main__":
 
     parent = ADPParent(prefix=f"{args.result_prefix}/results_{_args.exp_name}")
     unique_run_id = _args.exp_name
-    net = Net(6, 13)
+    net = Net(args.action, args.depth)
     net.load_state_dict(torch_load('./start.pt'))
 
     lvl = _initialize(os.path.join(args.lvl_dir, f"{args.game}_{args.init_lvl}"), d=args.shape0)
@@ -334,6 +349,8 @@ if __name__ == "__main__":
                           generation=0)
     generator.to_file(0, args.game)
     
+    archive = []
+
     pairs = [MinimalPair(unique_run_id=unique_run_id,
                          game=args.game,
                          generator=generator,
@@ -344,12 +361,19 @@ if __name__ == "__main__":
     done = False
     i = 0
     chkpt = f"{args.result_prefix}/results_{unique_run_id}/POET_CHKPT"
+    reject = f'{args.result_prefix}/results_{unique_run_id}/rejected'
     if not os.path.exists(chkpt):
         os.mkdir(chkpt)
+    if not os.path.exists(reject):
+        os.mkdir(reject)
     
+    stats = {}
+
     time.sleep(20)
     while not done:
         try:
+            stats[i] = {}
+
             if (i + 1) % 10 == 0:
                 print("refreshing workers")
                 cycleWorkers(parent)
@@ -362,7 +386,7 @@ if __name__ == "__main__":
             availableChildren = getChildren(parent)
 
             distributed_work = divideWorkBetweenChildren(pairs,  #  agents. We're not going to use the paired envs
-                                                         [pairs[i].generator for i in range(len(pairs))],
+                                                         [pairs[j].generator for j in range(len(pairs))],
                                                          availableChildren)
 
             print("evaluating")
@@ -379,9 +403,10 @@ if __name__ == "__main__":
             print("mutation?")
             if i % args.mutation_timer == 0:
                 print("yes")
-                new_envs = get_child_list(pairs, args.max_children, unique_run_id)
+                new_envs = get_child_list(pairs, args.max_children, unique_run_id, stats, i)
 
             pairs.extend(new_envs)
+            #archive.extend(new_envs)
             del new_envs # this does not delete the children that have now been placed in pairs.
             # print(len(pairs))
 
@@ -390,6 +415,7 @@ if __name__ == "__main__":
             if len(pairs) > args.max_envs:
                 aged_pairs = sorted(pairs, key=lambda x: x.id, reverse=True)
                 pairs = aged_pairs[:args.max_envs]
+                archive.extend(aged_pairs[args.max_envs:])
                 del aged_pairs
             
             # Optimizations step
@@ -397,7 +423,7 @@ if __name__ == "__main__":
             availableChildren = getChildren(parent)
             print("optimizing")
             distributed_work = divideWorkBetweenChildren(pairs,
-                                                         [pairs[i].generator for i in range(len(pairs))],
+                                                         [pairs[j].generator for j in range(len(pairs))],
                                                          availableChildren)
 
             send_work(distributed_work, ADPTASK.OPTIMIZE, parent, unique_run_id, i)
@@ -414,7 +440,7 @@ if __name__ == "__main__":
                 print("transferring")
                 availableChildren = getChildren(parent)
                 distributed_work = divideWorkBetweenChildren(pairs,
-                                                             [pairs[i].generator for i in range(len(pairs))],
+                                                             [pairs[j].generator for j in range(len(pairs))],
                                                              availableChildren,
                                                              transfer_eval=True)
 

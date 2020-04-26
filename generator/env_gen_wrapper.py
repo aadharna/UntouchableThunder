@@ -5,6 +5,8 @@ import numpy as np
 from generator.levels.base import Generator
 from generator.levels.base import _initialize
 
+from utils.loader import load_from_yaml
+
 class GridGame(gym.Wrapper):
     # static variable. Increment when new GG objs are created
     # and use value as part of unique id.
@@ -33,6 +35,8 @@ class GridGame(gym.Wrapper):
         self.lvl_name = lvl_name
         self.lvl_path = os.path.join(path, lvl_name)
         self.mechanics = mechanics
+
+        self.args = load_from_yaml(args_file)
         
         # if we do not have parsed location data on the sprites, read in a level and use that
         if not bool(locations):
@@ -128,6 +132,14 @@ class GridGame(gym.Wrapper):
                              # This should add some gradient signal.
         self.score += reward
         self.done = info['winner']
+
+        if self.args.no_score:
+            if self.done == 3:
+                reward = 1 - (self.steps / self.args.game_len)
+            elif self.done == 2:
+                reward = (self.steps / self.args.game_len) - 1
+            else:
+                reward = 0
 
         # update orientation
         if action != self.prev_move and action in self.rotating_actions:

@@ -11,6 +11,7 @@ from optimization.runners import run_TJ_DE, run_ppo, run_CoDE, run_DE
 # from devo import jDE, DE, CoDE
 
 from utils.utils import save_obj, load_obj
+from utils.loader import load_from_yaml
 import logging
 #logging.basicConfig(filename='example.log',level=logging.DEBUG)
 
@@ -58,6 +59,8 @@ class ADPChild:
                                 ),
                     master=False,  # won't use time_stamp or prefix
                     )
+
+        self.args = load_from_yaml(args_file)
 
         self.game_length = self.pair.env.play_length
 
@@ -150,7 +153,7 @@ class ADPChild:
             # get score of optimized weights
             score = self.pair.evaluate(rl=rl)
             state_dict = self.pair.nn.state_dict()
-            
+
             # save best weights
             #destination = f"{self.pair.prefix}/results_{run_id}/{chromosome_id}/final_weights_poet{poet_loop_counter}.pt"
             #torch_save(state_dict, destination)
