@@ -11,6 +11,15 @@ Advisers:
 See tl;dr at bottom.
 
 ```
+git clone --recursive git@github.com:aadharna/UntouchableThunder.git   
+conda env create -f env.yml  
+conda activate thesis   
+cd UntouchableThunder/ext  
+# pip install each of the submodules with:  
+pip install -e .
+``` 
+
+```
 To run an experiment:   
     - Edit the `args.yml` file to your specification  
         - max_envs should be equal to 1 - however many cores you want to use the program  
@@ -39,16 +48,6 @@ dZelda (normalized Score)
 
 ![](gifs/939_dzelda_noScore_complexify.gif)
 ----  
-Installing:  
-
-```
-git clone --recursive git@github.com:aadharna/UntouchableThunder.git`   
-conda env create -f env.yml  
-conda activate thesis   
-cd UntouchableThunder/ext  
-# pip install each of the submodules with:  
-pip install -e .
-```   
 
 The main phenomenon under investigation here is the co-evolution of agents and environments such that agents maximize the env, while environments adapt to minimize the agents (while maintaining playability).  
 
