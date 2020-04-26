@@ -17,17 +17,17 @@ Level complexification and agent behavior evolution along a single generational 
 
 dZelda (multi-door)
 
-![](842_dzelda_complexify.gif)
+![](gifs/842_dzelda_complexify.gif)
 
 Solarfox
 
-![](394_solarfox_complexify.gif)
+![](gifs/394_solarfox_complexify.gif)
 
 dZelda (normalized Score)
 
-![](889_dzelda_noScore_complexify.gif)
+![](gifs/889_dzelda_noScore_complexify.gif)
 
-![](939_dzelda_noScore_complexify.gif)
+![](gifs/939_dzelda_noScore_complexify.gif)
 ----  
 Installing:  
 
@@ -41,10 +41,20 @@ pip install -e .
 ```   
 
 
+To run an experiment: 
+    - Edit the `args.yml` file to your specification
+        - max_envs should be equal to 1 - however many cores you want to use the program
+        - if games is changed to Solarfox, also edit `actions` and `depth` to 5, 14 respectively.
+    - launch a tmux terminal 
+    - activate conda thesis
+    - bash run\_exp.sh expNameWhatever
+
+----  
+
  
 The main phenomenon under investigation here is the co-evolution of agents and environments such that agents maximize the env, while environments adapt to minimize the agents (while maintaining playability).  
 
-Basic idea: I was thinking about competitive co-evolution several weeks ago (before I knew that was the term), and thought to myself, "wouldn't it be neat if on one-hand we had an agent, A,  learning to play a level, but then we also had an adversarial agent, B, who was editing the levels that the first agent was trying to learn. **Would this help with generalizing what A was learning?S** as Deep-RL Methods can very easily overfit (which is a problem that is exacerbated by the fact that in RL, we test on the same environment we train on!). 
+Basic idea: I was thinking about competitive co-evolution several weeks ago (before I knew that was the term), and thought to myself, "wouldn't it be neat if on one-hand we had an agent, A,  learning to play a level, but then we also had an adversarial agent, B, who was editing the levels that the first agent was trying to learn. **Would this help with generalizing what A was learning?** as Deep-RL Methods can very easily overfit (which is a problem that is exacerbated by the fact that in RL, we test on the same environment we train on!). 
 
 I then came across [UberEngineering's POET](https://eng.uber.com/poet-open-ended-deep-learning/) -- Paired Open Ended Trailblazer, which does exactly that but with genetic algorithms for both 'agents'/sides of the problem (game playing agent and level generation) in a paired manner. From POET, this type of systems: Endlessly Generates Increasingly Complex and Diverse Learning Environments and their Solutions! The result is something like **Curriculum Learning**.
 
