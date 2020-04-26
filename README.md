@@ -26,7 +26,7 @@ To run an experiment:
         - if games is changed to Solarfox, also edit `actions` and `depth` to 5, 14 respectively.  
     - launch a tmux terminal   
     - activate conda thesis   
-    - bash run\_exp.sh expNameWhatever  
+    - bash run_exp.sh expNameWhatever  
 ```
 
 ----
