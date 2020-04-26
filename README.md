@@ -7,6 +7,7 @@ Advisers:
 
 	- Dr. Julian Togelius (NYU-Tandon)
 	- Dr. Damian Lyons (Fordham University)
+	- Dr. Lisa Soros (NYU-Tandon)
 
 See tl;dr at bottom.
 
