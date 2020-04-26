@@ -10,6 +10,16 @@ Advisers:
 
 See tl;dr at bottom.
 
+```
+To run an experiment:   
+    - Edit the `args.yml` file to your specification  
+        - max_envs should be equal to 1 - however many cores you want to use the program  
+        - if games is changed to Solarfox, also edit `actions` and `depth` to 5, 14 respectively.  
+    - launch a tmux terminal   
+    - activate conda thesis   
+    - bash run\_exp.sh expNameWhatever  
+```
+
 ----
 Results!!
 
@@ -40,18 +50,6 @@ cd UntouchableThunder/ext
 pip install -e .
 ```   
 
-
-To run an experiment: 
-    - Edit the `args.yml` file to your specification
-        - max_envs should be equal to 1 - however many cores you want to use the program
-        - if games is changed to Solarfox, also edit `actions` and `depth` to 5, 14 respectively.
-    - launch a tmux terminal 
-    - activate conda thesis
-    - bash run\_exp.sh expNameWhatever
-
-----  
-
- 
 The main phenomenon under investigation here is the co-evolution of agents and environments such that agents maximize the env, while environments adapt to minimize the agents (while maintaining playability).  
 
 Basic idea: I was thinking about competitive co-evolution several weeks ago (before I knew that was the term), and thought to myself, "wouldn't it be neat if on one-hand we had an agent, A,  learning to play a level, but then we also had an adversarial agent, B, who was editing the levels that the first agent was trying to learn. **Would this help with generalizing what A was learning?** as Deep-RL Methods can very easily overfit (which is a problem that is exacerbated by the fact that in RL, we test on the same environment we train on!). 
