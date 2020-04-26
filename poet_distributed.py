@@ -336,9 +336,10 @@ if __name__ == "__main__":
     parent = ADPParent(prefix=f"{args.result_prefix}/results_{_args.exp_name}")
     unique_run_id = _args.exp_name
     net = Net(args.action, args.depth)
-    net.load_state_dict(torch_load('./start.pt'))
+    #if args.game == 'dzelda':
+    #    net.load_state_dict(torch_load(f'./start.pt'))
 
-    lvl = _initialize(os.path.join(args.lvl_dir, f"{args.game}_{args.init_lvl}"), d=args.shape0)
+    lvl = _initialize(os.path.join(args.lvl_dir, f"{args.game}_{args.init_lvl}"))
     lvl_shape = lvl.shape
     generator = Generator(game=args.game, 
                           args_file=_args.args_file,
