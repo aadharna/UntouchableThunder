@@ -24,10 +24,36 @@ pip install -e .
 To run an experiment:   
     - Edit the `args.yml` file to your specification  
         - max_envs should be equal to 1 - however many cores you want to use the program  
-        - if games is changed to Solarfox, also edit `actions` and `depth` to 5, 14 respectively.  
+        - if games is changed to Solarfox, also edit `actions` and `depth` to 5, 14 respectively and the generator arguments.
+	- edit the generator arguments.  
     - launch a tmux terminal   
-    - activate conda thesis   
+    - conda activate thesis   
     - bash run_exp.sh expNameWhatever  
+
+NB: I use OMP to ensure each worker thread only uses one CPU-thread. Occasionally the worker thread dies on a refresh command. Just use the add_workers.sh file to add new workers (go in and assign the ids you want). Also, occasionally, the worker thread will die for reasons relating to GVGAI. When that happens, you need to place a tag in the `../results_expNameWhatever/communication/incoming` folder. 
+
+	- e.g. touch ../results_expNameWhatever/communication/incoming/dead{WORKER_ID}.txt
+
+This will alert the master thread that the worker/child has died, and then it will reassign that work to an alive and available worker. There are some cases where the worker will catch the error itself, but not all of them. For some reason I cannot extract out the PythonError that occurs to add a catch for it which tells me it's probably on the java side of things.   
+```
+
+```
+If you want to add a new environment there is a bit of boiler-plate that needs to be created:
+
+	1) Create a minimal environment, and place it in the `levels` directory.
+		- title: {game}_start.txt
+	2) Extract out the "static" portions of the map. The things that are not allowed to be changed: 
+		- e.g. boundary walls in dZelda cannot be move/removed.
+		- Save those as a coordinate form in pickle file also in `levels` directory
+			- title: {game}_boundary.pkl
+	3) Given the new game, this almost certainly means the mapTensor shape is different. Threfore, you will need update the shape of the neural network, Net (Yes, I know the name is bad. I should fix it when I have time). This is a policy network. The file is at: 
+
+		- agent/models.py
+
+		- Most likely, the layer that broke was: self.fc1 = ...
+		- Basically, be prepared to fiddle a little bit with the internal structure.
+	4) Update args.yml params of: actions and depth (Network args for when you initialize).
+
 ```
 
 ----
