@@ -20,7 +20,7 @@ action: 6
 depth: 13
 
 # algo args
-game_len: 250
+game_len: 500
 n_games: 1500
 DE_algo: DE
 popsize: 50
@@ -32,9 +32,9 @@ max_children: 8
 max_envs: 30
 comp_agent: mcts
 transfer_mc: False
-minimal_mutation: True
+minimal_mutation: False
 mutation_radius: 1
-num_poet_loops: 5000
+num_poet_loops: 5
 result_prefix: .. # DO NOT CHANGE!!
 start_fresh: True
 
