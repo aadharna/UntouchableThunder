@@ -21,6 +21,7 @@ pip install -e .
 ``` 
 
 To run an experiment:   
+	
 	1) Edit the `args.yml` file to your specification  
 		- max_envs should be equal to 1 - however many cores you want to use the program  
         	- if games is changed to Solarfox, also edit `actions` and `depth` to 5, 14 respectively and the generator arguments.
