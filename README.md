@@ -21,13 +21,13 @@ pip install -e .
 ``` 
 
 To run an experiment:   
-    - Edit the `args.yml` file to your specification  
+    * Edit the `args.yml` file to your specification  
         - max_envs should be equal to 1 - however many cores you want to use the program  
         - if games is changed to Solarfox, also edit `actions` and `depth` to 5, 14 respectively and the generator arguments.
 	- edit the generator arguments.  
-    - launch a tmux terminal   
-    - conda activate thesis   
-    - bash run_exp.sh expNameWhatever  
+    * launch a tmux terminal   
+    * conda activate thesis   
+    * bash run_exp.sh expNameWhatever  
 
 NB: I use OMP to ensure each worker thread only uses one CPU-thread. Occasionally the worker thread dies on a refresh command. Just use the add_workers.sh file to add new workers (go in and assign the ids you want). Also, occasionally, the worker thread will die for reasons relating to GVGAI. When that happens, you need to place a tag in the `../results_expNameWhatever/communication/incoming` folder. 
 
@@ -45,7 +45,9 @@ If you want to add a new environment there is a bit of boiler-plate that needs t
 		- e.g. boundary walls in dZelda cannot be move/removed.
 		- Save those as a coordinate form in pickle file also in `levels` directory
 			- title: {game}_boundary.pkl
-	3) Given the new game, this almost certainly means the mapTensor shape is different. Threfore, you will need update the shape of the neural network, Net (Yes, I know the name is bad. I should fix it when I have time). This is a policy network. The file is at: 
+	3) Given the new game, this almost certainly means the mapTensor shape is different. Therefore,
+	 you will need update the shape of the neural network, Net (Yes, I know the name is bad. 
+	 I should fix it when I have time). This is a policy network. The file is at: 
 
 		- agent/models.py
 
