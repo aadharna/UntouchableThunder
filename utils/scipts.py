@@ -68,8 +68,9 @@ def get_parent(directory):
 
 
 def get_tree(seedparent, lvl, folder):
-
-    x = [(seedparent, f'lvl{lvl}.txt')]
+    
+    parent = seedparent
+    x = [(parent, f'lvl{lvl}.txt')]
     while not parent == 0:
         parent, lvl = get_parent(parent)
         x.append((parent, lvl))                                                                              
