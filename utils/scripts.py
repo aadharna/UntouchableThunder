@@ -86,3 +86,15 @@ def get_tree(seedparent, lvl, folder):
             shutil.copy(f'./{f}/{net}', f'../../{folder}/{i}_{net}')
         shutil.copy(f'./{f}/{lvl}', f'../../{folder}/{i}_{lvl}')
 
+
+def createMCTSCurve(treeSize): 
+    """Given a folder of results created by `call_java_comp_agent: limited_mcts` search through that folder, load the results of the treesize experiment ran, and save that to a csv file. 
+    result 0 = lose, 1 = win"""
+    results = {}
+    for lvl in sorted(os.listdir(f"./mcts{treeSize}"), key=lambda x: int(x.split('.')[0])):
+        lvl_id = int(lvl.split(".")[0])
+        results[lvl_id] = json.load(open(f"mcts{treeSize}/{lvl}"))
+    df = pd.DataFrame.from_dict(results, orient='index')
+    df.to_csv(f"mcts{treeSize}_results.csv")
+
+
