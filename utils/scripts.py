@@ -1,5 +1,5 @@
 import pandas as pd; import os 
-
+import json
 
 def make_transfer_graph():
 
@@ -84,7 +84,7 @@ def get_tree(seedparent, lvl, folder):
     for i, (net, f, lvl) in enumerate(q):
         if net is not None:
             shutil.copy(f'./{f}/{net}', f'../../{folder}/{i}_{net}')
-        shutil.copy(f'./{f}/{lvl}', f'../../{folder}/{i}_{lvl}')
+        shutil.copy(f'./{f}/{lvl}', f'../../{folder}/{i}_{f}.txt')
 
 
 def createMCTSCurve(treeSize): 
