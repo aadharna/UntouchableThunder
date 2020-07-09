@@ -3,7 +3,7 @@ from scipy.spatial.distance import euclidean
 from generator.levels.base import Generator, _initialize
 from utils.AStar import astar
 
-def getLvlCharacterization(lvlpath, seedLvls, args_file):
+def getdZeldaLvlCharacterization(lvlpath, seedLvls, args_file):
     tile = _initialize(lvlpath)
     gen = Generator(tile, shape=tile.shape, path=seedLvls, args_file=args_file)
     
