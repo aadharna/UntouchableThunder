@@ -68,7 +68,7 @@ dZelda (multi-door)
 
 Solarfox
 
-![](gifs/394_solarfox_complexify.gif)
+![](gifs/smallSolarfox.gif)
 
 dZelda (normalized Score)
 
