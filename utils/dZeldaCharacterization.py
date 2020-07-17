@@ -8,7 +8,8 @@ def getdZeldaLvlCharacterization(lvlpath, seedLvls, args_file):
     gen = Generator(tile, shape=tile.shape, path=seedLvls, args_file=args_file)
     
     booleanMap = gen.tile_world
-    valid = ~np.logical_xor((booleanMap != 'w'), (booleanMap != '3'))
+    valid = booleanMap != 'w'
+    #valid = ~np.logical_xor((booleanMap != 'w'), (booleanMap != '3'))
     numericMap = np.zeros(shape=booleanMap.shape)
     numericMap[valid] = 0
     numericMap[~valid] = 1
@@ -33,6 +34,7 @@ def getdZeldaLvlCharacterization(lvlpath, seedLvls, args_file):
     featureSet = [len(gen.locations['g']), 
                   len(gen.locations['+']), 
                   len(gen.locations['3']), 
+                  len(gen.locations['w']),
                   len(keyPath), 
                   len(doorPath)]
     
