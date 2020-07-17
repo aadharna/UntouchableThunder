@@ -1,9 +1,12 @@
 import pandas as pd; import os 
 import json
 
+from utils.utils import save_obj
+
 def make_transfer_graph():
 
     c = {} 
+    toFromTracker = {}
     for d in os.listdir('.'): 
          if os.path.isdir(d): 
             try: 
@@ -13,13 +16,16 @@ def make_transfer_graph():
             for i in range(10, 5010, 10): 
                 j = i - 1 
                 if j not in c: 
-                    c[j] = 0 
+                    c[j] = 0
+                    toFromTracker[j] = []
                 for f in os.listdir(f'./{_net}'): 
                     if f'poet{j}_network' in f: 
                         c[j] += 1
+                        toFromTracker[j].append((_net, int(f.split("network_")[1].split("_")[0])))
     
     df = pd.DataFrame.from_dict(c, orient='index') 
-    df.to_csv("transfers_per_attempt.csv") 
+    df.to_csv("transfers_per_attempt.csv")
+    save_obj(toFromTracker, '.', 'exactTransfers')
     
     return
 
