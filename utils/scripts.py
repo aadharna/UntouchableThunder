@@ -104,3 +104,24 @@ def createMCTSCurve(treeSize):
     df.to_csv(f"mcts{treeSize}_results.csv")
 
 
+def createLearningDeltas(exp):
+    deltas = {} 
+    for d in os.listdir('.'): 
+        try: 
+            lvl = int(d) 
+        except ValueError as e: 
+            continue
+        files = os.listdir(f'./{lvl}')
+        opt = [f for f in files if 'scores' in f]
+        wins = [f for f in files if 'win' in f] 
+        sortedWins = sorted(wins, key=lambda x: int(x.split('poet')[1].split('.')[0]))
+        sortedOpt = sorted(opt, key=lambda x: int(x.split("poet")[1].split("_")[0]))
+        birth = int(sortedOpt[0].split('poet')[1].split('_')[0]) 
+        try: 
+            firstVictory = int(sortedWins[0].split('poet')[1].split('.')[0]) 
+        except IndexError as e: 
+            firstVictory = np.inf 
+        deltas[lvl] = firstVictory - birth
+
+    save_obj(deltas, '.', f'{exp}.learningDelta')
+
