@@ -159,6 +159,8 @@ def perform_transfer(pairs, answers, poet_loop_counter, unique_run_id):
     :return:
     """
 
+    new_weights = {}
+
     for k, fixed_env_pair in enumerate(pairs):
         current_score = answers[(fixed_env_pair.id, fixed_env_pair.generator.id)]['score']
         current_net = fixed_env_pair.nn.state_dict()
@@ -182,16 +184,15 @@ def perform_transfer(pairs, answers, poet_loop_counter, unique_run_id):
                     current_score = j_score
                     current_net   = changing_agent_pair.nn.state_dict()
                     transferred_id = changing_agent_pair.id
+                    new_weights[fixed_env_pair.id] = (current_net, transferred_id)
 
-        #transfer into environment, k, the agent, j, who performed the best.
-        if not fixed_env_pair.id == transferred_id:
-            fixed_env_pair.nn.load_state_dict(current_net)
-
-            # todo talk with lisa about if
-            # fixed_env_pair.id = transferred_id ? It's not clear to me.
+    for k, fixed_env_pair in enumerate(pairs):
+        if fixed_env_pair.id in new_weights:
+            state_dict, new_agent_id = new_weights[fixed_env_pair.id]
+            fixed_env_pair.nn.load_state_dict(state_dict)
 
             with open(os.path.join(f'{args.result_prefix}/results_{unique_run_id}/{fixed_env_pair.id}',
-                                   f'poet{poet_loop_counter}_network_{transferred_id}_transferred_here.txt'),
+                                   f'poet{poet_loop_counter}_network_{new_agent_id}_transferred_here.txt'),
                       'w+') as fname:
                 pass
 
