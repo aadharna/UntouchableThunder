@@ -14,3 +14,7 @@
 [submodule "ext/GVGAI_GYM"]
 	path = ext/GVGAI_GYM
 	url = git@github.com:aadharna/GVGAI_GYM.git
+
+[submodule "ext/a2c_gvgai"]
+	path = ext/a2c_gvgai
+	url = https://github.com/njustesen/a2c_gvgai.git
