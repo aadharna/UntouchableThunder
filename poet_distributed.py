@@ -9,8 +9,9 @@ from utils.ADPParent import ADPParent
 from utils.ADPTASK_ENUM import ADPTASK
 
 from agent.models import Net
-# from generator.env_gen_wrapper import GridGame
-from generator.levels.base import Generator, _initialize
+from generator.levels.EvolutionaryGenerator import EvolutionaryGenerator
+from generator.levels.IlluminatingGenerator import IlluminatingGenerator
+from generator.levels.base import _initialize
 from agent.minimalPair import MinimalPair
 
 from torch import save as torch_save
@@ -342,13 +343,13 @@ if __name__ == "__main__":
 
     lvl = _initialize(os.path.join(args.lvl_dir, f"{args.game}_{args.init_lvl}"))
     lvl_shape = lvl.shape
-    generator = Generator(game=args.game, 
-                          args_file=_args.args_file,
-                          tile_world=lvl,
-                          shape=lvl.shape,
-                          path=args.lvl_dir,
-                          mechanics=args.mechanics,
-                          generation=0)
+    generator = EvolutionaryGenerator(game=args.game,
+                                      args_file=_args.args_file,
+                                      tile_world=lvl,
+                                      shape=lvl.shape,
+                                      path=args.lvl_dir,
+                                      mechanics=args.mechanics,
+                                      generation=0)
     generator.to_file(0, args.game)
     
     archive = []
