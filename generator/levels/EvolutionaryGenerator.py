@@ -14,10 +14,9 @@ class EvolutionaryGenerator(BaseGenerator):
                  shape,
                  args_file='./args.yml',
                  path='/envs/games/zelda_v0/',
-                 mechanics=[],
                  generation=0,
                  locations={},
-                 game='dzelda'):
+                 **kwargs):
         """
 
         :param tile_world: 2d numpy array of map
@@ -63,6 +62,7 @@ class EvolutionaryGenerator(BaseGenerator):
         :return:
         """
         split_lvl = new_lvl.split('\n')[:-1]  # remove empty '' at the end
+        print(split_lvl)
 
         o = np.array([['0'] * self._height] * self._length, dtype=str)
         for i in range(self._length):
@@ -130,7 +130,7 @@ class EvolutionaryGenerator(BaseGenerator):
             # np.save(f"{path.split('.')[0]}.npy", self.tile_world)
         return path
 
-    def mutate(self, mutationRate, minimal=False, r=1):
+    def mutate(self, mutationRate, minimal=False, r=1, **kwargs):
         """randomly edit parts of the level!
         :param mutationRate: e.g. 0.2
         :param minimal: boolean. Should the mutation be within a radius of the original pos

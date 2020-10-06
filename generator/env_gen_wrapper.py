@@ -3,6 +3,7 @@ import gym
 import numpy as np
 
 from generator.levels.EvolutionaryGenerator import EvolutionaryGenerator
+from generator.levels.IlluminatingGenerator import IlluminatingGenerator
 from generator.levels.base import _initialize
 
 from utils.loader import load_from_yaml
@@ -37,36 +38,46 @@ class GridGame(gym.Wrapper):
         self.mechanics = mechanics
 
         self.args = load_from_yaml(args_file)
+
+        if self.args.generatorType  == "evolutionary":
         
-        # if we do not have parsed location data on the sprites, read in a level and use that
-        if not bool(locations):
-            #set up first level, read it in from disk.
-            lvl = _initialize(self.lvl_path, d=shape[0])
-            self.lvl_shape = lvl.shape
-            self.generator = EvolutionaryGenerator(game=self.game,
-                                                   args_file=args_file,
-                                                   tile_world=lvl,
-                                                   shape=lvl.shape,
-                                                   path=path,
-                                                   mechanics=self.mechanics,
-                                                   generation=gen_id,
-                                                   locations=locations)
-        
-        # this condition will be used 99% of the time.
-        else:
-            # use generated lvl contained within locations dict.
-            self.lvl_shape = shape
-            self.generator = EvolutionaryGenerator(game=self.game,
-                                                   args_file=args_file,
-                                                   tile_world=None,
-                                                   shape=shape,
-                                                   path=path,
-                                                   mechanics=self.mechanics,
-                                                   generation=gen_id,
-                                                   locations=locations)
-        # save to disk, can comment out if that lets me multithread.
-        self.generator.to_file(GridGame.env_count, self.game)
-        
+            # if we do not have parsed location data on the sprites, read in a level and use that
+            if not bool(locations):
+                #set up first level, read it in from disk.
+                lvl = _initialize(self.lvl_path, d=shape[0])
+                self.lvl_shape = lvl.shape
+                self.generator = EvolutionaryGenerator(game=self.game,
+                                                       args_file=args_file,
+                                                       tile_world=lvl,
+                                                       shape=lvl.shape,
+                                                       path=path,
+                                                       mechanics=self.mechanics,
+                                                       generation=gen_id,
+                                                       locations=locations)
+
+            # this condition will be used 99% of the time.
+            else:
+                # use generated lvl contained within locations dict.
+                self.lvl_shape = shape
+                self.generator = EvolutionaryGenerator(game=self.game,
+                                                       args_file=args_file,
+                                                       tile_world=None,
+                                                       shape=shape,
+                                                       path=path,
+                                                       mechanics=self.mechanics,
+                                                       generation=gen_id,
+                                                       locations=locations)
+            # save to disk, can comment out if that lets me multithread.
+            # self.generator.to_file(GridGame.env_count, self.game)
+
+        elif self.args.generatorType == "illuminating":
+            self.generator = IlluminatingGenerator(shape=self.generator.shape,
+                                                    args_file=self.generator.args_file,
+                                                    path=self.generator.base_path,
+                                                    generation=self.generator.generation + 1,
+                                                    lvl_path=self.lvl_path)
+
+
         # return picture states?
         self.pics = images
         
