@@ -253,6 +253,7 @@ def get_child_list(parent_list, max_children, unique_run_id, stats, poet_loop_co
         if pass_mc(new_gen, unique_run_id, poet_loop_counter):
             passed += 1
             child_list.append(MinimalPair(unique_run_id=unique_run_id,
+                                          generatorType=args.generatorType,
                                           generator=new_gen,
                                           prefix=args.result_prefix,
                                           parent=parent.nn,
@@ -343,19 +344,24 @@ if __name__ == "__main__":
 
     lvl = _initialize(os.path.join(args.lvl_dir, f"{args.game}_{args.init_lvl}"))
     lvl_shape = lvl.shape
-    generator = EvolutionaryGenerator(game=args.game,
-                                      args_file=_args.args_file,
-                                      tile_world=lvl,
-                                      shape=lvl.shape,
-                                      path=args.lvl_dir,
-                                      mechanics=args.mechanics,
-                                      generation=0)
+
+    genArgs = {'game':args.game,
+               'args_file':_args.args_file,
+               'tile_world':lvl,
+               'shape':lvl.shape,
+               'path':args.lvl_dir,
+               'mechanics':args.mechanics,
+               'generation':0}
+
+    Generator = EvolutionaryGenerator if args.generatorType == "evolutionary" else IlluminatingGenerator
+    generator = Generator(**genArgs)
     generator.to_file(0, args.game)
     
     archive = []
 
     pairs = [MinimalPair(unique_run_id=unique_run_id,
                          game=args.game,
+                         generatorType=args.generatorType,
                          generator=generator,
                          parent=net,
                          prefix=args.result_prefix)

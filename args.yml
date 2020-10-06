@@ -15,26 +15,28 @@ minimal: ['w']
 probs: [0.25, 0.5, 0.25] # [remove, spawn, move] probabilities
 shape0: 9
 
+generatorType: illuminating
+
 #network args
 action: 6
 depth: 13
 
 # algo args
 game_len: 500
-n_games: 1500
+n_games: 20
 DE_algo: DE
-popsize: 50
-mutation_timer: 25
+popsize: 5
+mutation_timer: 4
 mutation_rate: 0.8
-transfer_timer: 10
+transfer_timer: 3
 rl: False
-max_children: 8
-max_envs: 30
+max_children: 2
+max_envs: 6
 comp_agent: mcts
 transfer_mc: False
 minimal_mutation: False
 mutation_radius: 1
-num_poet_loops: 5
+num_poet_loops: 12
 result_prefix: .. # DO NOT CHANGE!!
 start_fresh: True
 
