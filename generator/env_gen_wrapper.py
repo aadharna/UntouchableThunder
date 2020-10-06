@@ -2,7 +2,7 @@ import os
 import gym
 import numpy as np
 
-from generator.levels.base import Generator
+from generator.levels.EvolutionaryGenerator import EvolutionaryGenerator
 from generator.levels.base import _initialize
 
 from utils.loader import load_from_yaml
@@ -43,27 +43,27 @@ class GridGame(gym.Wrapper):
             #set up first level, read it in from disk.
             lvl = _initialize(self.lvl_path, d=shape[0])
             self.lvl_shape = lvl.shape
-            self.generator = Generator(game=self.game,
-                                       args_file=args_file,
-                                       tile_world=lvl,
-                                       shape=lvl.shape,
-                                       path=path,
-                                       mechanics=self.mechanics,
-                                       generation=gen_id,
-                                       locations=locations)
+            self.generator = EvolutionaryGenerator(game=self.game,
+                                                   args_file=args_file,
+                                                   tile_world=lvl,
+                                                   shape=lvl.shape,
+                                                   path=path,
+                                                   mechanics=self.mechanics,
+                                                   generation=gen_id,
+                                                   locations=locations)
         
         # this condition will be used 99% of the time.
         else:
             # use generated lvl contained within locations dict.
             self.lvl_shape = shape
-            self.generator = Generator(game=self.game,
-                                       args_file=args_file,
-                                       tile_world=None,
-                                       shape=shape,
-                                       path=path,
-                                       mechanics=self.mechanics,
-                                       generation=gen_id,
-                                       locations=locations)
+            self.generator = EvolutionaryGenerator(game=self.game,
+                                                   args_file=args_file,
+                                                   tile_world=None,
+                                                   shape=shape,
+                                                   path=path,
+                                                   mechanics=self.mechanics,
+                                                   generation=gen_id,
+                                                   locations=locations)
         # save to disk, can comment out if that lets me multithread.
         self.generator.to_file(GridGame.env_count, self.game)
         

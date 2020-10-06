@@ -1,7 +1,7 @@
 import os
 from copy import deepcopy
 from agent.models import Net
-from generator.levels.base import Generator
+from generator.levels.EvolutionaryGenerator import EvolutionaryGenerator
 
 class MinimalPair():
     id = 0
@@ -41,14 +41,14 @@ class MinimalPair():
         new_map, shp = self.generator.mutate(mutationRate=mutationRate,
                                              minimal=minimal,
                                              r=r)
-        gen = Generator(game=self.game, 
-                        args_file=self.generator.args_file,
-                        tile_world=None,
-                        shape=shp,
-                        path=self.generator.base_path,
-                        mechanics=self.generator.mechanics,
-                        generation=self.generator.generation + 1,
-                        locations=new_map)
+        gen = EvolutionaryGenerator(game=self.game,
+                                    args_file=self.generator.args_file,
+                                    tile_world=None,
+                                    shape=shp,
+                                    path=self.generator.base_path,
+                                    mechanics=self.generator.mechanics,
+                                    generation=self.generator.generation + 1,
+                                    locations=new_map)
 
         gen.to_file(gen.id, self.game)
         return gen

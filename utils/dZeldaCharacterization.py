@@ -1,11 +1,12 @@
 import numpy as np
 from scipy.spatial.distance import euclidean
-from generator.levels.base import Generator, _initialize
+from generator.levels.base import _initialize
+from generator.levels.EvolutionaryGenerator import EvolutionaryGenerator
 from utils.AStar import astar
 
 def getdZeldaLvlCharacterization(lvlpath, seedLvls, args_file):
     tile = _initialize(lvlpath)
-    gen = Generator(tile, shape=tile.shape, path=seedLvls, args_file=args_file)
+    gen = EvolutionaryGenerator(tile, shape=tile.shape, path=seedLvls, args_file=args_file)
     
     booleanMap = gen.tile_world
     valid = booleanMap != 'w'
