@@ -1,5 +1,7 @@
 import os
 from copy import deepcopy
+import numpy as np
+
 from agent.models import Net
 from generator.levels.EvolutionaryGenerator import EvolutionaryGenerator
 from generator.levels.IlluminatingGenerator import IlluminatingGenerator
@@ -30,13 +32,15 @@ class MinimalPair():
         self.id = MinimalPair.id
         MinimalPair.id += 1
 
-        run_folder = f'{prefix}/results_{self.unique_run_id}/'
+        self.run_folder = f'{prefix}/results_{self.unique_run_id}/'
 
-        if not os.path.exists(run_folder):
-            os.mkdir(run_folder)
-        self.agent_folder = os.path.join(run_folder, str(self.id))
+        if not os.path.exists(self.run_folder):
+            os.mkdir(self.run_folder)
+        self.agent_folder = os.path.join(self.run_folder, str(self.id))
         if not os.path.exists(self.agent_folder):
             os.mkdir(self.agent_folder)
+            self.repo = os.path.join(self.agent_folder, 'levels')
+            os.mkdir(self.repo)
         with open(f'{self.agent_folder}/lvl{self.generator.id}.txt', 'w+') as fname:
             fname.write(str(self.generator))
 
@@ -65,15 +69,14 @@ class MinimalPair():
             return gen
 
         else:
-            level = self.generator.mutate(mutationRate=mutationRate,
-                                          r=r,
-                                          env_id=self.id,
-                                          path=self.agent_folder)
-
             gen = IlluminatingGenerator(shape=self.generator.shape,
                                         args_file=self.generator.args_file,
                                         path=self.generator.base_path,
                                         generation=self.generator.generation + 1,
-                                        lvl_path=level)
+                                        # todo: get annealing/growth scheme
+                                        diff=self.generator.diff,
+                                        prefix=self.run_folder)
 
+            gen.generate(params=[r], difficulty=True, env_id=self.id)
+            # str(gen) # .to_file(gen.id, self.game)
             return gen
