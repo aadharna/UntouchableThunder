@@ -231,7 +231,7 @@ def pass_mc(new_generator, unique_run_id, poet_loop_counter):
         difficulty += '.hard'
 
     level = os.path.join(f'{args.result_prefix}/results_{unique_run_id}/rejected',
-                           f'poet{poet_loop_counter}_lvl{new_generator.id}_{difficulty}.txt')
+                           f'poet{poet_loop_counter}_lvl{new_generator.id}{difficulty}.txt')
 
     with open(level, 'w+') as fname:
         fname.write(new_generator.string)
