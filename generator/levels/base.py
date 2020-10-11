@@ -2,10 +2,13 @@ import numpy as np
 
 class BaseGenerator:
     def __init__(self):
-        super().__init__()
 
 
         pass
+
+    # for compatability reasons
+    def update_from_lvl_string(self, new_lvl):
+        raise NotImplementedError
 
     def generate(self):
         '''
