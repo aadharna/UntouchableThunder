@@ -18,7 +18,7 @@ from torch import save as torch_save
 from torch import load as torch_load
 
 def callOut(parent):
-    print("calling out")
+    # print("calling out")
     children = []
     while len(children) < 1:
         try:
@@ -40,14 +40,14 @@ def flatten(answer_list):
 
 
 def waitForAndCollectAnswers(parent, children, distributed_work, unique_run_id, poet_loop_counter, task):
-    print('waiting for answers')
+    # print('waiting for answers')
     resend = []
     answers_list = []
     time.sleep(10)
     while not parent.checkChildResponseStatus(children, resend):
         if resend:
             time.sleep(5)
-            print(f"resending work {resend}")
+            # print(f"resending work {resend}")
             # save completed work so that child who gets second task
             # does not overwrite the first task.
             for (reassigned_from, reassigned_to) in resend:
@@ -66,7 +66,7 @@ def waitForAndCollectAnswers(parent, children, distributed_work, unique_run_id, 
     answers_list.extend([parent.readChildAnswer(answer) for answer in answer_pointers])
     flat_answers = flatten(answers_list)
 
-    print('collected answers')
+    # print('collected answers')
     return flat_answers
 
 
@@ -108,7 +108,7 @@ def updatePairs(pairs, answers, task_type):
     :param task_type: ADPTASK ID
     :return:
     """
-    print("updating")
+    # print("updating")
     # do something with the answers.
     # for each dict from the children
 
@@ -181,7 +181,7 @@ def perform_transfer(pairs, answers, poet_loop_counter, unique_run_id):
                 # todo talk about <=?
                 if current_score < j_score:
                     # updated network
-                    print(f"update network {fixed_env_pair.id} to {changing_agent_pair.id}")
+                    # print(f"update network {fixed_env_pair.id} to {changing_agent_pair.id}")
                     current_score = j_score
                     current_net   = changing_agent_pair.nn.state_dict()
                     transferred_id = changing_agent_pair.id
@@ -197,24 +197,26 @@ def perform_transfer(pairs, answers, poet_loop_counter, unique_run_id):
                       'w+') as fname:
                 pass
 
-def pass_mc(gridGame, unique_run_id, poet_loop_counter):
-    print("testing MC")
+def pass_mc(new_generator, unique_run_id, poet_loop_counter):
+
+    # print("testing MC")
     
     path_to_game = f'./ext/GVGAI_GYM/games/{args.game}_v0/{args.game}.txt'
-    print("running mcts agent")
+    # print("running mcts agent")
     # if you LOSE with a tree-serach agent, it's too hard.
-    wonGameMCTS = runJavaAgent('runGVGAI.jar', 
+    # print(f"path: {gridGame.path_to_file}, {type(gridGame.path_to_file)}")
+    wonGameMCTS = runJavaAgent('runGVGAI.jar',
                                path_to_game,
-                               gridGame.path_to_file,
+                               new_generator.path_to_file,
                                args.comp_agent,
                                str(args.game_len),
                                )
 
-    print("running random agent")
+    # print("running random agent")
     # if you WIN playing randomly, the level is too easy.
     wonGameRandomly = runJavaAgent('runGVGAI.jar',
                                    path_to_game,
-                                   gridGame.path_to_file,
+                                   new_generator.path_to_file,
                                    'random',
                                    str(args.game_len))
 
@@ -229,10 +231,10 @@ def pass_mc(gridGame, unique_run_id, poet_loop_counter):
         difficulty += '.hard'
 
     level = os.path.join(f'{args.result_prefix}/results_{unique_run_id}/rejected',
-                           f'poet{poet_loop_counter}_lvl{gridGame.id}{difficulty}.txt')
+                           f'poet{poet_loop_counter}_lvl{new_generator.id}_{difficulty}.txt')
 
     with open(level, 'w+') as fname:
-        fname.write(str(gridGame))
+        fname.write(new_generator.string)
 
     return False
 
@@ -240,13 +242,23 @@ def get_child_list(parent_list, max_children, unique_run_id, stats, poet_loop_co
     child_list = []
     passed = 0
     mutation_trial = 0
+
     while mutation_trial < max_children:
-        print(f"mutation_trial {mutation_trial + 1}/{max_children}")
+        # print(f"mutation_trial {mutation_trial + 1}/{max_children}")
         parent = np.random.choice(parent_list)
 
-        new_gen = parent.mutate(mutationRate=args.mutation_rate,
-                                minimal=args.minimal_mutation,
-                                r=args.mutation_radius)
+        if args.generatorType == "evolutionary":
+            mu = args.mutation_rate
+            minimal = args.minimal_mutation
+            r = args.mutation_radius
+        else:
+            mu = None
+            minimal = True,
+            r = parent.geneartor.diff
+
+        new_gen = parent.mutate(mutationRate=mu,
+                                minimal=minimal,
+                                r=r)
 
         mutation_trial += 1
 
@@ -288,7 +300,7 @@ def send_work(distributed_work, task, parent, unique_run_id, poet_loop_counter):
 def getChildren(parent):
 
     children = callOut(parent)
-    print(children)
+    # print(children)
 
     # get available children
     availableChildren = parent.isChildAvailable(children)
@@ -348,8 +360,10 @@ if __name__ == "__main__":
     genArgs = {'game':args.game,
                'args_file':_args.args_file,
                'tile_world':lvl,
+               'prefix': f"{args.result_prefix}/results_{_args.exp_name}",
                'shape':lvl.shape,
                'path':args.lvl_dir,
+               'diff':0.05,
                'mechanics':args.mechanics,
                'generation':0}
 
@@ -382,6 +396,7 @@ if __name__ == "__main__":
     while not done:
         try:
             stats[i] = {}
+            print(f"poet loop {i}")
 
             if (i + 1) % 10 == 0:
                 print("refreshing workers")
@@ -398,7 +413,7 @@ if __name__ == "__main__":
                                                          [pairs[j].generator for j in range(len(pairs))],
                                                          availableChildren)
 
-            print("evaluating")
+            # print("evaluating")
             send_work(distributed_work, ADPTASK.EVALUATE, parent, unique_run_id, i)
             
             # get answers from children
@@ -409,9 +424,9 @@ if __name__ == "__main__":
             # Add in new children
             #
             new_envs = []
-            print("mutation?")
+            # print("mutation?")
             if i % args.mutation_timer == 0:
-                print("yes")
+                # print("yes")
                 new_envs = get_child_list(pairs, args.max_children, unique_run_id, stats, i)
 
             pairs.extend(new_envs)
@@ -430,7 +445,7 @@ if __name__ == "__main__":
             # Optimizations step
             #
             availableChildren = getChildren(parent)
-            print("optimizing")
+            # print("optimizing")
             distributed_work = divideWorkBetweenChildren(pairs,
                                                          [pairs[j].generator for j in range(len(pairs))],
                                                          availableChildren)
@@ -446,7 +461,7 @@ if __name__ == "__main__":
             # EVALUATE each NN with each ENV.
             #
             if (i + 1) % args.transfer_timer == 0:
-                print("transferring")
+                # print("transferring")
                 availableChildren = getChildren(parent)
                 distributed_work = divideWorkBetweenChildren(pairs,
                                                              [pairs[j].generator for j in range(len(pairs))],
