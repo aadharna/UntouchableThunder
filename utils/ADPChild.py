@@ -51,6 +51,7 @@ class ADPChild:
                     prefix=prefix,
                     GG=GridGame(game=game,
                                 args_file=args_file,
+                                prefix=prefix,
                                 play_length=length,
                                 path=lvl_dir,
                                 lvl_name=init_lvl,
@@ -179,7 +180,8 @@ class ADPChild:
         """
         
         # have some communcation go to java each time so that the server does more than just sleep
-        self.pair.env.reset() 
+        # self.pair.env.reset()
+
         
         lvls = task_params['lvls']
         nns = task_params['nns']
@@ -189,13 +191,18 @@ class ADPChild:
         task_id = task_params['task_id']
         poet_loop_counter = task_params['poet'] # int
         run_id = task_params['run_id']
-        
+
         answers = {}
         if bool(nns):
             for i in range(len(nns)):
                 nn = nns[i]
                 lvl = lvls[i]
                 chromosome_id = chromosome_ids[i]
+
+                # update base path to the id of the pair being used
+                self.pair.env.generator._path = os.path.join(self.prefix, str(chromosome_id))
+                self.pair.env.generator.env_id = chromosome_id
+
                 env_id = env_ids[i]
 
                 # key word args
