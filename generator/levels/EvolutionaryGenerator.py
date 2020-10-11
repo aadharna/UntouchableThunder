@@ -16,6 +16,7 @@ class EvolutionaryGenerator(BaseGenerator):
                  path='/envs/games/zelda_v0/',
                  generation=0,
                  locations={},
+                 prefix='..',
                  **kwargs):
         """
 
@@ -52,6 +53,8 @@ class EvolutionaryGenerator(BaseGenerator):
         self.id = EvolutionaryGenerator.id
         EvolutionaryGenerator.id += 1
 
+        self.string = str(self)
+
         # self.chars = np.unique(np.unique(self.tile_world).tolist() + self.mechanics)
         # self.chars = list(set(self.chars) - {'A'}) # do not place more agents
 
@@ -62,7 +65,7 @@ class EvolutionaryGenerator(BaseGenerator):
         :return:
         """
         split_lvl = new_lvl.split('\n')[:-1]  # remove empty '' at the end
-        print(split_lvl)
+        # print(split_lvl)
 
         o = np.array([['0'] * self._height] * self._length, dtype=str)
         for i in range(self._length):
