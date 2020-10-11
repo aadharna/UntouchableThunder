@@ -1,5 +1,6 @@
 import os
 import gym
+import gvgai #needs to be here for gvgai envs
 import numpy as np
 
 from generator.levels.EvolutionaryGenerator import EvolutionaryGenerator
@@ -16,6 +17,7 @@ class GridGame(gym.Wrapper):
     def __init__(self,
                  game,
                  play_length,
+                 prefix='..',
                  args_file='./args.yml',
                  path='./levels',
                  lvl_name='start.txt',
@@ -31,6 +33,7 @@ class GridGame(gym.Wrapper):
         --------
         """
         self.args_file = args_file
+        self.prefix = prefix
         self.game = game
         self.dir_path = path # gvgai.dir path + envs/games/zelda_v0
         self.lvl_name = lvl_name
@@ -71,11 +74,11 @@ class GridGame(gym.Wrapper):
             # self.generator.to_file(GridGame.env_count, self.game)
 
         elif self.args.generatorType == "illuminating":
-            self.generator = IlluminatingGenerator(shape=self.generator.shape,
-                                                    args_file=self.generator.args_file,
-                                                    path=self.generator.base_path,
-                                                    generation=self.generator.generation + 1,
-                                                    lvl_path=self.lvl_path)
+            self.generator = IlluminatingGenerator(shape=shape,
+                                                    args_file=args_file,
+                                                    path=path,
+                                                    generation=gen_id,
+                                                    prefix=prefix)
 
 
         # return picture states?
