@@ -75,10 +75,10 @@ class GridGame(gym.Wrapper):
 
         elif self.args.generatorType == "illuminating":
             self.generator = IlluminatingGenerator(shape=shape,
-                                                    args_file=args_file,
-                                                    path=path,
-                                                    generation=gen_id,
-                                                    prefix=prefix)
+                                                   args_file=args_file,
+                                                   path=path,
+                                                   generation=gen_id,
+                                                   run_folder=prefix)
 
 
         # return picture states?
