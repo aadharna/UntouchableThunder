@@ -86,16 +86,19 @@ def divideWorkBetweenChildren(agents, envs, children, transfer_eval=False):
         tasks[id]['env'] = []
         tasks[id]['nn_id'] = []
         tasks[id]['env_id'] = []
+        tasks[id]['diff'] = []
 
                                                                     # itertools product
     agent_env_work_pair = zip(agents, envs) if not transfer_eval else product(agents, envs)
 
     for agent, generator in agent_env_work_pair:
         id = next(dispenser)
-        tasks[id]['env'].append(str(generator))
+        lvl = str(generator) if args.generatorType == 'evolutionary' else None
+        tasks[id]['env'].append(lvl)
         tasks[id]['nn'].append(agent.nn.state_dict())
         tasks[id]['nn_id'].append(agent.id)
         tasks[id]['env_id'].append(generator.id)
+        tasks[id]['diff'].append(agent.generator.diff)
 
     return tasks
 
@@ -254,7 +257,7 @@ def get_child_list(parent_list, max_children, unique_run_id, stats, poet_loop_co
         else:
             mu = None
             minimal = True,
-            r = parent.geneartor.diff
+            r = parent.generator.diff
 
         new_gen = parent.mutate(mutationRate=mu,
                                 minimal=minimal,
@@ -360,19 +363,21 @@ if __name__ == "__main__":
     genArgs = {'game':args.game,
                'args_file':_args.args_file,
                'tile_world':lvl,
-               'prefix': f"{args.result_prefix}/results_{_args.exp_name}",
+               'run_folder': f"{args.result_prefix}/results_{_args.exp_name}",
                'shape':lvl.shape,
                'path':args.lvl_dir,
                'diff':0.05,
                'mechanics':args.mechanics,
+               'env_id':0,
                'generation':0}
 
+    print("Create generator")
     Generator = EvolutionaryGenerator if args.generatorType == "evolutionary" else IlluminatingGenerator
     generator = Generator(**genArgs)
-    generator.to_file(0, args.game)
-    
+
     archive = []
 
+    print("Create minPair")
     pairs = [MinimalPair(unique_run_id=unique_run_id,
                          game=args.game,
                          generatorType=args.generatorType,
@@ -380,6 +385,8 @@ if __name__ == "__main__":
                          parent=net,
                          prefix=args.result_prefix)
             ]
+
+    generator.to_file(0, args.game)
 
     done = False
     i = 0

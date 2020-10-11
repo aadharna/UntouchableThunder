@@ -14,7 +14,7 @@ class IlluminatingGenerator(BaseGenerator):
                  args_file='./args.yml',
                  path='./levels',
                  generation=0,
-                 prefix='..',
+                 run_folder='..',
                  **kwargs):
         """
 
@@ -57,12 +57,12 @@ class IlluminatingGenerator(BaseGenerator):
         self.num_samples = 0
         self.path_to_file = None
 
-        self.diff = kwargs['diff'] if 'diff' in kwargs else None
+        self.diff = kwargs['diff'] if 'diff' in kwargs else 0.05
 
-        self.prefix = prefix
+        self.run_folder = run_folder
         self.env_id = 0
 
-        self.generate(params=[self.diff], difficulty=True, env_id=self.env_id)
+        # self.generate(params=[self.diff], difficulty=True, env_id=self.env_id)
 
         # self.chars = np.unique(np.unique(self.tile_world).tolist() + self.mechanics)
         # self.chars = list(set(self.chars) - {'A'}) # do not place more agents
@@ -82,7 +82,7 @@ class IlluminatingGenerator(BaseGenerator):
         env_id = kwargs['env_id'] if 'env_id' in kwargs else self.id
         # prefix = kwargs['path'] if 'path' in kwargs else self._path
         # print(self.prefix)
-        name = os.path.join(self.prefix, str(env_id), 'levels', f"sample:{self.num_samples}")
+        name = os.path.join(self.run_folder, str(env_id), 'levels', f"sample:{self.num_samples}")
         if params:
             name += "_dif:" + str(round(params[0], 2))
             params = ["difficulty"] + params + [self._height, self._length]
@@ -127,5 +127,5 @@ class IlluminatingGenerator(BaseGenerator):
 
     def __str__(self):
         diff = self.diff if self.diff else np.random.rand()
-        self.generate(params=[diff], difficulty=True, env_id=self.env_id)
+        self.generate(params=[diff], env_id=self.env_id)
         return self.string

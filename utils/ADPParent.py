@@ -142,6 +142,7 @@ class ADPParent:
             'task_id': task_id,
             'chromosome_ids': work_dict['nn_id'],
             'env_ids': work_dict['env_id'],
+            'diff': work_dict['diff'],
             'poet': poet_loop_counter,
             'kwargs': kwargs
         }

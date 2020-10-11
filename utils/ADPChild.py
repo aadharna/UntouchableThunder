@@ -187,6 +187,7 @@ class ADPChild:
         nns = task_params['nns']
         chromosome_ids = task_params['chromosome_ids']
         env_ids = task_params['env_ids']
+        diffs = task_params['diff']
         kwargs = task_params['kwargs']
         task_id = task_params['task_id']
         poet_loop_counter = task_params['poet'] # int
@@ -198,10 +199,12 @@ class ADPChild:
                 nn = nns[i]
                 lvl = lvls[i]
                 chromosome_id = chromosome_ids[i]
+                diff = diffs[i]
 
                 # update base path to the id of the pair being used
                 self.pair.env.generator._path = os.path.join(self.prefix, str(chromosome_id))
                 self.pair.env.generator.env_id = chromosome_id
+                self.pair.env.generator.diff = diff
 
                 env_id = env_ids[i]
 

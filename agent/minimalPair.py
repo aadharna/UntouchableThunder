@@ -32,6 +32,8 @@ class MinimalPair():
         self.id = MinimalPair.id
         MinimalPair.id += 1
 
+        self.generator.env_id = self.id
+
         self.run_folder = f'{prefix}/results_{self.unique_run_id}/'
 
         if not os.path.exists(self.run_folder):
@@ -75,7 +77,7 @@ class MinimalPair():
                                         generation=self.generator.generation + 1,
                                         # todo: get annealing/growth scheme
                                         diff=self.generator.diff,
-                                        prefix=self.run_folder)
+                                        run_folder=self.run_folder)
 
             gen.generate(params=[r], difficulty=True, env_id=self.id)
             # str(gen) # .to_file(gen.id, self.game)
