@@ -52,7 +52,7 @@ class MinimalPair():
         If the evolutionary generator, r is the mutation radius. It didn't do anything at all, so we're going to
         overload it.
 
-        If illuminating, r will represent the difficulty parameter.
+        If illuminating, r will represent the difficulty parametlser.
         """
         if self.generatorType == "evolutionary":
             new_map, shp = self.generator.mutate(mutationRate=mutationRate,
@@ -71,12 +71,13 @@ class MinimalPair():
             return gen
 
         else:
+            direction = np.random.choice([0.01, -0.01])
             gen = IlluminatingGenerator(shape=self.generator.shape,
                                         args_file=self.generator.args_file,
                                         path=self.generator.base_path,
                                         generation=self.generator.generation + 1,
                                         # todo: get annealing/growth scheme
-                                        diff=self.generator.diff,
+                                        diff=min(max(0.01, self.generator.diff + direction), 0.99),
                                         run_folder=self.run_folder)
 
             gen.generate(params=[r], difficulty=True, env_id=self.id)
