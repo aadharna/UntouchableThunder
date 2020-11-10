@@ -61,6 +61,7 @@ class IlluminatingGenerator(BaseGenerator):
 
         self.run_folder = run_folder
         self.env_id = 0
+        self.new = True
 
         # self.generate(params=[self.diff], difficulty=True, env_id=self.env_id)
 
@@ -83,6 +84,9 @@ class IlluminatingGenerator(BaseGenerator):
         # prefix = kwargs['path'] if 'path' in kwargs else self._path
         # print(self.prefix)
         name = os.path.join(self.run_folder, str(env_id), 'levels', f"sample:{self.num_samples}")
+        if self.new:
+            name += f"_{int(time.time())}"
+            self.new = False
         if params:
             name += "_dif:" + str(round(params[0], 2))
             params = ["difficulty"] + params + [self._height, self._length]
@@ -93,8 +97,9 @@ class IlluminatingGenerator(BaseGenerator):
         file = name + ".txt"
         # print(file)
         os.system("node " + self.script + " " + self.jsGame + " " + file + " " + param_str)
+        time.sleep(0.1)
         while not os.path.exists(file):
-            time.sleep(1)
+            time.sleep(0.2)
         path = os.path.abspath(file)
 
         # set path to file.
