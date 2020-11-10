@@ -18,7 +18,7 @@ from torch import save as torch_save
 from torch import load as torch_load
 
 def callOut(parent):
-    # print("calling out")
+    print("calling out")
     children = []
     while len(children) < 1:
         try:
@@ -405,10 +405,10 @@ if __name__ == "__main__":
             stats[i] = {}
             print(f"poet loop {i}")
 
-            if (i + 1) % 10 == 0:
+            if (i + 1) % args.refresh == 0:
                 print("refreshing workers")
                 cycleWorkers(parent)
-                time.sleep(120)
+                time.sleep(20)
 
             tdir = os.path.join(chkpt, str(i))
             if not os.path.exists(tdir):
