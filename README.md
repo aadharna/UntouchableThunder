@@ -3,6 +3,9 @@ Competitive Co-evolution of agents and environments (via mechanics) in [GVG-AI](
 
 Master's Thesis -- Aaron Dharna  
 
+ToG Paper Code lives in:
+./transferAnalysis and is self-contained to that folder
+
 Advisers:   
 
 	- Dr. Julian Togelius (NYU-Tandon)
