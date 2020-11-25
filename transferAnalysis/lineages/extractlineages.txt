@@ -1,0 +1,15 @@
+path = "singleNoScore.lineage.pkl"
+lineage = {}
+for d in reversed(sorted(os.listdir('.'))):
+    try:
+        net = int(d)
+    except ValueError as e:
+        continue
+    lineage[net] = [net]
+    parent = net
+    while not parent == 0:
+        parent, lvl = get_parent(parent)
+        lineage[net].append(parent)
+		
+with open(path, 'wb+') as f:
+    pickle.dump(lineage, f, pickle.HIGHEST_PROTOCOL)
