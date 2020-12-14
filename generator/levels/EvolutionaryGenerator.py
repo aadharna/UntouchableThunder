@@ -55,7 +55,7 @@ class EvolutionaryGenerator(BaseGenerator):
 
         self.string = str(self)
 
-        self.diff = None
+        self.diff = 1
 
         # self.chars = np.unique(np.unique(self.tile_world).tolist() + self.mechanics)
         # self.chars = list(set(self.chars) - {'A'}) # do not place more agents
