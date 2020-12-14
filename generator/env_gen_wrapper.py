@@ -1,6 +1,5 @@
 import os
 import gym
-import gvgai #needs to be here for gvgai envs
 import numpy as np
 
 from generator.levels.EvolutionaryGenerator import EvolutionaryGenerator
@@ -83,12 +82,34 @@ class GridGame(gym.Wrapper):
 
         # return picture states?
         self.pics = images
-        
-        # self.env = gym_gvgai.make('gvgai-{}-lvl0-v0'.format(game))
-        self.env = gym.make(f'gvgai-{game}-custom-v0',
-                            level_data=str(self.generator),
-                            pixel_observations=images,
-                            tile_observations=True)
+
+        if self.args.engine == 'GDY':
+            from griddly import gd
+            from griddly import GymWrapperFactory
+            wrapper = GymWrapperFactory()
+
+            if self.pics:
+                self.observer = gd.ObserverType.SPRITE_2D
+            else:
+                self.observer = gd.ObserverType.VECTOR
+            try:
+                wrapper.build_gym_from_yaml(
+                    f'{game}-custom',
+                    os.path.join(self.dir_path, f'{game}.yaml'),
+                    level=0,
+                    # global_observer_type=gd.ObserverType.SPRITE_2D,
+                    player_observer_type=self.observer
+                )
+            except gym.error.Error:
+                pass
+
+        else:
+            raise ValueError("gvgai is not supported anymore. Please use Griddly.")
+
+
+        self.env = gym.make(f"{self.args.engine}-{game}-custom-v0")
+
+        self.env.enable_history()
 
         # update static count of number of all envs
         self.id = GridGame.env_count
@@ -116,36 +137,38 @@ class GridGame(gym.Wrapper):
         self.score = 0
         self.prev_move = 4
 
+
         # save file currently in generator to disk
-        s = str(self.generator)
+        badgen = True
+        while badgen:
+            try:
+                s = str(self.generator)
+                # this is a global observation
+                state = self.env.reset(level_string=s)
+                badgen = False
+            except ValueError:
+                continue
 
-        if self.pics:
-            (pix, state) = self.env.reset(environment_id=f'{self.game}-custom', level_data=s)
-        else:
-            state = self.env.reset(environment_id=f'{self.game}-custom', level_data=s)
+        # THIS IS TEMPORARY:
+        state, _, _, _ = self.env.step(0)\
 
+        # after you have a state, get the conv-depth
         if self.depth is None:
-            self.depth = state.shape[2] #shape is (9, 13, 13) Going to be reshaped to (13, 9, 13). 
-        # print(state)
-        return np.transpose(state, (2, 0, 1))
+            self.depth = state.shape[0] #shape is (9, 13, 13) Going to be reshaped to (13, 9, 13).
+
+        return state
 
     def step(self, action):
-        im = None
-        if self.pics:
-            (im, tile), reward, done, info = self.env.step(action)
-        else:
-            tile, reward, done, info = self.env.step(action)
 
+        state, reward, done, info = self.env.step(action)
         if self.steps >= self.play_length:
             done = True
-            
-        state = np.transpose(tile, (2, 0, 1))
+        # state = np.transpose(tile, (2, 0, 1))
         
         self.steps += 1
-        reward -= 1e-4       # punish just randomly moving around
-                             # This should add some gradient signal.
         self.score += reward
-        self.done = info['winner']
+        if "PlayerResult" in info:
+            self.done = info['PlayerResult']['1']
 
         if self.args.no_score:
             if self.done == 3:
@@ -159,7 +182,7 @@ class GridGame(gym.Wrapper):
         if action != self.prev_move and action in self.rotating_actions:
             self.prev_move = action
         
-        return state, reward, done, {'pic': im, 'won': info['winner']}
+        return state, reward, done, {'pic': None, 'won': self.done}
 
     def mutate(self, mutationRate):
         new_map, shape = self.generator.mutate(mutationRate)
