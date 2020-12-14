@@ -43,7 +43,7 @@ class MinimalPair():
             os.mkdir(self.agent_folder)
             self.repo = os.path.join(self.agent_folder, 'levels')
             os.mkdir(self.repo)
-        with open(f'{self.agent_folder}/lvl{self.generator.id}.txt', 'w+') as fname:
+        with open(f'{self.agent_folder}/lvl_{self.generator.id}_{self.generator.diff}.txt', 'w+') as fname:
             fname.write(str(self.generator))
 
     def mutate(self, mutationRate, minimal, r):
@@ -81,5 +81,5 @@ class MinimalPair():
                                         run_folder=self.run_folder)
 
             gen.generate(params=[r], difficulty=True, env_id=self.id)
-            # str(gen) # .to_file(gen.id, self.game)
+            gen.to_file(gen.id, self.game)
             return gen
