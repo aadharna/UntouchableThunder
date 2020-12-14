@@ -22,7 +22,7 @@ from generator.env_gen_wrapper import GridGame
 from agent.NNagent import NNagent
 from agent.models import Value
 
-from baselines.common.vec_env.subproc_vec_env import SubprocVecEnv
+# from baselines.common.vec_env.subproc_vec_env import SubprocVecEnv
 
 def preprocess_obs_space(obs_space: Space, device: str):
     """
