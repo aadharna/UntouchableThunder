@@ -84,7 +84,7 @@ class NNagent(Agent):
         """
   
         with torch.no_grad():
-            outputs = self.nn(state, compass).squeeze()
+            outputs = self.nn(state, compass).flatten()
             
             _, predicted = torch.max(outputs, 0)
         
