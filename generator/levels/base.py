@@ -28,7 +28,6 @@ def _initialize(path, d=9):
     :param path: path to txt file representation of level
     :return:
     """
-    time.sleep(0.05)
     failing = True
     while failing:
 
