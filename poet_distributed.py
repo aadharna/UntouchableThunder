@@ -265,6 +265,8 @@ def get_child_list(parent_list, max_children, unique_run_id, stats, poet_loop_co
 
         mutation_trial += 1
 
+
+
         if pass_mc(new_gen, unique_run_id, poet_loop_counter):
             passed += 1
             child_list.append(MinimalPair(unique_run_id=unique_run_id,
@@ -354,8 +356,8 @@ if __name__ == "__main__":
     parent = ADPParent(prefix=f"{args.result_prefix}/results_{_args.exp_name}")
     unique_run_id = _args.exp_name
     net = Net(args.action, args.depth)
-    if args.game == 'dzelda':
-        net.load_state_dict(torch_load(f'./start.pt'))
+    # if args.game == 'dzelda':
+    #     net.load_state_dict(torch_load(f'./start.pt'))
 
     lvl = _initialize(os.path.join(args.lvl_dir, f"{args.game}_{args.init_lvl}"))
     lvl_shape = lvl.shape
