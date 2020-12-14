@@ -69,8 +69,9 @@ class Agent:
             c = torch.DoubleTensor(np.array([c]))
             
             action, nlogpob, ent = self.get_action(state, c) if not rl else self.rl_get_action(state, c)
-            
-            state, reward, done, info = env.step(action)
+
+            # todo: FIGURE OUT HOW TO MAKE IT SO THAT I DON'T HAVE TO INT(ACTION).
+            state, reward, done, info = env.step(int(action))
             if self.noisy:
                 state = add_noise(state)
             # print(f"action: {action}, done: {done}, reward: {reward}")
