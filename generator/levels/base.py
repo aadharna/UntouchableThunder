@@ -40,7 +40,7 @@ def _initialize(path, d=9):
             time.sleep(0.1)
         finally:
             fpointer.close()
-    time.sleep(0.05)
+    # time.sleep(0.05)
     # with open(path, 'r') as file:
     #     # print(path)
     #     f = file.read()
