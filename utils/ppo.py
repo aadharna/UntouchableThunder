@@ -5,7 +5,7 @@ import time
 import gym
 from gym.wrappers import TimeLimit, Monitor
 from gym.spaces import Discrete, Box, MultiBinary, MultiDiscrete, Space
-import gvgai
+# import gvgai
 
 
 import torch
