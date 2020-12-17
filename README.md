@@ -1,15 +1,28 @@
 # UntouchableThunder
-Competitive Co-evolution of agents and environments (via mechanics) in [GVG-AI](https://arxiv.org/pdf/1802.10363.pdf). 
+Competitive Co-evolution of agents and environments.
 
-Master's Thesis -- Aaron Dharna  
+Corresponding Author: Aaron Dharna  
 
-Advisers:   
+
+MS Advisers:   
 
 	- Dr. Julian Togelius (NYU-Tandon)
 	- Dr. Damian Lyons (Fordham University)
-	- Dr. Lisa Soros (NYU-Tandon)
+	- Dr. Lisa Soros (Cross Labs, Japan)
 
-See tl;dr at bottom.
+PhD Advisers: 
+
+	- Dr. Amy Hoover (NJIT)
+
+----  
+
+NOTE: I have switched away from GVGAI as the underlying game engine and towards Griddly
+
+----  
+
+This code has been primarily developed on linux, but I am adding support for windows (slowly). 
+
+To get the version of this work that is used in the ToG and AIIDE papers, see Release ToG tag. Installation for ToG tag can be seen below. Note this work only on Linux because of GVGAI.
 
 ```
 git clone --recursive git@github.com:aadharna/UntouchableThunder.git   
@@ -107,7 +120,8 @@ Additional things to consider:
 	
 Framework: 
 
-	- Use GVG-AI (generalized video game - ai) to set up levels and train agents across multiple games.  
+	- DEPRECATED: Use GVG-AI (generalized video game - ai) to set up levels and train agents across multiple games. 
+	- CURRENT: Griddly to do the same as above. But this can also do RTS games and mini-grid games. 
 
 ----  
 # tl;dr
@@ -119,19 +133,7 @@ POET alters the topology of the levels to instantiate curriculum learning. A com
 	- number of keys
 	- position of all game objects
 
-If those initial results hold, then scope will be expanded to also complexity via: 
-
-	- new rules
-	- new items
-	- etc
-
-as the agent gets better is the direction that I would like to go in. 
 
 ----  
 
-NOTE: We have decided to go forward with neuroevolution. To do this, we are using PyTorch-Neat also out of Uber-Engineering. 
-I could not figure out a way to use their repo as if it were just a module. The only way it worked was by cloning the appropriate
-code into my repo in the `pytorch_neat` folder. All code in there was from Uber_Eng and not myself. 
-
-----  
 This is a living document.
