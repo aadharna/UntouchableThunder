@@ -79,6 +79,17 @@ Actions:
           Commands:
             - remove: true
             - reward: -1
+  # remove the recently spawned attack animation sprite
+  - Name: remove_sprite
+    InputMapping:
+      Internal: true
+    Behaviours:
+      - Src:
+          Object: attack_fire
+          Commands:
+            - remove: true
+        Dst:
+          Object: attack_fire
   # Define the move action
   - Name: move
     InputMapping:
@@ -106,7 +117,6 @@ Actions:
             - rot: _dir
         Dst:
           Object: avatar
-
       # Only an avatar with a key can win
       - Src:
           Preconditions:
@@ -147,7 +157,6 @@ Actions:
             - reward: -1
         Dst:
           Object: spider
-
       # The gnome and the spider can move into empty space
       - Src:
           Object: avatar
@@ -155,21 +164,23 @@ Actions:
             - mov: _dest
         Dst:
           Object: _empty
-
-#  - Name: attack
-#    InputMapping:
-#      Inputs:
-#        1:
-#          Description: attack front
-#          OrientationVector: [ 1, 0 ]
-#      Relative: true
-#    Behaviours:
-#      - Src:
-#          Object: avatar
-#        Dst:
-#          Object: spider
-#          Commands:
-#            - remove: true
+  - Name: attack
+    InputMapping:
+      Inputs:
+        1:
+          Description: attack front
+          OrientationVector: [ 1, 0 ]
+          VectorToDest: [1, 0]
+      Relative: true
+    Behaviours:
+      - Src:
+          Object: avatar
+          Commands:
+            - spawn: attack_fire
+        Dst:
+          Object: [spider, _empty]
+          Commands:
+            - remove: true
 Objects:
   - Name: avatar
     Z: 3
@@ -180,18 +191,46 @@ Objects:
       Sprite2D:
         - Image: gvgai/oryx/swordman1_0.png
         - Image: gvgai/oryx/swordmankey1_0.png
+      Block2D:
+        - Shape: triangle
+          Color: [0.0, 0.5, 0.5]
+          Scale: 0.75
+        - Shape: triangle
+          Color: [0.3, 0.5, 0.2]
+          Scale: 1.0
+  - Name: attack_fire
+    Z: 1
+    InitialActions:
+      - Action: remove_sprite
+        Delay: 3
+    MapCharacter: x
+    Observers:
+      Sprite2D:
+        - Image: gvgai/oryx/fire1.png
+      Block2D:
+        - Shape: square
+          Color: [1.0, 0.0, 0.0]
+          Scale: 0.5
   - Name: key
     Z: 2
     MapCharacter: "+"
     Observers:
       Sprite2D:
         - Image: gvgai/oryx/key2.png
+      Block2D:
+        - Shape: triangle
+          Color: [0.5, 1.0, 0.5]
+          Scale: 0.7
   - Name: goal
     Z: 2
     MapCharacter: g
     Observers:
       Sprite2D:
         - Image: gvgai/oryx/doorclosed1.png
+      Block2D:
+        - Shape: square
+          Color: [0.0, 0.7, 0.0]
+          Scale: 0.7
   #   - Name: chaser
   #     Z: 2
   #     MapCharacter: "3"
@@ -203,15 +242,14 @@ Objects:
     InitialActions:
       - Action: random_movement
         Delay: 5
-        Randomize: true
     MapCharacter: "3"
     Observers:
       Sprite2D:
         - Image: oryx/oryx_fantasy/avatars/spider1.png
       Block2D:
-        - Shape: square
-          Color: [1.0, 0.0, 0.0]
-          Scale: 0.8
+        - Shape: triangle
+          Color: [0.9, 0.1, 0.1]
+          Scale: 0.5
   - Name: wall
     MapCharacter: w
     Observers:
@@ -234,3 +272,7 @@ Objects:
             - gvgai/oryx/wall3_13.png
             - gvgai/oryx/wall3_14.png
             - gvgai/oryx/wall3_15.png
+      Block2D:
+        - Shape: square
+          Color: [0.7, 0.7, 0.7]
+          Scale: 1.0
