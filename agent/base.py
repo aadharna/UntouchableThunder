@@ -17,7 +17,11 @@ class BaseAgent:
 
         self._env = GG
         self.depth = GG.depth
-        self.action_space = GG.env.action_space.n
+        # count the number of distinct discrete actions
+        # subtract the zero sub-action from each unique action
+        # add back in a zero action at the end
+        # THIS ASSUMES ACTION SPACES ARE DISCRETE
+        self.action_space = GG.nActions
         self.max_steps = GG.play_length
         # total reward of agent playing env
         self.max_achieved_score = 0
