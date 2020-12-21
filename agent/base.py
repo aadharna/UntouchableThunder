@@ -65,10 +65,10 @@ class BaseAgent:
         raise NotImplementedError
 
     def reset(self):
-        raise self.env.reset()
+        return self.env.reset()
     
     def step(self, x):
-        raise self.env.step(x)
+        return self.env.step(x)
     
     def __str__(self):
-        raise str(self.env.generator)
+        return str(self.env.generator)
