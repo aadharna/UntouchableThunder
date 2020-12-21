@@ -1,6 +1,5 @@
 import os
 import time
-import gvgai
 import numpy as np
 from itertools import product
 
@@ -204,7 +203,7 @@ def pass_mc(new_generator, unique_run_id, poet_loop_counter):
 
     # print("testing MC")
     
-    path_to_game = f'./ext/GVGAI_GYM/games/{args.game}_v0/{args.game}.txt'
+    path_to_game = f'./levels/gvgai_{args.game}_def.txt'
     # print("running mcts agent")
     # if you LOSE with a tree-serach agent, it's too hard.
     # print(f"path: {gridGame.path_to_file}, {type(gridGame.path_to_file)}")
