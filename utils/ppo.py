@@ -19,7 +19,7 @@ import numpy as np
 from utils.utils import zelda_spaces
 
 from generator.env_gen_wrapper import GridGame
-from agent.NNagent import NNagent
+from agent.OrientationConditionedNNagent import OrientationConditionedNNagent
 from agent.models import Value
 
 # from baselines.common.vec_env.subproc_vec_env import SubprocVecEnv
