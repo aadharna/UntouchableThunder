@@ -1,19 +1,15 @@
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from torch.autograd import Variable
 from torch.distributions.categorical import Categorical
-
-import os
 
 import numpy as np
 from copy import deepcopy
 
-from agent.base import Agent
+from agent.base import BaseAgent
 from agent.models import Net
-# from agent.models import Actor
+from utils.utils import add_noise
 
-class NNagent(Agent):
+
+class OrientationConditionedNNagent(BaseAgent):
 
     def __init__(self, time_stamp, GG=None, parent=None, prefix='.', actions=6, depth=13, master=True):
         
@@ -21,7 +17,7 @@ class NNagent(Agent):
         
         # GG exists, use it.
         if GG:
-                super(NNagent, self).__init__(GG, time_stamp, prefix=prefix, master=master)
+                super(OrientationConditionedNNagent, self).__init__(GG, time_stamp, prefix=prefix, master=master)
                 
                 if parent:
                     self.nn = deepcopy(parent)
@@ -30,7 +26,8 @@ class NNagent(Agent):
                               depth=self.depth)
                     
         
-        # GG does not exist, That's okay       
+        # GG does not exist, That's okay
+        # This is useful for vectorized environment evolution evaluation
         else:
             
             # we cannot rely on the env to have this information
@@ -54,14 +51,55 @@ class NNagent(Agent):
         """
         if env == None:
             env = self.env
-        return np.sum(super().evaluate(env, rl=rl))
+
+        """Run self agent on current generator level. 
+                """
+        self.images = []
+        # print("evaluating agent")
+        done = False
+        rewards = []
+        state = add_noise(env.reset()) if self.noisy else env.reset()
+        while not done:
+            c = env.orientation[env.prev_move - 1]
+            state = torch.DoubleTensor(np.array([state]))
+            c = torch.DoubleTensor(np.array([c]))
+
+            action, nlogpob, ent = self.get_action(state, c) if not rl else self.rl_get_action(state, c)
+
+            # todo: FIGURE OUT HOW TO MAKE IT SO THAT I DON'T HAVE TO INT(ACTION).
+            state, reward, done, info = env.step(int(action))
+            if self.noisy:
+                state = add_noise(state)
+            # print(f"action: {action}, done: {done}, reward: {reward}")
+            # state is a grid world here since we're using GridGame class
+            rewards.append(reward)
+            if self.vis:
+                self.images.append(info['pic'])
+                self.vis(env.env, action, image=info['pic'])
+
+        self.won = info['won']
+
+        # self.update_score(np.sum(rewards))
+        # print("evaluated")
+        # print(len(rewards))
+        # if the user wants to do another noisy trial,
+        # let them request it again.
+        self.noisy = False
+        return np.sum(rewards)
+
+    def fitness(self, noisy=False, fn=None, rl=False):
+        """run this agent through the current generator env once and store result into
+        """
+        self.noisy = noisy
+        self.vis = fn
+        return self.env.fitness(self, rl=rl)
 
     def mutate(self, mutationRate):
         childGG = self.env.mutate(mutationRate)
-        return NNagent(time_stamp=self.unique_run_id,
-                       prefix=self.prefix,
-                       GG=childGG,
-                       parent=self.nn)
+        return OrientationConditionedNNagent(time_stamp=self.unique_run_id,
+                                             prefix=self.prefix,
+                                             GG=childGG,
+                                             parent=self.nn)
     
     def __getstate__(self):
         base = super().__dict__
@@ -95,7 +133,7 @@ class NNagent(Agent):
         if not hasattr(self, '_env') and action != self.prev_move and action in self.rotating_actions:
             self.prev_move = action
         
-        return action, _, _
+        return action, 1, 0
    
     def rl_get_action(self, state, compass):
         """Select an action by running a tile-input through the neural network.
