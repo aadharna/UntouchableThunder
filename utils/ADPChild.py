@@ -2,7 +2,7 @@ import os
 import time
 from torch import save as torch_save
 
-from agent.NNagent import NNagent
+from agent.OrientationConditionedNNagent import OrientationConditionedNNagent
 from generator.env_gen_wrapper import GridGame
 from optimization.Optimizer import PyTorchObjective
 from utils.ADPTASK_ENUM import ADPTASK
@@ -47,9 +47,9 @@ class ADPChild:
 
         # this pair is for useage by children. It does not count as a POET pair.
         self.pair = \
-            NNagent(time_stamp=None,
-                    prefix=prefix,
-                    GG=GridGame(game=game,
+            OrientationConditionedNNagent(time_stamp=None,
+                                          prefix=prefix,
+                                          GG=GridGame(game=game,
                                 args_file=args_file,
                                 prefix=prefix,
                                 play_length=length,
@@ -58,8 +58,9 @@ class ADPChild:
                                 mechanics=['+', 'g'],  # doesn't matter.
                                 # monsters, key, door, wall
                                 ),
-                    master=False,  # won't use time_stamp or prefix
-                    )
+                                          master=False,  # won't use time_stamp or prefix
+                                          )
+        
 
         self.args = load_from_yaml(args_file)
 
