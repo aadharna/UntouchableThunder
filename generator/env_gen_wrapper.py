@@ -150,7 +150,7 @@ class GridGame(gym.Wrapper):
                 continue
 
         # THIS IS TEMPORARY:
-        state, _, _, _ = self.env.step(0)\
+        state, _, _, _ = self.env.step(0)
 
         # after you have a state, get the conv-depth
         if self.depth is None:
