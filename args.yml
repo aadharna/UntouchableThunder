@@ -19,8 +19,8 @@ shape0: 9
 generatorType: illuminating
 
 #network args
-action: 5
-depth: 5
+action: 6
+depth: 6
 
 # algo args
 game_len: 500
