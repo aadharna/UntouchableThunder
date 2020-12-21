@@ -108,6 +108,13 @@ class GridGame(gym.Wrapper):
 
 
         self.env = gym.make(f"{self.args.engine}-{game}-custom-v0")
+        _ = self.env.reset()
+        # count the number of distinct discrete actions
+        # subtract the zero sub-action from each unique action
+        # add back in a zero action at the end
+        # THIS ASSUMES ACTION SPACES ARE DISCRETE
+        self.action_dict = self.env.action_space.action_space_dict
+        self.nActions = sum([v.n - 1 for k, v in self.env.action_space.action_space_dict.items()]) + 1
 
         self.env.enable_history()
 
@@ -150,7 +157,7 @@ class GridGame(gym.Wrapper):
                 continue
 
         # THIS IS TEMPORARY:
-        state, _, _, _ = self.env.step(0)
+        state, _, _, _ = self.env.step({'player':0, 'move':0})
 
         # after you have a state, get the conv-depth
         if self.depth is None:
