@@ -47,16 +47,15 @@ class OrientationConditionedNNagent(BaseAgent):
         self.compass_info = np.array([0, 0, 0, 1])
 
     def interpretAction(self, a):
-        d = {'player': 0}
+        action = [0, 0]
         if a in [0, 1, 2, 3, 4]:
             # Todo: REMOVE INT CAST
             # THIS will happen with Chris's update to allow for
             # e.g. nparray(2)
-            d.update({'move': int(a)})
+            action = [0, int(a)]
         elif a in [5]:
-            d.update({'attack': 1})
-
-        return d
+            action = [1, int(a)]
+        return action
 
     def evaluate(self, env=None, rl=False):
         """Run self agent on current generator level.
@@ -70,17 +69,15 @@ class OrientationConditionedNNagent(BaseAgent):
         # print("evaluating agent")
         done = False
         rewards = []
-        state = add_noise(env.reset()) if self.noisy else env.reset()
+        state = env.reset()
         while not done:
             c = env.orientation[env.prev_move - 1]
-            state = torch.DoubleTensor(np.array([state]))
-            c = torch.DoubleTensor(np.array([c]))
+            state = torch.DoubleTensor([state])
+            c = torch.DoubleTensor([c])
 
             action, nlogpob, ent = self.get_action(state, c) if not rl else self.rl_get_action(state, c)
             action = self.interpretAction(action)
             state, reward, done, info = env.step(action)
-            if self.noisy:
-                state = add_noise(state)
             # print(f"action: {action}, done: {done}, reward: {reward}")
             # state is a grid world here since we're using GridGame class
             rewards.append(reward)
