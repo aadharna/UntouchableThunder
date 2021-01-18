@@ -1,5 +1,7 @@
 import os
 import gym
+from gym.spaces import MultiDiscrete, Discrete
+
 import numpy as np
 
 from generator.levels.EvolutionaryGenerator import EvolutionaryGenerator
@@ -92,12 +94,13 @@ class GridGame(gym.Wrapper):
                 self.observer = gd.ObserverType.SPRITE_2D
             else:
                 self.observer = gd.ObserverType.VECTOR
+            print(self.observer)
             try:
                 wrapper.build_gym_from_yaml(
                     f'{game}-custom',
                     os.path.join(self.dir_path, f'{game}.yaml'),
                     level=0,
-                    # global_observer_type=gd.ObserverType.SPRITE_2D,
+                    global_observer_type=self.observer,
                     player_observer_type=self.observer
                 )
             except gym.error.Error:
@@ -113,10 +116,18 @@ class GridGame(gym.Wrapper):
         # subtract the zero sub-action from each unique action
         # add back in a zero action at the end
         # THIS ASSUMES ACTION SPACES ARE DISCRETE
-        self.action_dict = self.env.action_space.action_space_dict
-        self.nActions = sum([v.n - 1 for k, v in self.env.action_space.action_space_dict.items()]) + 1
+        actionType = self.env.action_space
+        if type(actionType) == MultiDiscrete:
+            self.nActions = 1
+            for d in actionType.nvec:
+                self.nActions += (d - 1)
+        elif type(actionType) == Discrete:
+            self.nActions = actionType.n
+        else:
+            raise ValueError(f"Unsupported action type in game: {self.game}. "
+                             f"Only Discrete and MultiDiscrete are supported")
 
-        self.env.enable_history()
+        self.env.enable_history(True)
 
         # update static count of number of all envs
         self.id = GridGame.env_count
@@ -129,12 +140,12 @@ class GridGame(gym.Wrapper):
         self.score = 0
         self.play_length = play_length
 
+        self.info_list = []
         self.reset()
         
         self.orientation = np.eye(4, dtype=int)
         self.prev_move = 4
         self.rotating_actions = [1, 2, 3, 4]
-
 
 
     def reset(self):
@@ -143,7 +154,9 @@ class GridGame(gym.Wrapper):
         self.steps = 0
         self.score = 0
         self.prev_move = 4
-
+        self.info_list.clear()
+        # import time
+        # time.sleep(0.5)
 
         # save file currently in generator to disk
         badgen = True
@@ -151,26 +164,24 @@ class GridGame(gym.Wrapper):
             try:
                 s = str(self.generator)
                 # this is a global observation
-                state = self.env.reset(level_string=s)
+                state = self.env.reset(level_string=s, global_observations=True)
+                self.env.enable_history(True)
                 badgen = False
             except ValueError:
                 continue
 
-        # THIS IS TEMPORARY:
-        state, _, _, _ = self.env.step({'player':0, 'move':0})
-
         # after you have a state, get the conv-depth
         if self.depth is None:
-            self.depth = state.shape[0] #shape is (9, 13, 13) Going to be reshaped to (13, 9, 13).
+            self.depth = state['player'].shape[0]
 
-        return state
+        return state['player']
 
     def step(self, action):
 
         state, reward, done, info = self.env.step(action)
+        # self.env.render(observer='global')
         if self.steps >= self.play_length:
             done = True
-        # state = np.transpose(tile, (2, 0, 1))
         
         self.steps += 1
         self.score += reward
@@ -178,18 +189,22 @@ class GridGame(gym.Wrapper):
             self.done = info['PlayerResult']['1']
 
         if self.args.no_score:
-            if self.done == 3:
+            if self.done == 'Win':
                 reward = 1 - (self.steps / self.args.game_len)
-            elif self.done == 2:
+            elif self.done == 'Lose':
                 reward = (self.steps / self.args.game_len) - 1
             else:
                 reward = 0
 
+        info['pic'] = state if self.pics else None
+        info['won'] = self.done
+        self.info_list.append(info)
+
         # update orientation
         if action != self.prev_move and action in self.rotating_actions:
             self.prev_move = action
-        
-        return state, reward, done, {'pic': None, 'won': self.done}
+
+        return state, reward, done, info
 
     def mutate(self, mutationRate):
         new_map, shape = self.generator.mutate(mutationRate)
@@ -259,6 +274,6 @@ class GridGame(gym.Wrapper):
         return _make
     
     def close(self):
-        self.env.stop()
+        self.env.close()
                 
     

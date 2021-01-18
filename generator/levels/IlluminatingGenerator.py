@@ -53,8 +53,6 @@ class IlluminatingGenerator(BaseGenerator):
         self.id = IlluminatingGenerator.id
         IlluminatingGenerator.id += 1
 
-        self.script = os.path.dirname(os.path.realpath(__file__)) + '/../../ext/a2c_gvgai/lib/gvgai_generator/app_v3.js'
-
         self.num_samples = 0
         self.path_to_file = None
 

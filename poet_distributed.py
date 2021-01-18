@@ -194,7 +194,7 @@ def perform_transfer(pairs, answers, poet_loop_counter, unique_run_id):
             state_dict, new_agent_id = new_weights[fixed_env_pair.id]
             fixed_env_pair.nn.load_state_dict(state_dict)
 
-            with open(os.path.join(f'{args.result_prefix}/results_{unique_run_id}/{fixed_env_pair.id}',
+            with open(os.path.join(f'{args.result_prefix}', f'results_{unique_run_id}', f'{fixed_env_pair.id}',
                                    f'poet{poet_loop_counter}_network_{new_agent_id}_transferred_here.txt'),
                       'w+') as fname:
                 pass
@@ -203,7 +203,7 @@ def pass_mc(new_generator, unique_run_id, poet_loop_counter):
 
     # print("testing MC")
     
-    path_to_game = f'./levels/gvgai_{args.game}_def.txt'
+    path_to_game = os.path.join('levels', f'gvgai_{args.game}_def.txt')
     # print("running mcts agent")
     # if you LOSE with a tree-serach agent, it's too hard.
     # print(f"path: {gridGame.path_to_file}, {type(gridGame.path_to_file)}")
@@ -232,8 +232,8 @@ def pass_mc(new_generator, unique_run_id, poet_loop_counter):
     if not wonGameMCTS:
         difficulty += '.hard'
 
-    level = os.path.join(f'{args.result_prefix}/results_{unique_run_id}/rejected',
-                           f'poet{poet_loop_counter}_lvl{new_generator.id}{difficulty}.txt')
+    level = os.path.join(args.result_prefix, f'results_{unique_run_id}', 'rejected',
+                         f'poet{poet_loop_counter}_lvl{new_generator.id}{difficulty}.txt')
 
     with open(level, 'w+') as fname:
         fname.write(new_generator.string)
@@ -277,7 +277,7 @@ def get_child_list(parent_list, max_children, unique_run_id, stats, poet_loop_co
 
             tag = os.path.join(f'{args.result_prefix}',
                                f'results_{unique_run_id}',
-                               f'{child_list[-1].id}/parent_is_{parent.id}.txt')
+                               f'{child_list[-1].id}', f'parent_is_{parent.id}.txt')
             with open(tag, 'w+') as fname:
                 pass
     stats[poet_loop_counter]['viable'] = passed / max_children

@@ -128,7 +128,7 @@ class EvolutionaryGenerator(BaseGenerator):
         :param game: name of game being mutated
         :return: path to newly created level file
         """
-        path = os.path.join(self._path, f"{game}_id:{env_id}_g:{self.generation}.txt")
+        path = os.path.join(self._path, f"{game}_{env_id}_{self.generation}.txt")
         with open(path, 'w+') as fname:
             fname.write(str(self))
             self.path_to_file = path
