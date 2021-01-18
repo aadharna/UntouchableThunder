@@ -34,7 +34,7 @@ class MinimalPair():
 
         self.generator.env_id = self.id
 
-        self.run_folder = f'{prefix}/results_{self.unique_run_id}/'
+        self.run_folder = os.path.join(prefix, f'results_{self.unique_run_id}')
 
         if not os.path.exists(self.run_folder):
             os.mkdir(self.run_folder)
@@ -43,7 +43,9 @@ class MinimalPair():
             os.mkdir(self.agent_folder)
             self.repo = os.path.join(self.agent_folder, 'levels')
             os.mkdir(self.repo)
-        with open(f'{self.agent_folder}/lvl_{self.generator.id}_{self.generator.diff}.txt', 'w+') as fname:
+        fileName = os.path.join(self.agent_folder,
+                                f'lvl_{self.generator.id}_{self.generator.diff:.2f}.txt')
+        with open(fileName, 'w+') as fname:
             fname.write(str(self.generator))
 
     def mutate(self, mutationRate, minimal, r):

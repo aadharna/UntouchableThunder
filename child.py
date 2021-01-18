@@ -1,5 +1,6 @@
 import os
 import time
+import subprocess
 from utils.ADPChild import ADPChild
 from utils.loader import load_from_yaml
 
@@ -30,7 +31,7 @@ if __name__ == "__main__":
                      length=file_args.game_len,
                      lvl_dir=file_args.lvl_dir,
                      init_lvl=f"{file_args.game}_{file_args.init_lvl}",
-                     prefix=f"{file_args.result_prefix}/results_{line_args.exp_name}")
+                     prefix=os.path.join(file_args.result_prefix, f"results_{line_args.exp_name}"))
 
     #logging.debug(f"child {child.id} alive signal sent")
     
@@ -71,7 +72,13 @@ if __name__ == "__main__":
         if os.path.exists(child.alive + '.cycle'):
             os.remove(child.alive + '.cycle')
         print(f"refreshing worker {child.id}")
-        os.system(f'bash refreshWorker.sh {line_args.exp_name} {line_args.args_file} {line_args.id}')
+        import platform
+        if platform.system() == "Linux":
+            os.system(f'bash refreshWorker.sh {line_args.exp_name} {line_args.args_file} {line_args.id}')
+        elif platform.system() == "Windows":
+            # p = subprocess.Popen(f'pwsh -w hidden -file refreshWorker.ps1 -i {line_args.id} -expname {line_args.exp_name} -fname {line_args.args_file}')
+            # print(p.pid)
+            pass
         print("stuff")
 
 

@@ -34,7 +34,7 @@ class ADPChild:
             'alive_signals': 'alive',
             'available_signals': 'available'
         }
-        self.createFolders()
+        # self.createFolders()
 
         self.id = child_id
         self.alive = os.path.join(self.root,
@@ -120,7 +120,7 @@ class ADPChild:
             self.pair.noisy = noisy
             score = self.pair.evaluate(rl=rl)
             return {
-                'won': self.pair.env.done == 3,
+                'won': self.pair.env.done == 'Win',
                 'chromosome_id': chromosome_id,
                 'env_id': env_id,
                 'score': score,
@@ -160,11 +160,13 @@ class ADPChild:
             #destination = f"{self.pair.prefix}/results_{run_id}/{chromosome_id}/final_weights_poet{poet_loop_counter}.pt"
             #torch_save(state_dict, destination)
             # did the agent WIN the game?
-            if self.pair.env.done == 3:
-                path = f"{self.prefix}/{chromosome_id}/winning_weights_poet{poet_loop_counter}.pt"
+            if self.pair.env.done == 'Win':
+                path = os.path.join(f'{self.prefix}', 
+                                    f'{chromosome_id}',
+                                    f'winning_weights_poet{poet_loop_counter}.pt')
                 torch_save(state_dict, path)
             return {
-                'won': self.pair.env.done == 3,
+                'won': self.pair.env.done == 'Win',
                 'score': score,
                 'chromosome_id': chromosome_id,
                 'env_id': env_id,
