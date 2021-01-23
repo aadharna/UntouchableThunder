@@ -16,8 +16,10 @@ from agent.minimalPair import MinimalPair
 from torch import save as torch_save
 from torch import load as torch_load
 
+from tqdm import tqdm
+
 def callOut(parent):
-    print("calling out")
+    # print("calling out")
     children = []
     while len(children) < 1:
         try:
@@ -412,13 +414,17 @@ if __name__ == "__main__":
     stats['transfers'] = {}
 
     time.sleep(20)
+
+    pbar = tqdm(total=args.num_poet_loops)
+    
+
     while not done:
         try:
             stats[i] = {}
-            print(f"poet loop {i}")
+            # print(f"poet loop {i}")
 
             if (i + 1) % args.refresh == 0:
-                print("refreshing workers")
+                # print("refreshing workers")
                 cycleWorkers(parent)
                 time.sleep(20)
 
@@ -505,15 +511,18 @@ if __name__ == "__main__":
                     fname.write(str(pair.generator))
 
             i += 1
+            pbar.update(1)
             if i >= args.num_poet_loops:
                 done = True
 
         except KeyboardInterrupt as e:
             print(e)
+            pbar.close()
             dieAndKillChildren(parent, pairs)
             import sys
             sys.exit(0)
 
     print("dying")
+    pbar.close()
     dieAndKillChildren(parent, pairs, stats)
 

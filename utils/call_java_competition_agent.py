@@ -24,7 +24,7 @@ def runJavaAgent(jar, vgdl, lvl, agent, length):
     assert type(length) == str
     
     args = [jar, vgdl, lvl, agent, length]
-    print(args)
+    # print(args)
     
     result = _jarWrapper(*args)
     
