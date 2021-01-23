@@ -37,9 +37,9 @@ class IlluminatingGenerator(BaseGenerator):
         self._length = shape[0]
         self._height = shape[1]
 
-        self.jsGame = 'zelda' if self.game == 'dzelda' else self.game
+        self.jsGame = 'zelda' if 'zelda' in self.game else self.game
 
-        self.BOUNDARY = load_obj(path, f'{self.game}_boundary.pkl')
+        # self.BOUNDARY = load_obj(path, f'{self.game}_boundary.pkl')
 
         self.mechanics = self.args.mechanics
         # make folder in levels folder
