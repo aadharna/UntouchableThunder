@@ -16,8 +16,8 @@ class GridGame(gym.Wrapper):
     env_count = 0
 
     def __init__(self,
-                 game,
-                 play_length,
+                 game=None,
+                 play_length=None,
                  prefix='..',
                  args_file='./args.yml',
                  path='./levels',
@@ -34,15 +34,15 @@ class GridGame(gym.Wrapper):
         --------
         """
         self.args_file = args_file
+        self.args = load_from_yaml(args_file)
         self.prefix = prefix
-        self.game = game
+        
+        self.game = game if game is not None else self.args.game 
         self.dir_path = path # gvgai.dir path + envs/games/zelda_v0
         self.lvl_name = lvl_name
         self.lvl_path = os.path.join(path, lvl_name)
-        self.mechanics = mechanics
-
-        self.args = load_from_yaml(args_file)
-
+        self.mechanics = mechanics if not bool(mechanics) else self.args.mechanics
+        
         if self.args.generatorType  == "evolutionary":
         
             # if we do not have parsed location data on the sprites, read in a level and use that
@@ -98,7 +98,7 @@ class GridGame(gym.Wrapper):
             try:
                 wrapper.build_gym_from_yaml(
                     f'{game}-custom',
-                    os.path.join(self.dir_path, f'{game}.yaml'),
+                    os.path.join(self.dir_path, f'{self.game}.yaml'),
                     level=0,
                     global_observer_type=self.observer,
                     player_observer_type=self.observer
@@ -135,10 +135,10 @@ class GridGame(gym.Wrapper):
 
         self.depth = None # gets set in self.reset()
         # env must exist to reset
-        self.done = False
+        self.win = False
         self.steps = 0
         self.score = 0
-        self.play_length = play_length
+        self.play_length = play_length if play_length is not None else self.args.game_len
 
         self.info_list = []
         self.reset()
@@ -185,24 +185,25 @@ class GridGame(gym.Wrapper):
         
         self.steps += 1
         self.score += reward
-        if "PlayerResult" in info:
-            self.done = info['PlayerResult']['1']
+        if "PlayerResults" in info:
+            self.win = info['PlayerResults']['1']
+            print(f"set win to: {self.win}")
 
         if self.args.no_score:
-            if self.done == 'Win':
-                reward = 1 - (self.steps / self.args.game_len)
-            elif self.done == 'Lose':
-                reward = (self.steps / self.args.game_len) - 1
+            if self.win == 'Win':
+                reward = 1 - (self.steps / self.play_length)
+            elif self.win == 'Lose':
+                reward = (self.steps / self.play_length) - 1
             else:
                 reward = 0
 
         info['pic'] = state if self.pics else None
-        info['won'] = self.done
+        info['won'] = self.win
         self.info_list.append(info)
 
         # update orientation
-        if action != self.prev_move and action in self.rotating_actions:
-            self.prev_move = action
+        # if action != self.prev_move and action in self.rotating_actions:
+        #     self.prev_move = action
 
         return state, reward, done, info
 
