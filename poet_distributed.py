@@ -134,7 +134,12 @@ def cycleWorkers(parent):
     for a in alive:
         parent.placeChildFlag(os.path.join(path, a) + '.cycle')
 
-def dieAndKillChildren(parent, pairs):
+def dieAndKillChildren(parent, pairs, stats):
+
+    from utils.utils import save_obj
+    save_obj(stats,
+             os.path.join(f"{args.result_prefix}", f"results_{unique_run_id}"),
+             f"pinsky_stats")
 
     # [pair.env.close() for pair in pairs]
     path = os.path.join(parent.root,
@@ -147,7 +152,7 @@ def dieAndKillChildren(parent, pairs):
         # create #.txt.done files. 
         parent.placeChildFlag(os.path.join(path, a) + '.done')
 
-def perform_transfer(pairs, answers, poet_loop_counter, unique_run_id):
+def perform_transfer(pairs, answers, poet_loop_counter, unique_run_id, stats):
     """
     find the network which performed best in each env.
     Move that best-network into that env.
@@ -163,6 +168,7 @@ def perform_transfer(pairs, answers, poet_loop_counter, unique_run_id):
     """
 
     new_weights = {}
+    stats['transfers'][poet_loop_counter] = []
 
     for k, fixed_env_pair in enumerate(pairs):
         current_score = answers[(fixed_env_pair.id, fixed_env_pair.generator.id)]['score']
@@ -193,6 +199,7 @@ def perform_transfer(pairs, answers, poet_loop_counter, unique_run_id):
         if fixed_env_pair.id in new_weights:
             state_dict, new_agent_id = new_weights[fixed_env_pair.id]
             fixed_env_pair.nn.load_state_dict(state_dict)
+            stats['transfers'][poet_loop_counter].append((new_agent_id, fixed_env_pair.id))
 
             with open(os.path.join(f'{args.result_prefix}', f'results_{unique_run_id}', f'{fixed_env_pair.id}',
                                    f'poet{poet_loop_counter}_network_{new_agent_id}_transferred_here.txt'),
@@ -275,6 +282,8 @@ def get_child_list(parent_list, max_children, unique_run_id, stats, poet_loop_co
                                           parent=parent.nn,
                                           game=parent.game))
 
+            stats['lineage'].append((parent.id, child_list[-1].id))
+
             tag = os.path.join(f'{args.result_prefix}',
                                f'results_{unique_run_id}',
                                f'{child_list[-1].id}', f'parent_is_{parent.id}.txt')
@@ -352,8 +361,8 @@ print(__name__)
 
 if __name__ == "__main__":
 
-    parent = ADPParent(prefix=f"{args.result_prefix}/results_{_args.exp_name}")
     unique_run_id = _args.exp_name
+    parent = ADPParent(prefix=os.path.join(f"{args.result_prefix}", f"results_{unique_run_id}"))
     net = Net(args.action, args.depth)
     # if args.game == 'dzelda':
     #     net.load_state_dict(torch_load(f'./start.pt'))
@@ -364,7 +373,7 @@ if __name__ == "__main__":
     genArgs = {'game':args.game,
                'args_file':_args.args_file,
                'tile_world':lvl,
-               'run_folder': f"{args.result_prefix}/results_{_args.exp_name}",
+               'run_folder': os.path.join(f"{args.result_prefix}", f"results_{unique_run_id}"),
                'shape':lvl.shape,
                'path':args.lvl_dir,
                'diff':0.05,
@@ -391,14 +400,16 @@ if __name__ == "__main__":
 
     done = False
     i = 0
-    chkpt = f"{args.result_prefix}/results_{unique_run_id}/POET_CHKPT"
-    reject = f'{args.result_prefix}/results_{unique_run_id}/rejected'
+    chkpt = os.path.join(f"{args.result_prefix}", f"results_{unique_run_id}", f"POET_CHKPT")
+    reject = os.path.join(f"{args.result_prefix}", f"results_{unique_run_id}", f"rejected")
     if not os.path.exists(chkpt):
         os.mkdir(chkpt)
     if not os.path.exists(reject):
         os.mkdir(reject)
     
     stats = {}
+    stats['lineage'] = []
+    stats['transfers'] = {}
 
     time.sleep(20)
     while not done:
@@ -482,7 +493,7 @@ if __name__ == "__main__":
                 transfer_eval_answers = waitForAndCollectAnswers(parent, availableChildren, distributed_work, unique_run_id, i, ADPTASK.EVALUATE)
 
                 # use information to determine if NN i should migrate to env j.
-                perform_transfer(pairs, transfer_eval_answers, i, unique_run_id)
+                perform_transfer(pairs, transfer_eval_answers, i, unique_run_id, stats)
 
             # save checkpoints of networks into POET folder
             #
@@ -504,5 +515,5 @@ if __name__ == "__main__":
             sys.exit(0)
 
     print("dying")
-    dieAndKillChildren(parent, pairs)
+    dieAndKillChildren(parent, pairs, stats)
 
