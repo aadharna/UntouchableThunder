@@ -187,7 +187,7 @@ class GridGame(gym.Wrapper):
         self.score += reward
         if "PlayerResults" in info:
             self.win = info['PlayerResults']['1']
-            print(f"set win to: {self.win}")
+            # print(f"set win to: {self.win}")
 
         if self.args.no_score:
             if self.win == 'Win':
