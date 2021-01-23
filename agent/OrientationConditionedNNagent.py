@@ -63,8 +63,6 @@ class OrientationConditionedNNagent(BaseAgent):
         if env == None:
             env = self.env
 
-        """Run self agent on current generator level. 
-                """
         self.images = []
         # print("evaluating agent")
         done = False
