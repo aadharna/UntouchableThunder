@@ -42,7 +42,7 @@ class Maze:
         pass
     
     def generate(self, width, height):
-        maze = [];
+        maze = []
         for y in range(height):
             maze.append([])
             for x in range(width):
@@ -74,8 +74,10 @@ class Maze:
                 sorted_surrounding = sorted(surrounding, key=lambda x: np.random.rand() - 0.5)
                 if len(sorted_surrounding) > 0:
                     maze[current['y']][current['x']].unlockDirection(surrounding[0])
-                    maze[current['y'] + sorted_surrounding[0]['y']][current['x'] + surrounding[0]['x'].unlockDirection({ x: -1 * sorted_surrounding[0]['x'], y: -1 * sorted_surrounding[0]['y'] })]
-                    maze[current.y][current.x].marked = true
+                    maze[current['y'] + sorted_surrounding[0]['y']][current['x'] + surrounding[0]['x']].unlockDirection(
+                        { x: -1 * sorted_surrounding[0]['x'], y: -1 * sorted_surrounding[0]['y'] }
+                    )
+                    maze[current['y']][current['x']].marked = True
                     for x in [-1, 0, 1]:
                         for y in [-1, 0, 1]:
                             if ((x == 0 or y == 0) and not (x == 0 and y == 0)):
@@ -97,7 +99,7 @@ class Maze:
                     pos = { 'x':math.floor(x / 2), 
                             'y': math.floor(y / 2) }
                     
-                    result[y][x] = 0;
+                    result[y][x] = 0
                     if (not maze[pos['y']][pos['x']].getWall({ 'x': -1, 'y': 0 })):
                         result[y][x - 1] = 0
                     if (not maze[pos['y']][pos['x']].getWall({ 'x': 1, 'y': 0 })):
@@ -121,9 +123,9 @@ class Zelda:
         for x in range(len(_map[0])):
             for y in range(len(_map)):
                 if (_map[y][x] == 0):
-                    possibleLocations.append({ 'x': x, 'y': y });
+                    possibleLocations.append({ 'x': x, 'y': y })
 
-        return possibleLocations;
+        return possibleLocations
     
     def getAllSeparatorWalls(self, _map):
         possibleLocations = []
@@ -131,20 +133,20 @@ class Zelda:
             for y in range(len(_map) - 1):
                 if (_map[y][x] == 1 and ((_map[y - 1][x] == 0 and _map[y + 1][x] == 0) or 
                                          (_map[y][x - 1] == 0 and _map[y][x + 1] == 0))):
-                    possibleLocations.append({ 'x': x, 'y': y });
+                    possibleLocations.append({ 'x': x, 'y': y })
 
-        return possibleLocations;
+        return possibleLocations
     
     def distance(self, p1, p2):
         return np.abs(p1['x'] - p2['x']) + np.abs(p1['y'] - p2['y'])
     
     def getDifficultyParameters(self, diff, maxWidth, maxHeight):
-        width = maxWidth;
-        height = maxHeight;
-        openess = (1 - diff) * 0.7 + 0.2 * np.random.rand() + 0.1;
-        enemies = diff * 0.4 + 0.3 * np.random.rand();
-        distanceToGoal = diff * 0.6 + 0.3 * np.random.rand();
-        return [width, height, openess, enemies, distanceToGoal];
+        width = maxWidth
+        height = maxHeight
+        openess = (1 - diff) * 0.7 + 0.2 * np.random.rand() + 0.1
+        enemies = diff * 0.4 + 0.3 * np.random.rand()
+        distanceToGoal = diff * 0.6 + 0.3 * np.random.rand()
+        return [width, height, openess, enemies, distanceToGoal]
     
     def adjustParameters(self, width, height, openess, enemies, distanceToGoal):
         parameters = [openess, enemies, distanceToGoal]
@@ -184,7 +186,7 @@ class Zelda:
         for i in range(len(walls)):
             if not openess:
                 break
-            _map[walls[i]['y']][walls[i]['x']] = 0;
+            _map[walls[i]['y']][walls[i]['x']] = 0
             openess -= 1
         
         locations = sorted(self.getAllPossibleLocations(_map), key=lambda x: np.random.rand() - 0.5)
@@ -234,7 +236,7 @@ class Zelda:
         _map[exit['y']][exit['x']] = 3
         _map[avatar['y']][avatar['x']] = 2
         
-        results = "";
+        results = ""
         for y in range(len(_map)):
             for x in range(len(_map[y])):
                 if _map[y][x] == 0:
