@@ -167,8 +167,11 @@ class GridGame(gym.Wrapper):
                 state = self.env.reset(level_string=s, global_observations=True)
                 self.env.enable_history(True)
                 badgen = False
-            except ValueError:
-                continue
+            except ValueError as e:
+                if self.args.generatorType == "illuminating":
+                    continue
+                else:
+                    raise e
 
         # after you have a state, get the conv-depth
         if self.depth is None:
