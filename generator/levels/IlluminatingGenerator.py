@@ -39,9 +39,6 @@ class IlluminatingGenerator(BaseGenerator):
 
         self.jsGame = 'zelda' if 'zelda' in self.game else self.game
 
-        # self.BOUNDARY = load_obj(path, f'{self.game}_boundary.pkl')
-
-        self.mechanics = self.args.mechanics
         # make folder in levels folder
         self.base_path = path
         self._path = os.path.join(self.base_path, f'{self.game}_poet_levels')
@@ -60,7 +57,6 @@ class IlluminatingGenerator(BaseGenerator):
 
         self.run_folder = run_folder
         self.env_id = 0
-        self.new = True
 
         if not self.jsGame == 'zelda':
             # import from neurips generator
