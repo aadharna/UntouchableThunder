@@ -51,7 +51,7 @@ if __name__ == "__main__":
                 time.sleep(5)
             
             if not done:
-                print("found task")
+                # print("found task")
                 child.recieveTaskAndReturnAnswer()
 
         except KeyboardInterrupt as e:
