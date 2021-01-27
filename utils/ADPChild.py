@@ -80,7 +80,7 @@ class ADPChild:
                             self.subfolders['sent_by_parent'],
                             f'child{self.id}') + '.pkl'
         if os.path.exists(path):
-            print(f"child{self.id} has a task")
+            # print(f"child{self.id} has a task")
             return True
         return False
 
@@ -184,6 +184,7 @@ class ADPChild:
         
         # have some communcation go to java each time so that the server does more than just sleep
         # self.pair.env.reset()
+        # print(task_params)
 
         
         lvls = task_params['lvls']
