@@ -1,11 +1,19 @@
 Version: "0.1"
 Environment:
-  Name: Zelda
+  Name: Partially Observable Zelda
+  Description: A port of the GVGAI game "Zelda", but partially observable. Pick up keys to reach doors and avoid enemies.
   Observers:
     Sprite2D:
       TileSize: 24
       BackgroundTile: gvgai/newset/floor2.png
   Player:
+    Observer:
+      RotateWithAvatar: true
+      TrackAvatar: true
+      Height: 5
+      Width: 5
+      OffsetX: 0
+      OffsetY: 2
     AvatarObject: avatar
   Termination:
     Win:
@@ -24,15 +32,22 @@ Environment:
       w.g.........w
       wwwwwwwwwwwww
     - |
-      wwwwwwwwwwwww
-      w.....+..+g.w
-      w.+.w.g.....w
-      w.....Ag..e.w
-      w+..+.......w
-      w....w..+...w
-      w.........g.w
-      w.e...+++.+ww
-      wwwwwwwwwwwww
+      wwwwwwwwwwwwwww
+      w.............w
+      w......w......w
+      w......w......w
+      w......w......w
+      w..e...w..+...w
+      w......w......w
+      w......w......w
+      w.wwwwwwwwwww.w
+      w.....Aw......w
+      w......w......w
+      w......w......w
+      w......w......w
+      w......w......w
+      w...........g.w
+      wwwwwwwwwwwwwww
     - |
       wwwwwwwwwwwwwwwwwwwwwwwwwwwwww
       w........+....e..............w
@@ -169,8 +184,8 @@ Actions:
       Inputs:
         1:
           Description: attack front
-          OrientationVector: [ 1, 0 ]
-          VectorToDest: [1, 0]
+          OrientationVector: [ -1, 0 ]
+          VectorToDest: [-1, 0]
       Relative: true
     Behaviours:
       - Src:
