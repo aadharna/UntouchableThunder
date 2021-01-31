@@ -100,7 +100,7 @@ class GridGame(gym.Wrapper):
                     f'{game}-custom',
                     os.path.join(self.dir_path, f'{self.game}.yaml'),
                     level=0,
-                    global_observer_type=self.observer,
+                    global_observer_type=gd.ObserverType.SPRITE_2D,
                     player_observer_type=self.observer
                 )
             except gym.error.Error:
@@ -153,6 +153,7 @@ class GridGame(gym.Wrapper):
         """
         self.steps = 0
         self.score = 0
+        self.win = False
         self.prev_move = 4
         self.info_list.clear()
         # import time
@@ -257,10 +258,32 @@ class GridGame(gym.Wrapper):
         
         #since we skipped the gvgai env, we need to create a new one. 
         # NOTE: THIS IS SUPER-FUCKING-EXPENSIVE
-        self.__dict__['env'] = gym.make(f'gvgai-{self.game}-custom-v0',
-                                        level_data=self.lvl_data,
-                                        pixel_observations=self.pics,
-                                        tile_observations=True)
+
+        if self.args.engine == 'GDY':
+            from griddly import gd
+            from griddly import GymWrapperFactory
+            wrapper = GymWrapperFactory()
+
+            if self.pics:
+                self.observer = gd.ObserverType.SPRITE_2D
+            else:
+                self.observer = gd.ObserverType.VECTOR
+            # print(self.observer)
+            try:
+                wrapper.build_gym_from_yaml(
+                    f'{self.game}-custom',
+                    os.path.join(self.dir_path, f'{self.game}.yaml'),
+                    level=0,
+                    global_observer_type=self.observer,
+                    player_observer_type=self.observer
+                )
+            except gym.error.Error:
+                pass
+
+        else:
+            raise ValueError("gvgai is not supported anymore. Please use Griddly.")
+
+        self.__dict__['env'] = gym.make(f'{self.args.engine}-{self.game}-custom-v0')
         
         
     # for use in vec_envs
@@ -268,9 +291,9 @@ class GridGame(gym.Wrapper):
         def _make():
             return GridGame(game=self.game,
                              play_length=self.play_length,
-                             path=os.path.join(self.dir_path),
-                             lvl_name=f"{self.game}_id:{self.id}_g:{self.generator.generation+1}.txt",
-                             gen_id=self.generator.generation + 1,
+                             path=self.dir_path,
+                             lvl_name=self.lvl_name,
+                             gen_id=self.generator.generation,
                              mechanics=self.mechanics,
                              images=self.pics,
                              locations=self.generator.locations,
