@@ -28,13 +28,13 @@ class PyTorchObjective():
         
         _min = -1.0  # min
         _max = 1.0  # max
-        dimension = self.x0.shape[0]      
+        self.dimension = self.x0.shape[0]
         
         self.init_fitnesses = (_max - _min) * np.random.uniform(size=popsize) + _min
         self.init_population = (
-            _max - _min) * np.random.uniform(size=(self.popsize, dimension)) + _min
+            _max - _min) * np.random.uniform(size=(self.popsize, self.dimension)) + _min
         
-        self.out_population = np.zeros((popsize, dimension), dtype='float64')
+        self.out_population = np.zeros((popsize, self.dimension), dtype='float64')
         self.out_fitnesses  = np.zeros((popsize, 1), dtype='float64')
         
 

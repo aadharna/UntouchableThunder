@@ -3,6 +3,7 @@ import time
 
 class BaseGenerator:
     def __init__(self):
+        self.locations = {}
         pass
 
     # for compatability reasons

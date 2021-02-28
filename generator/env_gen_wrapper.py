@@ -100,7 +100,7 @@ class GridGame(gym.Wrapper):
                     f'{game}-custom',
                     os.path.join(self.dir_path, f'{self.game}.yaml'),
                     level=0,
-                    global_observer_type=gd.ObserverType.SPRITE_2D,
+                    global_observer_type=self.observer,
                     player_observer_type=self.observer
                 )
             except gym.error.Error:

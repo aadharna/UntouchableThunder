@@ -43,9 +43,9 @@ class MinimalPair():
             os.mkdir(self.agent_folder)
             self.repo = os.path.join(self.agent_folder, 'levels')
             os.mkdir(self.repo)
-        fileName = os.path.join(self.agent_folder,
-                                f'lvl_{self.generator.id}_{self.generator.diff:.2f}.txt')
-        with open(fileName, 'w+') as fname:
+        self.fileName = os.path.join(self.agent_folder,
+                                     f'lvl_{self.generator.id}_{self.generator.diff:.2f}.txt')
+        with open(self.fileName, 'w+') as fname:
             fname.write(str(self.generator))
 
     def mutate(self, mutationRate, minimal, r):

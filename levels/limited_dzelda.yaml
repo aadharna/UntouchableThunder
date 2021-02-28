@@ -260,7 +260,7 @@ Objects:
     MapCharacter: e
     Observers:
       Sprite2D:
-        - Image: oryx/oryx_fantasy/avatars/spider1.png
+        - Image: gvgai/oryx/ogre1.png
       Block2D:
         - Shape: triangle
           Color: [0.9, 0.1, 0.1]
