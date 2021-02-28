@@ -43,7 +43,7 @@ class OrientationConditionedNNagent(BaseAgent):
                 self.nn = Net(n_actions=actions,
                                   depth=depth)
        
-        self.nn.double()
+        # self.nn.double()
         self.compass_info = np.array([0, 0, 0, 1])
 
     def interpretAction(self, a):
@@ -66,19 +66,19 @@ class OrientationConditionedNNagent(BaseAgent):
         self.images = []
         # print("evaluating agent")
         done = False
-        rewards = []
+        self.rewards = []
         state = env.reset()
         while not done:
             c = env.orientation[env.prev_move - 1]
-            state = torch.DoubleTensor([state])
-            c = torch.DoubleTensor([c])
+            state = torch.FloatTensor([state])
+            c = torch.FloatTensor([c])
 
             action, nlogpob, ent = self.get_action(state, c) if not rl else self.rl_get_action(state, c)
             action = self.interpretAction(action)
             state, reward, done, info = env.step(action)
             # print(f"action: {action}, done: {done}, reward: {reward}")
             # state is a grid world here since we're using GridGame class
-            rewards.append(reward)
+            self.rewards.append(reward)
             if self.vis:
                 self.images.append(info['pic'])
                 self.vis(env.env, action, image=info['pic'])
@@ -91,7 +91,7 @@ class OrientationConditionedNNagent(BaseAgent):
         # if the user wants to do another noisy trial,
         # let them request it again.
         self.noisy = False
-        return np.sum(rewards)
+        return np.sum(self.rewards)
 
     def fitness(self, noisy=False, fn=None, rl=False):
         """run this agent through the current generator env once and store result into

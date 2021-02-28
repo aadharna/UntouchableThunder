@@ -34,7 +34,7 @@ def getdZeldaLvlCharacterization(lvlpath, seedLvls, args_file):
     
     featureSet = [len(gen.locations['g']), 
                   len(gen.locations['+']), 
-                  len(gen.locations['3']), 
+                  len(gen.locations['e']), 
                   len(gen.locations['w']),
                   len(keyPath), 
                   len(doorPath)]

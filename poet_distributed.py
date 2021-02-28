@@ -4,6 +4,7 @@ import numpy as np
 from itertools import product
 
 from utils.call_java_competition_agent import runJavaAgent
+from utils.dZeldaCharacterization import getdZeldaLvlCharacterization
 from utils.ADPParent import ADPParent
 from utils.ADPTASK_ENUM import ADPTASK
 
@@ -23,7 +24,7 @@ def callOut(parent):
     children = []
     while len(children) < 1:
         try:
-            time.sleep(5)
+            time.sleep(2)
         except KeyboardInterrupt as e:
             print(e)
             import sys
@@ -44,10 +45,10 @@ def waitForAndCollectAnswers(parent, children, distributed_work, unique_run_id, 
     # print('waiting for answers')
     resend = []
     answers_list = []
-    time.sleep(10)
+    time.sleep(2)
     while not parent.checkChildResponseStatus(children, resend):
         if resend:
-            time.sleep(5)
+            time.sleep(2)
             # print(f"resending work {resend}")
             # save completed work so that child who gets second task
             # does not overwrite the first task.
@@ -57,7 +58,7 @@ def waitForAndCollectAnswers(parent, children, distributed_work, unique_run_id, 
                     
             send_work({k[1]:distributed_work[k[0]] for k in resend}, task, parent, unique_run_id, poet_loop_counter)
             resend = []
-        time.sleep(5)
+        time.sleep(2)
 
     answer_pointers = os.listdir(os.path.join(
         parent.root,
@@ -104,7 +105,7 @@ def divideWorkBetweenChildren(agents, envs, children, transfer_eval=False):
     return tasks
 
 
-def updatePairs(pairs, answers, task_type):
+def updatePairs(pairs, answers, task_type, poet_loop_id, stats):
     """
 
     :param pairs: list of active NN-Env pairs
@@ -122,6 +123,10 @@ def updatePairs(pairs, answers, task_type):
             if xsome_id == each_pair.id:
                 # print("found matching nn")
                 each_pair.score = answers[(xsome_id, env_id)]['score']
+                try:
+                    stats['lvls'][each_pair.id]['won'] = answers[(xsome_id, env_id)]['won'] if answers[(xsome_id, env_id)]['won'] else False
+                except KeyError:
+                    import pdb; pdb.set_trace()
                 if task_type == ADPTASK.OPTIMIZE:
                     nn = answers[(xsome_id, env_id)]['nn']  # this is a state_dict
                     each_pair.nn.load_state_dict(nn)
@@ -220,8 +225,7 @@ def pass_mc(new_generator, unique_run_id, poet_loop_counter):
                                path_to_game,
                                new_generator.path_to_file,
                                args.comp_agent,
-                               str(args.game_len),
-                               )
+                               str(args.game_len))
 
     # print("running random agent")
     # if you WIN playing randomly, the level is too easy.
@@ -273,8 +277,6 @@ def get_child_list(parent_list, max_children, unique_run_id, stats, poet_loop_co
 
         mutation_trial += 1
 
-
-
         if pass_mc(new_gen, unique_run_id, poet_loop_counter):
             passed += 1
             child_list.append(MinimalPair(unique_run_id=unique_run_id,
@@ -284,6 +286,12 @@ def get_child_list(parent_list, max_children, unique_run_id, stats, poet_loop_co
                                           parent=parent.nn,
                                           game=parent.game))
 
+            stats['lvls'][child_list[-1].id] = {}
+            stats['lvls'][child_list[-1].id]['lvl'] = str(new_gen)
+            stats['lvls'][child_list[-1].id]['lvlChar'] = getdZeldaLvlCharacterization(child_list[-1].fileName,
+                                                                                       args.lvl_dir,
+                                                                                       _args.args_file)
+            stats['lvls'][child_list[-1].id]['won'] = False
             stats['lineage'].append((parent.id, child_list[-1].id))
 
             tag = os.path.join(f'{args.result_prefix}',
@@ -322,7 +330,7 @@ def getChildren(parent):
 
     # if list is empty, wait and check again
     while not bool(availableChildren):
-        time.sleep(5)
+        time.sleep(2)
         availableChildren = parent.isChildAvailable(children)
 
     return availableChildren
@@ -412,6 +420,13 @@ if __name__ == "__main__":
     stats = {}
     stats['lineage'] = []
     stats['transfers'] = {}
+    stats['lvls'] = {}
+
+    stats['lvls'][pairs[0].id] = {}
+    stats['lvls'][pairs[0].id]['lvl'] = str(pairs[0].generator)
+    stats['lvls'][pairs[0].id]['lvlChar'] = getdZeldaLvlCharacterization(pairs[0].fileName,
+                                                                            args.lvl_dir,
+                                                                            _args.args_file)
 
     time.sleep(20)
 
@@ -444,7 +459,7 @@ if __name__ == "__main__":
             # get answers from children
             eval_answers = waitForAndCollectAnswers(parent, availableChildren, distributed_work, unique_run_id, i,  ADPTASK.EVALUATE)
 
-            updatePairs(pairs, eval_answers, ADPTASK.EVALUATE)
+            updatePairs(pairs, eval_answers, ADPTASK.EVALUATE, i, stats)
 
             # Add in new children
             #
@@ -480,7 +495,7 @@ if __name__ == "__main__":
             # get answers from children
             opt_answers = waitForAndCollectAnswers(parent, availableChildren, distributed_work, unique_run_id, i, ADPTASK.OPTIMIZE)
 
-            updatePairs(pairs, opt_answers, ADPTASK.OPTIMIZE)
+            updatePairs(pairs, opt_answers, ADPTASK.OPTIMIZE, i, stats)
 
             # TRANSFER NNs between ENVS,
             # EVALUATE each NN with each ENV.
