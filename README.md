@@ -1,8 +1,9 @@
 # UntouchableThunder
-Competitive Co-evolution of agents and environments.
+Competitive Co-evolution of agents and environments -- https://arxiv.org/abs/2007.08497. 
 
 Corresponding Author: Aaron Dharna  
 
+Note, this REPO is considered deprecated and I am working on a general purpose library for POET-like research. 
 
 MS Advisers:   
 
